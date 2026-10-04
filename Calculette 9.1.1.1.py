@@ -188,7 +188,7 @@ if "Division" in choix_op:
 else:
     consigne_b = "Deuxième nombre (Longueur illimitée — Virgule autorisée) :"
     max_c = None
-    placeholder_a = "Ex: 123.456.789"
+    placeholder_a = "Ex: 123.456"
     placeholder_b = "Ex: 78.91"
 
 a_input = st.text_input("Premier nombre (Longueur illimitée) :", placeholder=placeholder_a)
