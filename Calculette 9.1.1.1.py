@@ -182,7 +182,7 @@ st.markdown("### 📥 Saisie des dimensions")
 # Configuration dynamique des règles de saisie selon le choix
 if "Division" in choix_op:
     consigne_b = "Deuxième nombre (Dénominateur — Max 6 chiffres) :"
-    max_c = 10
+    max_c = 7
     placeholder_a = "Ex: 569965644221 (Sans virgule)"
     placeholder_b = "Ex: 999854"
 else:
