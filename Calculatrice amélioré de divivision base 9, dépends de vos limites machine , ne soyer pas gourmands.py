@@ -73,7 +73,7 @@ def chercher_extension_sans_abandon(num_str, den_str):
     partie_entiere_dec = num_dec_origine // den_dec
     resultat_trouve = None
     
-    # LOI DE PROPORTIONNALITÉ : Empêche Python de s'enfoncer à l'infini dans les "1"
+    # LOI DE PROPORTIONNALITÉ : Limite la recherche pour éviter de bloquer le PC
     limite_harmonique = len(den_str.strip().replace(" ", "")) + 2
     
     # Scan en profondeur avec gestion du demi-tour (Backtracking)
@@ -83,7 +83,7 @@ def chercher_extension_sans_abandon(num_str, den_str):
         if resultat_trouve is not None:
             return
             
-        # Si on dépasse la taille critique, on sort du tunnel pour essayer d'autres chiffres
+        # Si on dépasse la taille critique, on fait demi-tour pour essayer d'autres chiffres
         if len(chaine_actuelle) >= limite_harmonique:
             return
             
@@ -115,7 +115,7 @@ def chercher_extension_sans_abandon(num_str, den_str):
 
 
 # ==============================================================================
-# 3. INTERFACE CONSOLE
+# 3. INTERFACE CONSOLE AMÉLIORÉE POUR LES UTILISATEURS
 # ==============================================================================
 
 if __name__ == "__main__":
@@ -140,8 +140,8 @@ if __name__ == "__main__":
             
             print("\n" + "+" + "-"*68)
             print(f" 💎 RÉSULTAT DU CALCUL : {reponse}")
-            print(f" ⚡ SÉQUENCE GÉNÉRÉE : {extension}")
-            print(f" ⏱️ TEMPS D'EFFORT : {temps_ecoule:.6f} secondes")
+            print(f" ⚡ CHIFFRES COMPLÉMENTAIRES TROUVÉS APRÈS LA VIRGULE : {extension}")
+            print(f" ⏱️ TEMPS D'EFFORT DU PROCESSEUR : {temps_ecoule:.6f} secondes")
             print("+" + "-"*68 + "\n")
             
         except KeyboardInterrupt:
