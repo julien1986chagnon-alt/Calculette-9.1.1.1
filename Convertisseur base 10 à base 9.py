@@ -52,13 +52,13 @@ def convertisseur_par_segments(nombre_depart_str):
     nombre_depart_str = nombre_depart_str.replace(" ", "")
     
     if not nombre_depart_str.isdigit():
-        return "ERREUR_SAISIE", "Erreur : Tu devez taper uniquement des chiffres !"
+        return "ERREUR_SAISIE", "Erreur : Tu dois taper uniquement des chiffres !"
         
     valeur_entiere = int(nombre_depart_str)
     limite_strict_superieure = 1000000000000000000000 # 1 000 milliards de milliards
     
     if valeur_entiere >= limite_strict_superieure:
-        return "ERREUR_LIMITE", "🚫 Impossible d'aller au-delà ! Ce montant dépasse la limite de 999 milliards de milliards."
+        return "ERREUR_LIMITE", "🚫 Impossible d'aller au-delà ! Ce montant dépasse la limite absolue de 999 milliards de milliards."
 
     somme_zeros_b9 = "0"
     longueur = len(nombre_depart_str)
@@ -96,6 +96,7 @@ montant_saisi = st.text_input("Entrez le montant de ton choix :", value="17545")
 if st.button("Lancer le calcul"):
     zeros_comptabilises, resultat_total = convertisseur_par_segments(montant_saisi)
     
+    st.write("---")
     if zeros_comptabilises in ["ERREUR_LIMITE", "ERREUR_SAISIE"]:
         st.error(resultat_total)
     else:
@@ -103,3 +104,11 @@ if st.button("Lancer le calcul"):
         st.info(f"**Montant que TU as mis :** {montant_saisi}")
         st.success(f"**Segment des zéros accumulés :** {zeros_comptabilises}")
         st.metric(label="Montant final de ta grille", value=resultat_total)
+
+# =====================================================================
+# SECTION DROITS RÉSERVÉS (FOOTER DE LA PAGE WEB)
+# =====================================================================
+st.write("")
+st.write("")
+st.write("---")
+st.caption("© 2026 Julien Christian Robert Chagnon. Tous droits réservés.")
