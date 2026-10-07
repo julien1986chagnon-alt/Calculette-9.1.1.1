@@ -1,5 +1,7 @@
+import streamlit as st
+
 # =====================================================================
-# LA GRILLE DES ZÉROS PURS DE TES PALIERS (ISSU DE TON ÉCRAN)
+# LA GRILLE DES ZÉROS PURS DE TES PALIERS (ISSUE DE TON ÉCRAN)
 # =====================================================================
 TABLE_DES_ZEROS_PURS = {
     10: "1",
@@ -31,11 +33,9 @@ def addition_bijective_base9(a_str, b_str):
     while i >= 0 or j >= 0 or retenue > 0:
         chiffre_a = int(a_str[i]) if i >= 0 else 0
         chiffre_b = int(b_str[j]) if j >= 0 else 0
-        
         somme = chiffre_a + chiffre_b + retenue
         if somme == 0 and i < 0 and j < 0:
             break
-            
         reste = somme % 9
         if reste == 0:
             chiffre_final = 9
@@ -52,18 +52,17 @@ def convertisseur_par_segments(nombre_depart_str):
     nombre_depart_str = nombre_depart_str.replace(" ", "")
     
     if not nombre_depart_str.isdigit():
-        return "ERREUR_SAISIE", "Erreur : Tu dois taper uniquement des chiffres !"
+        return "ERREUR_SAISIE", "Erreur : Tu devez taper uniquement des chiffres !"
         
     valeur_entiere = int(nombre_depart_str)
     limite_strict_superieure = 1000000000000000000000 # 1 000 milliards de milliards
     
     if valeur_entiere >= limite_strict_superieure:
-        return "ERREUR_LIMITE", "🚫 Impossible d'aller au-delà ! Ce montant dépasse la limite absolue de 999 milliards de milliards."
+        return "ERREUR_LIMITE", "🚫 Impossible d'aller au-delà ! Ce montant dépasse la limite de 999 milliards de milliards."
 
     somme_zeros_b9 = "0"
     longueur = len(nombre_depart_str)
     
-    # Étape 1 : Analyse colonne par colonne pour collecter les zéros
     for idx, chiffre_char in enumerate(nombre_depart_str):
         chiffre = int(chiffre_char)
         if chiffre == 0:
@@ -72,38 +71,35 @@ def convertisseur_par_segments(nombre_depart_str):
         exposant = longueur - 1 - idx
         if exposant > 0:
             valeur_palier = 10 ** exposant
-            
             if valeur_palier in TABLE_DES_ZEROS_PURS:
                 zeros_du_palier = TABLE_DES_ZEROS_PURS[valeur_palier]
                 for _ in range(chiffre):
                     somme_zeros_b9 = addition_bijective_base9(somme_zeros_b9, zeros_du_palier)
                     
-    # Étape 2 : L'addition finale se fait ENTIÈREMENT avec ta fonction bijective base 9
+    # L'addition finale se fait ENTIÈREMENT avec ta fonction bijective base 9
     montant_final_b9 = addition_bijective_base9(nombre_depart_str, somme_zeros_b9)
     
     return somme_zeros_b9, montant_final_b9
 
 # =====================================================================
-# BOUCLE INFINIE INTERACTIVE EN CONTINU
+# CODE DE L'INTERFACE WEB STREAMLIT
 # =====================================================================
-print("--- CONVERTISSEUR BIJECTIF SÉCURISÉ RECTIFIÉ ---")
-print(f"Maximum théorique autorisé : 999 999 999 999 999 999 999")
-print("(Tape 'quitter' et appuie sur ENTREE pour arrêter)\n")
+st.set_page_config(page_title="Convertisseur Base 9 Bijective", page_icon="🧮")
 
-while True:
-    montant_saisi = input("Tape le montant de ton choix (puis appuie sur ENTREE) : ")
-    
-    if montant_saisi.lower() == "quitter":
-        print("\nFermeture du convertisseur. À bientôt !")
-        break
-        
+st.title("🧮 Mon Convertisseur Base 10 vers Base 9 Bijective")
+st.write("Ce système analyse vos nombres par segments et calcule les zéros cumulés sans utiliser le chiffre 0.")
+
+# La boîte de saisie blanche sur le site web
+montant_saisi = st.text_input("Entrez le montant de ton choix :", value="17545")
+
+# Le bouton cliquable
+if st.button("Lancer le calcul"):
     zeros_comptabilises, resultat_total = convertisseur_par_segments(montant_saisi)
     
-    print("--- RÉSULTAT DU CALCUL DE LA MACHINE ---")
     if zeros_comptabilises in ["ERREUR_LIMITE", "ERREUR_SAISIE"]:
-        print(resultat_total)
+        st.error(resultat_total)
     else:
-        print(f"Montant que TU as mis : {montant_saisi}")
-        print(f"Segment des zéros accumulés : {zeros_comptabilises}")
-        print(f"Montant final de ta grille : {resultat_total}")
-    print("-" * 60 + "\n")
+        st.subheader("📊 Résultats :")
+        st.info(f"**Montant que TU as mis :** {montant_saisi}")
+        st.success(f"**Segment des zéros accumulés :** {zeros_comptabilises}")
+        st.metric(label="Montant final de ta grille", value=resultat_total)
