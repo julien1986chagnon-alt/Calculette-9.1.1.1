@@ -57,7 +57,7 @@ st.set_page_config(page_title="Console de Routage Bijectif Bilatéral", page_ico
 st.title("🔐 Console de Routage Bijectif Bilatéral")
 st.markdown("---")
 
-# Création de deux colonnes pour un affichage moderne côte à côte
+# Création de deux colonnes pour l'affichage côte à côte
 col1, col2 = st.columns(2)
 
 with col1:
@@ -70,11 +70,15 @@ with col1:
         key="txt_source"
     )
     
-    # Calcul automatique et affichage du résultat chiffré
+    # Conteneur stable pour éviter le bug de rafraîchissement
+    zone_affichage_encode = st.empty()
+    
+    # Calcul et affichage automatique
     if texte_source:
         flux_chiffre = encoder_message_sans_zero(texte_source)
-        st.success("✨ Message encodé :")
-        st.code(flux_chiffre, language="text")
+        with zone_affichage_encode.container():
+            st.success("✨ Message encodé :")
+            st.code(flux_chiffre, language="text")
 
 with col2:
     st.subheader("🔓 Section Décodage")
@@ -87,8 +91,12 @@ with col2:
         key="flx_saisi"
     )
     
-    # Calcul automatique et affichage du résultat décodé
+    # Conteneur stable pour éviter le bug de rafraîchissement
+    zone_affichage_decode = st.empty()
+    
+    # Calcul et affichage automatique
     if flux_saisi:
         texte_decode = decoder_message_sans_zero(flux_saisi)
-        st.info("📝 Message décodé :")
-        st.text(texte_decode)
+        with zone_affichage_decode.container():
+            st.info("📝 Message décodé :")
+            st.text(texte_decode)
