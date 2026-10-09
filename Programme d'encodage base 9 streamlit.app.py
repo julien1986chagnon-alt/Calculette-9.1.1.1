@@ -1,7 +1,7 @@
-import gradio as gr
+import streamlit as st
 
 # ==========================================
-# 1. FONCTIONS DE CONVERSION & ENCODAGE (VOTRE LOGIQUE)
+# 1. FONCTIONS DE CONVERSION & ENCODAGE
 # ==========================================
 
 def decimal_a_base9_bijective(n):
@@ -46,59 +46,53 @@ def decoder_message_sans_zero(flux_b9):
             code_decimal = base9_bijective_a_decimal(bloc)
             caracteres_decoles.append(chr(code_decimal))
         except ValueError:
+            # Ignore les blocs invalides
             continue
     return "".join(caracteres_decoles)
 
 
 # ==========================================
-# 2. INTERFACE GRAPHIQUE ULTRA-STABLE (GRADIO)
+# 2. INTERFACE GRAPHIQUE LINÉAIRE & ROBUSTE
 # ==========================================
 
-with gr.Blocks(title="Console de Routage Bijectif Bilatéral") as app:
-    gr.Markdown("# 🔐 Console de Routage Bijectif Bilatéral")
-    gr.Markdown("---")
-    
-    with gr.Row():
-        # Colonne de gauche : Encodage
-        with gr.Column():
-            gr.Markdown("### ✍️ Section Encodage")
-            texte_source = gr.Textbox(
-                label="Texte Source (Lettres)", 
-                value="HELIOS base 9", 
-                lines=5
-            )
-            flux_chiffre = gr.Textbox(
-                label="✨ Message encodé (En temps réel)", 
-                interactive=False, 
-                lines=5
-            )
-            # Liaison temps réel pour l'encodage
-            texte_source.change(
-                fn=encoder_message_sans_zero, 
-                inputs=texte_source, 
-                outputs=flux_chiffre
-            )
-            
-        # Colonne de droite : Décodage
-        with gr.Column():
-            gr.Markdown("### 🔓 Section Décodage")
-            flux_saisi = gr.Textbox(
-                label="Flux Encodé (Chiffres de 1 à 9 séparés par des espaces)", 
-                placeholder="Collez les chiffres ici...", 
-                lines=5
-            )
-            texte_decode = gr.Textbox(
-                label="📝 Message décodé (En temps réel)", 
-                interactive=False, 
-                lines=5
-            )
-            # Liaison temps réel pour le décodage
-            flux_saisi.change(
-                fn=decoder_message_sans_zero, 
-                inputs=flux_saisi, 
-                outputs=texte_decode
-            )
+# Configuration minimale de la page
+st.set_page_config(page_title="Console de Routage")
 
-# Lancement de l'application
-if __name__ == "__main__":
-    app.launch()
+st.title("🔐 Console de Routage Bijectif Bilatéral")
+st.write("---")
+
+# --- SECTION 1 : ENCODAGE ---
+st.header("✍️ Encodage de message")
+texte_source = st.text_area(
+    "Écrivez votre texte en lettres ci-dessous :", 
+    value="HELIOS base 9",
+    key="zone_saisie_lettres"
+)
+
+# On calcule le flux de chiffres
+flux_chiffre = encoder_message_sans_zero(texte_source)
+
+st.write("✨ **Résultat chiffré à copier :**")
+# Utilisation d'un affichage textuel basique pour éviter les erreurs de composants
+st.text(flux_chiffre)
+
+st.write("---")
+
+# --- SECTION 2 : DÉCODAGE ---
+st.header("🔓 Décodage de flux")
+flux_saisi = st.text_area(
+    "Collez vos chiffres (séparés par des espaces) ci-dessous :", 
+    value="",
+    placeholder="Exemple: 12 45 78...",
+    key="zone_saisie_chiffres"
+)
+
+# On calcule le texte décodé
+texte_decode = decoder_message_sans_zero(flux_saisi)
+
+st.write("📝 **Résultat décodé :**")
+if flux_saisi:
+    st.text(texte_decode)
+else:
+    st.text("En attente de chiffres...")
+
