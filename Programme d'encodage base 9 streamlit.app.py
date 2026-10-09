@@ -48,7 +48,7 @@ def decoder_message_sans_zero(flux_b9):
 
 
 # ==========================================
-# 2. INTERFACE GRAPHIQUE (STREAMLIT STABLE)
+# 2. INTERFACE GRAPHIQUE (TEMPS RÉEL STABLE)
 # ==========================================
 
 # Configuration de la page web
@@ -70,14 +70,14 @@ with col1:
         key="txt_source"
     )
     
-    # Bouton manuel pour déclencher l'encodage proprement
-    if st.button("🚀 Lancer l'encodage", key="btn_encode"):
-        if texte_source:
-            flux_chiffre = encoder_message_sans_zero(texte_source)
-            st.success("✨ Message encodé :")
-            st.code(flux_chiffre, language="text")
-        else:
-            st.warning("Veuillez saisir du texte à encoder.")
+    st.write("✨ **Message encodé :**")
+    # Le conteneur de code est généré une seule fois à l'écran pour éviter le bug visuel
+    zone_code = st.code("", language="text")
+    
+    # Mise à jour du texte à l'intérieur du conteneur fixe
+    if texte_source:
+        flux_chiffre = encoder_message_sans_zero(texte_source)
+        zone_code.code(flux_chiffre, language="text")
 
 with col2:
     st.subheader("🔓 Section Décodage")
@@ -90,11 +90,13 @@ with col2:
         key="flx_saisi"
     )
     
-    # Bouton manuel pour déclencher le décodage proprement
-    if st.button("🔓 Lancer le décodage", key="btn_decode"):
-        if flux_saisi:
-            texte_decode = decoder_message_sans_zero(flux_saisi)
-            st.info("📝 Message décodé :")
-            st.text(texte_decode)
-        else:
-            st.warning("Veuillez coller des chiffres à décoder.")
+    st.write("📝 **Message décodé :**")
+    # La zone de texte décodée reste fixe elle aussi
+    zone_texte = st.empty()
+    
+    # Mise à jour en temps réel
+    if flux_saisi:
+        texte_decode = decoder_message_sans_zero(flux_saisi)
+        zone_texte.text(texte_decode)
+    else:
+        zone_texte.text("En attente de données...")
