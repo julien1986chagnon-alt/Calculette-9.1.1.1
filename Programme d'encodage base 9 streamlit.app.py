@@ -48,21 +48,19 @@ def decoder_message_sans_zero(flux_b9):
 
 
 # ==========================================
-# 2. INTERFACE GRAPHIQUE ROBUSTE (ANTI-BUG)
+# 2. INTERFACE GRAPHIQUE COMPLÈTEMENT FIXE
 # ==========================================
 
-# Configuration de la page web
 st.set_page_config(page_title="Console de Routage Bijectif Bilatéral", page_icon="🔐")
 
 st.title("🔐 Console de Routage Bijectif Bilatéral")
 st.markdown("---")
 
-# Séparation stricte via des Onglets (Verrouille l'affichage et élimine l'erreur React)
-onglet_encodage, onglet_decodage = st.tabs(["✍️ Encodage de messages", "🔓 Décodage de flux"])
+# Nous utilisons des blocs de saisie standards. Plus de st.code ni de st.empty.
+col1, col2 = st.columns(2)
 
-# --- ONGLET 1 : ENCODAGE ---
-with onglet_encodage:
-    st.subheader("Section Encodage")
+with col1:
+    st.subheader("✍️ Section Encodage")
     texte_source = st.text_area(
         "Texte Source (Lettres) :", 
         value="HELIOS base 9", 
@@ -70,23 +68,36 @@ with onglet_encodage:
         key="txt_source"
     )
     
-    if texte_source:
-        flux_chiffre = encoder_message_sans_zero(texte_source)
-        st.write("✨ **Message encodé :**")
-        st.code(flux_chiffre, language="text")
+    # Calcul direct du message encodé
+    flux_chiffre = encoder_message_sans_zero(texte_source) if texte_source else ""
+    
+    # Remplacement de st.code par un champ de texte standard en lecture seule (sécurisé)
+    st.text_area(
+        "✨ Message encodé (Copiez ce flux) :",
+        value=flux_chiffre,
+        height=150,
+        disabled=True,
+        key="res_encode"
+    )
 
-# --- ONGLET 2 : DÉCODAGE ---
-with onglet_decodage:
-    st.subheader("Section Décodage")
+with col2:
+    st.subheader("🔓 Section Décodage")
     flux_saisi = st.text_area(
         "Flux Encodé (Chiffres de 1 à 9 séparés par des espaces) :", 
         value="", 
-        placeholder="Collez le flux chiffré ici...",
+        placeholder="Collez les chiffres ici...",
         height=150,
         key="flx_saisi"
     )
     
-    if flux_saisi:
-        texte_decode = decoder_message_sans_zero(flux_saisi)
-        st.write("📝 **Message décodé :**")
-        st.info(texte_decode)
+    # Calcul direct du message décodé
+    texte_decode = decoder_message_sans_zero(flux_saisi) if flux_saisi else "En attente de données..."
+    
+    # Remplacement de st.info par un champ de texte standard en lecture seule (sécurisé)
+    st.text_area(
+        "📝 Message décodé :",
+        value=texte_decode,
+        height=150,
+        disabled=True,
+        key="res_decode"
+    )
