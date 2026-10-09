@@ -1,7 +1,7 @@
-import streamlit as st
+import gradio as gr
 
 # ==========================================
-# 1. FONCTIONS DE CONVERSION & ENCODAGE
+# 1. FONCTIONS DE CONVERSION & ENCODAGE (VOTRE LOGIQUE)
 # ==========================================
 
 def decimal_a_base9_bijective(n):
@@ -25,6 +25,8 @@ def base9_bijective_a_decimal(nombre_str):
     return valeur
 
 def encoder_message_sans_zero(texte):
+    if not texte:
+        return ""
     blocs_encodes = []
     for caractere in texte:
         code_decimal = ord(caractere)
@@ -33,6 +35,8 @@ def encoder_message_sans_zero(texte):
     return " ".join(blocs_encodes)
 
 def decoder_message_sans_zero(flux_b9):
+    if not flux_b9:
+        return ""
     blocs = flux_b9.strip().split(" ")
     caracteres_decoles = []
     for bloc in blocs:
@@ -42,62 +46,59 @@ def decoder_message_sans_zero(flux_b9):
             code_decimal = base9_bijective_a_decimal(bloc)
             caracteres_decoles.append(chr(code_decimal))
         except ValueError:
-            # Ignore les caractères invalides (comme les lettres dans le flux de chiffres)
             continue
     return "".join(caracteres_decoles)
 
 
 # ==========================================
-# 2. INTERFACE GRAPHIQUE COMPLÈTEMENT FIXE
+# 2. INTERFACE GRAPHIQUE ULTRA-STABLE (GRADIO)
 # ==========================================
 
-st.set_page_config(page_title="Console de Routage Bijectif Bilatéral", page_icon="🔐")
-
-st.title("🔐 Console de Routage Bijectif Bilatéral")
-st.markdown("---")
-
-# Nous utilisons des blocs de saisie standards. Plus de st.code ni de st.empty.
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("✍️ Section Encodage")
-    texte_source = st.text_area(
-        "Texte Source (Lettres) :", 
-        value="HELIOS base 9", 
-        height=150,
-        key="txt_source"
-    )
+with gr.Blocks(title="Console de Routage Bijectif Bilatéral") as app:
+    gr.Markdown("# 🔐 Console de Routage Bijectif Bilatéral")
+    gr.Markdown("---")
     
-    # Calcul direct du message encodé
-    flux_chiffre = encoder_message_sans_zero(texte_source) if texte_source else ""
-    
-    # Remplacement de st.code par un champ de texte standard en lecture seule (sécurisé)
-    st.text_area(
-        "✨ Message encodé (Copiez ce flux) :",
-        value=flux_chiffre,
-        height=150,
-        disabled=True,
-        key="res_encode"
-    )
+    with gr.Row():
+        # Colonne de gauche : Encodage
+        with gr.Column():
+            gr.Markdown("### ✍️ Section Encodage")
+            texte_source = gr.Textbox(
+                label="Texte Source (Lettres)", 
+                value="HELIOS base 9", 
+                lines=5
+            )
+            flux_chiffre = gr.Textbox(
+                label="✨ Message encodé (En temps réel)", 
+                interactive=False, 
+                lines=5
+            )
+            # Liaison temps réel pour l'encodage
+            texte_source.change(
+                fn=encoder_message_sans_zero, 
+                inputs=texte_source, 
+                outputs=flux_chiffre
+            )
+            
+        # Colonne de droite : Décodage
+        with gr.Column():
+            gr.Markdown("### 🔓 Section Décodage")
+            flux_saisi = gr.Textbox(
+                label="Flux Encodé (Chiffres de 1 à 9 séparés par des espaces)", 
+                placeholder="Collez les chiffres ici...", 
+                lines=5
+            )
+            texte_decode = gr.Textbox(
+                label="📝 Message décodé (En temps réel)", 
+                interactive=False, 
+                lines=5
+            )
+            # Liaison temps réel pour le décodage
+            flux_saisi.change(
+                fn=decoder_message_sans_zero, 
+                inputs=flux_saisi, 
+                outputs=texte_decode
+            )
 
-with col2:
-    st.subheader("🔓 Section Décodage")
-    flux_saisi = st.text_area(
-        "Flux Encodé (Chiffres de 1 à 9 séparés par des espaces) :", 
-        value="", 
-        placeholder="Collez les chiffres ici...",
-        height=150,
-        key="flx_saisi"
-    )
-    
-    # Calcul direct du message décodé
-    texte_decode = decoder_message_sans_zero(flux_saisi) if flux_saisi else "En attente de données..."
-    
-    # Remplacement de st.info par un champ de texte standard en lecture seule (sécurisé)
-    st.text_area(
-        "📝 Message décodé :",
-        value=texte_decode,
-        height=150,
-        disabled=True,
-        key="res_decode"
-    )
+# Lancement de l'application
+if __name__ == "__main__":
+    app.launch()
