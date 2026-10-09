@@ -43,76 +43,74 @@ def decoder_message_sans_zero(flux_b9):
             code_decimal = base9_bijective_a_decimal(bloc)
             caracteres_decoles.append(chr(code_decimal))
         except ValueError:
-            # Ignore les caractères invalides pendant la saisie
+            # Ignore les caractères invalides (comme les lettres dans le flux de chiffres)
             continue
     return "".join(caracteres_decoles)
 
 # ==========================================
-# 2. LOGIQUE DE MISE À JOUR EN TEMPS RÉEL
+# 2. LOGIQUE TRADUCTION DOUBLE SENS (TEMPS RÉEL)
 # ==========================================
 
-def actualiser_traduction(event=None):
-    # Récupérer le texte saisi par l'utilisateur
+def actualiser_depuis_texte(event=None):
+    """Quand l'utilisateur écrit du texte en haut -> On génère le flux au milieu"""
     texte_saisi = zone_saisie.get("1.0", tk.END).strip("\n")
-    
-    # Encodage
     flux_b9 = encoder_message_sans_zero(texte_saisi)
-    # Mise à jour de la zone "Flux Encodé"
-    affichage_encode.config(state=tk.NORMAL)
+    
+    # Met à jour la zone Flux sans bloquer l'écriture
     affichage_encode.delete("1.0", tk.END)
     affichage_encode.insert(tk.END, flux_b9)
-    affichage_encode.config(state=tk.DISABLED)
+
+def actualiser_depuis_flux(event=None):
+    """Quand l'utilisateur colle des chiffres au milieu -> On décode le texte en haut"""
+    flux_saisi = affichage_encode.get("1.0", tk.END).strip("\n")
+    texte_decode = decoder_message_sans_zero(flux_saisi)
     
-    # Décodage en temps réel
-    affichage_decode.config(state=tk.NORMAL)
-    affichage_decode.delete("1.0", tk.END)
-    affichage_decode.insert(tk.END, texte_saisi) # Le décodage réaffirme le texte initial
-    affichage_decode.config(state=tk.DISABLED)
+    # Met à jour la zone Texte Source
+    zone_saisie.delete("1.0", tk.END)
+    zone_saisie.insert(tk.END, texte_decode)
 
 # ==========================================
-# 3. CRÉATION DE L'INTERFACE GRAPHIQUE (Tkinter)
+# 3. CRÉATION DE L'INTERFACE GRAPHIQUE
 # ==========================================
 
-# Fenêtre principale
 root = tk.Tk()
 root.title("Console de Routage Bijectif Bilatéral")
-root.geometry("600x550")
+root.geometry("600x450")
 root.configure(padx=15, pady=15)
 
-# Style général
+# Style
 style = ttk.Style()
 style.configure("TLabel", font=("Arial", 11))
 style.configure("Title.TLabel", font=("Arial", 14, "bold"), foreground="#2c3e50")
 
-# Titres d'en-tête
+# En-tête
 titre1 = ttk.Label(root, text="Console de Routage Bijectif Bilatéral", style="Title.TLabel")
 titre1.pack(anchor=tk.W, pady=(0, 2))
-consigne = ttk.Label(root, text="Modifiez le champ ci-dessous, le décodage s'opère instantanément à partir du flux converti.", font=("Arial", 9, "italic"), foreground="#7f8c8d")
+consigne = ttk.Label(root, text="Écrivez du texte en haut pour l'encoder, OU collez des chiffres au milieu pour les décoder !", font=("Arial", 9, "italic"), foreground="#7f8c8d")
 consigne.pack(anchor=tk.W, pady=(0, 15))
 
-# --- Zone de saisie (Texte Source) ---
-lbl_saisie = ttk.Label(root, text="Texte Source :")
+# --- Zone 1 : Texte Source ---
+lbl_saisie = ttk.Label(root, text="Texte Source (Lettres) :")
 lbl_saisie.pack(anchor=tk.W)
 zone_saisie = tk.Text(root, height=5, font=("Courier", 10))
 zone_saisie.insert(tk.END, "HELIOS Base 9")
 zone_saisie.pack(fill=tk.X, pady=(0, 15))
-# Déclencher la fonction dès qu'une touche est relâchée
-zone_saisie.bind("<KeyRelease>", actualiser_traduction)
 
-# --- Zone d'affichage (Flux Encodé) ---
-lbl_encode = ttk.Label(root, text="Flux Encodé (Base 9) :")
+# Si on écrit ici, ça encode vers le bas
+zone_saisie.bind("<KeyRelease>", actualiser_depuis_texte)
+
+
+# --- Zone 2 : Flux Encodé (MAINTEANT MODIFIABLE !) ---
+lbl_encode = ttk.Label(root, text="Flux Encodé (Chiffres de 1 à 9 séparés par des espaces) :")
 lbl_encode.pack(anchor=tk.W)
-affichage_encode = tk.Text(root, height=5, font=("Courier", 10), bg="#f8f9fa", state=tk.DISABLED)
+affichage_encode = tk.Text(root, height=5, font=("Courier", 10), bg="#fcfcfc")
 affichage_encode.pack(fill=tk.X, pady=(0, 15))
 
-# --- Zone d'affichage (Message Décodé) ---
-lbl_decode = ttk.Label(root, text="Message Décodé :")
-lbl_decode.pack(anchor=tk.W)
-affichage_decode = tk.Text(root, height=5, font=("Courier", 10), bg="#f8f9fa", state=tk.DISABLED)
-affichage_decode.pack(fill=tk.X, pady=(0, 15))
+# Si on écrit ou colle des chiffres ici, ça décode vers le haut !
+affichage_encode.bind("<KeyRelease>", actualiser_depuis_flux)
 
-# Lancer la première traduction pour le texte par défaut
-actualiser_traduction()
 
-# Lancement de la boucle d'affichage Windows
+# Lancement initial pour afficher le texte par défaut
+actualiser_depuis_texte()
+
 root.mainloop()
