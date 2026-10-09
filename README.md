@@ -1,215 +1,150 @@
 # Calculette 9.1.1.1
 
-Ce dépôt regroupe plusieurs projets Python autour du même concept : manipuler des nombres en base 9, sans utiliser le chiffre 0, et explorer des méthodes de conversion, de calcul et d'encodage.
+Projet Python dédié à l'étude et à la démonstration de calculs numériques dans une base 9 sans zéro, avec des outils de conversion, d'encodage et d'interface utilisateur.
 
-Les scripts ont été créés pour tester des idées mathématiques, des conversions entre bases, et des interfaces utilisateur simples avec Python.
+## Présentation
 
-## 1. Présentation générale
+Ce dépôt rassemble plusieurs scripts et variantes expérimentales autour d'un même concept : manipuler des nombres dans un système de numération basé sur les chiffres 1 à 9, sans utiliser le chiffre 0.
 
-Le principe central de ce projet est d'utiliser une numération en base 9 où les chiffres autorisés sont :
+L'objectif est de tester des méthodes originales de conversion, de calcul arithmétique et d'encodage de données, tout en proposant des interfaces simples à utiliser via Python standard, Tkinter ou Streamlit.
 
-1, 2, 3, 4, 5, 6, 7, 8, 9
+## Objectifs du projet
 
-Le chiffre 0 n'est pas utilisé. Cela impose des règles de conversion particulières et un comportement mathématique original, notamment pour :
+- convertir des nombres entre décimal et base 9 sans zéro
+- effectuer des additions, soustractions et multiplications dans ce système
+- explorer une logique de division avancée
+- encoder et décoder du texte sous forme de suites de chiffres
+- fournir des démonstrations visuelles via des interfaces graphiques
 
-- la conversion décimal -> base 9 sans zéro
-- la conversion base 9 sans zéro -> décimal
-- les opérations arithmétiques
-- la division avec recherche de motifs numériques
-- l'encodage de texte sous forme de suite de chiffres
+## Structure du dépôt
 
-## 2. Fichiers présents
+- `Calculette 9.1.1.1.py` : calculatrice principale avec logique de conversion et interface Streamlit
+- `Calculette 9.1.1.1 streamlit.app.py` : version web de la calculatrice compatible Streamlit
+- `Programme d'encodage base 9.py` : encodeur/décodeur de texte en base 9
+- `Programme d'encodage base 9 streamlit.app.py` : version Streamlit de l'encodeur
+- `Convertisseur base 10 à base 9 streamlit.app.py` : convertisseur dédié
+- `Convertisseur de base 9 et 10 streamlit.app.py` : conversion bidirectionnelle
+- `Calculatrice amélioré de divivision base 9...py` : version spécialisée pour la division
+- `Licence` : licence du projet
 
-### `Calculette 9.1.1.1.py`
+## Fonctionnement général
 
-C'est le cœur de la calculatrice. Il contient :
+### Système de numération sans zéro
 
-- la logique de conversion entre nombre décimal et base 9 sans zéro
-- les fonctions de calcul pour l'addition, la soustraction et la multiplication
-- la logique de division "évolutive" ou "quantique"
-- une interface Streamlit qui permet à l'utilisateur d'entrer des nombres et d'obtenir des résultats
+Le projet utilise une base 9 spécifique où les chiffres valides sont :
 
-Le script fonctionne avec des nombres pouvant contenir des virgules décimales et utilise une logique spéciale pour aligner les chiffres selon la position de la virgule.
+`1, 2, 3, 4, 5, 6, 7, 8, 9`
 
-### `Calculette 9.1.1.1 streamlit.app.py`
+Le zéro est exclu, ce qui impose des méthodes de conversion particulières.
 
-C'est une version web de la calculatrice, destinée à être utilisée avec Streamlit.
+Les fonctions principales de conversion incluent :
 
-Elle propose :
+- conversion décimale vers base 9 adaptée
+- conversion base 9 vers décimal
+- traitement des nombres négatifs
+- gestion des nombres décimaux et de la virgule
 
-- un formulaire de saisie de deux nombres
-- la sélection de l'opération : addition, soustraction, multiplication ou division
-- le calcul directement dans le navigateur
-- un affichage plus lisible des résultats
+### Opérations arithmétiques
 
-Cette version est probablement la plus pratique pour un usage visuel et rapide.
+Les calculs sont réalisés en convertissant les nombres saisis vers une représentation exploitable en interne, puis en reconvertissant le résultat pour l'affichage.
 
-### `Programme d'encodage base 9.py`
+Les opérations principales sont :
 
-Ce script est un outil d'encodage/decodage de texte en base 9.
+- addition
+- soustraction
+- multiplication
+- division avancée
 
-Son fonctionnement est le suivant :
+### Division évolutive
 
-1. chaque lettre est convertie en son code ASCII
-2. ce nombre est ensuite transformé en base 9 sans zéro
-3. le résultat est affiché sous forme d'une suite de chiffres séparés par des espaces
-4. réciproquement, il est possible de recopier cette suite pour reconstituer le texte original
+La division est la fonctionnalité la plus sophistiquée du projet. Elle tente de construire une séquence de chiffres compatible avec les règles de la base 9 sans zéro et de déterminer un quotient valide selon une logique mathématique particulière.
 
-C'est un système de codage bijectif, dans le sens où un message texte peut être transformé puis reconstruit sans perte.
+## Interfaces disponibles
 
-### Autres fichiers de conversion et de calcul
+### 1. Interface Streamlit
 
-Le dépôt contient aussi plusieurs versions plus spécialisées, notamment :
+La version Streamlit permet d'utiliser le projet directement dans un navigateur web.
 
-- `Calculatrice amélioré de divivision base 9...py`
-- `Convertisseur base 10 à base 9 streamlit.app.py`
-- `Convertisseur de base 9 et 10 streamlit.app.py`
-- `Programme d'encodage base 9 streamlit.app.py`
-
-Ces fichiers proposent des variantes de conversion ou des interfaces plus ciblées sur des tâches précises comme :
-
-- conversion entre base 10 et base 9
-- affichage en interface web
-- division avancée en base 9
-- encodage de texte
-
-## 3. Comment fonctionne la base 9 sans zéro
-
-En base 10, on utilise les chiffres 0 à 9.
-
-En base 9 sans zéro, on utilise seulement 1 à 9.
-
-Exemple :
-
-- 1 en base 10 = 1 en base 9
-- 9 en base 10 = 10 en base 9, mais comme 0 est interdit, le système est réécrit de manière spécifique selon la logique du projet, ce qui explique l'algorithme particulier
-
-La conversion repose sur :
-
-- division successive par 9
-- stockage des restes
-- remplacement des 0 par 9 dans certaines phases
-- reconstruction du nombre dans le bon ordre
-
-C'est ce mécanisme qu'on retrouve dans les fonctions `decimal_a_logique_sans_zero()` et `logique_sans_zero_a_decimal()`.
-
-## 4. Fonctionnement des calculs
-
-### Addition, soustraction et multiplication
-
-Les opérations de base utilisent :
-
-1. la conversion du nombre saisi en valeur décimale
-2. le calcul décimal classique
-3. reconversion du résultat dans le système sans zéro
-4. réinsertion de la virgule au bon endroit
-
-La partie la plus délicate est la gestion des décimales : le programme doit conserver la bonne position de la virgule et réaligner les chiffres correctement.
-
-### Division
-
-La division est la partie la plus avancée du projet.
-
-Le script tente de trouver une séquence de chiffres qui permet de trouver un quotient exact ou un quotient approché en respectant les règles de base 9 sans zéro.
-
-L'algorithme :
-
-- nettoie la saisie
-- transforme les nombres en décimal
-- vérifie s'il n'y a pas de reste
-- sinon explore des suites de chiffres pour chercher un quotient compatible
-- retourne le résultat sous forme de valeur lisible et exploitable
-
-Cette logique est décrite dans la fonction `chercher_extension_sans_abandon()`.
-
-## 5. Interface utilisateur
-
-Le dépôt contient à la fois :
-
-- des scripts en ligne de commande / console
-- des versions Streamlit pour navigateur
-- une interface Tkinter pour le codage texte / décodage chiffre
-
-### Streamlit
-
-La version web se lance avec :
+#### Prérequis
 
 ```bash
 pip install streamlit
+```
+
+#### Lancement
+
+```bash
 streamlit run "Calculette 9.1.1.1 streamlit.app.py"
 ```
 
-### Tkinter
+### 2. Interface Tkinter
 
-Le script Python standard avec interface graphique peut être exécuté directement :
+Le script `Programme d'encodage base 9.py` utilise Tkinter pour offrir une interface graphique locale.
+
+#### Lancement
 
 ```bash
 python "Programme d'encodage base 9.py"
 ```
 
-## 6. Exemple d'utilisation
+## Exemple d'utilisation
 
-### Exemple de calcul
-
-- saisie : `123.45`
-- opération : addition ou multiplication
-- résultat : affiché selon la méthode de conversion base 9 sans zéro
-
-### Exemple d'encodage texte
-
-Entrée :
+### Calcul d'addition
 
 ```text
-HELIOS
+Entrée : 123.45 + 78.91
+Sortie : Résultat calculé selon la logique de conversion base 9 sans zéro
 ```
 
-Sortie :
+### Encodage de texte
 
 ```text
-... suite de chiffres en base 9 sans zéro ...
+Entrée : HELIOS
+Sortie : suite de chiffres encodés en base 9 sans zéro
 ```
 
-Puis, en décodant, le texte original est retrouvé.
+Puis, en décodant cette suite, le texte original peut être reconstitué.
 
-## 7. Dépendances
+## Dépendances
 
-Les projets Python utilisent principalement :
+Le projet repose principalement sur :
 
 - Python 3
 - `streamlit` pour les interfaces web
-- `tkinter` pour l'interface graphique standard
+- `tkinter` pour les interfaces graphiques locales
 
-## 8. Objectif du projet
+## Cas d'usage
 
-Ce dépôt est avant tout une expérimentation mathématique et algorithmique.
+Ce dépôt est utile pour :
 
-Il vise à :
+- expérimenter une base de numération alternative
+- comprendre le fonctionnement des conversions non standard
+- tester des algorithmes de calcul sans zéro
+- construire des démonstrations pédagogiques autour des systèmes numériques
 
-- tester une base numérique non conventionnelle
-- développer des méthodes de conversion personnalisées
-- explorer des calculs sans le chiffre 0
-- créer des outils visuels pour comprendre le système
+## Limitations
 
-## 9. Conclusion
+- le système repose sur une logique spécifique non standard
+- la division peut devenir complexe en présence de grands nombres
+- la lisibilité des résultats dépend fortement du modèle de conversion utilisé
+- certains scripts sont expérimentalement orientés démonstration plutôt que production
 
-Ce projet est un mélange entre :
+## Licence
 
-- calcul mathématique
-- base numérique personnalisée
-- conversion de nombres
-- encodage de texte
-- visualisation Web
+Ce projet est distribué sous la licence présente dans le fichier `Licence`.
 
-Il peut être vu comme une mini-plateforme de démonstration de logique numérique alternative.
+## Conclusion
+
+Ce dépôt représente une exploration mathématique et algorithmique autour d'une numération alternative en base 9. Il combine théorie, programmation, interfaces utilisateur et démonstration de calculs dans un cadre original et expérimental.
+
+Il constitue une base solide pour des extensions futures, notamment :
+
+- amélioration de la gestion des nombres décimaux
+- optimisation de la division
+- ajout de tests unitaires
+- interface plus ergonomique
+- documentation plus détaillée pour chaque script
 
 ---
 
-Si tu veux, je peux aussi créer un README encore plus avancé avec :
-
-- une section "installation"
-- une section "exemples de calculs"
-- une section "capture d'écran / interface"
-- une version plus professionnelle pour GitHub
-- une version plus courte et plus esthétique
-
-Je peux le faire directement dans le dépôt.
+Développé par Chagnon Julien Christian Robert.
