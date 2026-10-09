@@ -1,11 +1,4 @@
-# =====================================================================
-# CONFIGURATION DE LA PAGE STREAMLIT
-# =====================================================================
-st.set_page_config(
-    page_title="Convertisseur Bijectif",
-    page_icon="🔢",
-    layout="centered"
-)
+import streamlit as st
 
 # =====================================================================
 # CONFIGURATION : LA GRILLE DES ZÉROS PURS
@@ -33,7 +26,7 @@ TABLE_DES_ZEROS_PURS = {
 }
 
 # =====================================================================
-# LENGAGE METIER / LOGIQUE DE CALCUL
+# LOGIQUE DE CALCUL
 # =====================================================================
 def convertisseur_par_segments(montant_depart_str):
     montant_depart_str = montant_depart_str.replace(" ", "")
@@ -93,17 +86,17 @@ def convertisseur_inverse_par_segments(montant_b9_str):
 # INTERFACE UTILISATEUR (STREAMLIT)
 # =====================================================================
 st.title("🔢 Convertisseur Bijectif par Segments")
-st.write("Interface graphique pour la conversion directe et inverse avec gestion des grands nombres.")
+st.write("Interface graphique pour la conversion directe et inverse.")
 
 st.markdown("---")
 
-# Boutons radio pour sélectionner le mode
+# Sélection du mode
 mode = st.radio(
     "**Choisissez le sens de conversion :**",
     ("Base 10 ➔ Ajouter les décalages", "Retrouver le nombre d'origine (Inverse)")
 )
 
-# Champ de saisie du montant
+# Champ de saisie
 montant_saisi = st.text_input("**Entrez le montant :**", placeholder="Ex: 1000 ou 1221")
 
 st.markdown("###")
@@ -116,7 +109,7 @@ if st.button("Calculer le résultat", type="primary"):
         if mode == "Base 10 ➔ Ajouter les décalages":
             resultat = convertisseur_par_segments(montant_saisi)
             if "ERREUR" in resultat:
-                st.error(f"❌ {resultat} : Veuillez entrer un nombre entier valide.")
+                st.error("❌ Veuillez entrer un nombre entier valide.")
             else:
                 st.success(f"📈 **Résultat obtenu :** {resultat}")
         else:
