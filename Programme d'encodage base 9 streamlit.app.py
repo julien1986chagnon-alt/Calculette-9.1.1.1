@@ -48,7 +48,7 @@ def decoder_message_sans_zero(flux_b9):
 
 
 # ==========================================
-# 2. INTERFACE GRAPHIQUE (TEMPS RÉEL STABLE)
+# 2. INTERFACE GRAPHIQUE ROBUSTE (ANTI-BUG)
 # ==========================================
 
 # Configuration de la page web
@@ -57,12 +57,12 @@ st.set_page_config(page_title="Console de Routage Bijectif Bilatéral", page_ico
 st.title("🔐 Console de Routage Bijectif Bilatéral")
 st.markdown("---")
 
-# Création de deux colonnes pour l'affichage côte à côte
-col1, col2 = st.columns(2)
+# Séparation stricte via des Onglets (Verrouille l'affichage et élimine l'erreur React)
+onglet_encodage, onglet_decodage = st.tabs(["✍️ Encodage de messages", "🔓 Décodage de flux"])
 
-with col1:
-    st.subheader("✍️ Section Encodage")
-    # Zone de saisie du texte brut
+# --- ONGLET 1 : ENCODAGE ---
+with onglet_encodage:
+    st.subheader("Section Encodage")
     texte_source = st.text_area(
         "Texte Source (Lettres) :", 
         value="HELIOS base 9", 
@@ -70,33 +70,23 @@ with col1:
         key="txt_source"
     )
     
-    st.write("✨ **Message encodé :**")
-    # Le conteneur de code est généré une seule fois à l'écran pour éviter le bug visuel
-    zone_code = st.code("", language="text")
-    
-    # Mise à jour du texte à l'intérieur du conteneur fixe
     if texte_source:
         flux_chiffre = encoder_message_sans_zero(texte_source)
-        zone_code.code(flux_chiffre, language="text")
+        st.write("✨ **Message encodé :**")
+        st.code(flux_chiffre, language="text")
 
-with col2:
-    st.subheader("🔓 Section Décodage")
-    # Zone de saisie des chiffres
+# --- ONGLET 2 : DÉCODAGE ---
+with onglet_decodage:
+    st.subheader("Section Décodage")
     flux_saisi = st.text_area(
         "Flux Encodé (Chiffres de 1 à 9 séparés par des espaces) :", 
         value="", 
-        placeholder="Collez les chiffres ici...",
+        placeholder="Collez le flux chiffré ici...",
         height=150,
         key="flx_saisi"
     )
     
-    st.write("📝 **Message décodé :**")
-    # La zone de texte décodée reste fixe elle aussi
-    zone_texte = st.empty()
-    
-    # Mise à jour en temps réel
     if flux_saisi:
         texte_decode = decoder_message_sans_zero(flux_saisi)
-        zone_texte.text(texte_decode)
-    else:
-        zone_texte.text("En attente de données...")
+        st.write("📝 **Message décodé :**")
+        st.info(texte_decode)
