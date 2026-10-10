@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# Style CSS pour rendre l'interface plus sympa
+# Style CSS pour rendre l'interface propre et centrée
 st.markdown("""
     <style>
     .main { text-align: center; }
@@ -31,8 +31,8 @@ def decoder_mon_message(nombre, mot):
     et applique votre logique pour retourner le message secret.
     """
     # 📝 MODIFIEZ LES VALEURS CI-DESSOUS AVEC VOS VRAIS SECRETS :
-    NOMBRE_CORRECT = 42 # Remplacez par votre nombre secret
-    MOT_CORRECT = "secret" # Remplacez par votre mot secret (en minuscules)
+    NOMBRE_CORRECT = 42 # Remplacez 42 par votre nombre secret
+    MOT_CORRECT = "secret" # Remplacez "secret" par votre mot secret (en minuscules)
     
     # Nettoyage de la saisie utilisateur (enlève les espaces et met en minuscules)
     mot_nettoye = mot.strip().lower()
@@ -49,7 +49,7 @@ def decoder_mon_message(nombre, mot):
 # ==============================================================================
 # PARTIE 2 : INTERFACE GRAPHIQUE (WIDGETS)
 # ==============================================================================
-# Formulaire pour regrouper les entrées et éviter que la page se recharge à chaque frappe
+# Formulaire pour regrouper les entrées et éviter que la page recharge à chaque lettre tapée
 with st.form(key="formulaire_decodage"):
     st.write("### 🔑 Entrez vos clés de décodage")
     
@@ -87,7 +87,7 @@ if bouton_valider:
             # Succès ! On affiche le message de manière très visuelle
             st.success("🔓 CLÉS CORRECTES ! Le message a été déchiffré avec succès :")
             st.info(resultat)
-            st.balloons() # Animation de ballons de célébration !
+            st.balloons() # Animation festive de ballons !
         else:
             # Échec
             st.error("❌ Clés incorrectes. Le message reste crypté ! Vérifiez vos indices et réessayez.")
