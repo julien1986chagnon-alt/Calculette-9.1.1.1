@@ -1,98 +1,93 @@
 import streamlit as st
 
-# ==========================================
-# 1. FONCTIONS DE CONVERSION & ENCODAGE
-# ==========================================
-
-def decimal_a_base9_bijective(n):
-    if n == 0:
-        return ""
-    restes = []
-    while n > 0:
-        reste = n % 9
-        quotient = n // 9
-        if reste == 0:
-            reste = 9
-            quotient -= 1
-        restes.append(str(reste))
-        n = quotient
-    return "".join(reversed(restes))
-
-def base9_bijective_a_decimal(nombre_str):
-    valeur = 0
-    for caractere in nombre_str:
-        valeur = valeur * 9 + int(caractere)
-    return valeur
-
-def encoder_message_sans_zero(texte):
-    if not texte:
-        return ""
-    blocs_encodes = []
-    for caractere in texte:
-        code_decimal = ord(caractere)
-        code_bijectif = decimal_a_base9_bijective(code_decimal)
-        blocs_encodes.append(code_bijectif)
-    return " ".join(blocs_encodes)
-
-def decoder_message_sans_zero(flux_b9):
-    if not flux_b9:
-        return ""
-    blocs = flux_b9.strip().split(" ")
-    caracteres_decoles = []
-    for bloc in blocs:
-        if not bloc:
-            continue
-        try:
-            code_decimal = base9_bijective_a_decimal(bloc)
-            caracteres_decoles.append(chr(code_decimal))
-        except ValueError:
-            # Ignore les blocs invalides
-            continue
-    return "".join(caracteres_decoles)
-
-
-# ==========================================
-# 2. INTERFACE GRAPHIQUE LINÉAIRE & ROBUSTE
-# ==========================================
-
-# Configuration minimale de la page
-st.set_page_config(page_title="Console de Routage")
-
-st.title("🔐 Console de Routage Bijectif Bilatéral")
-st.write("---")
-
-# --- SECTION 1 : ENCODAGE ---
-st.header("✍️ Encodage de message")
-texte_source = st.text_area(
-    "Écrivez votre texte en lettres ci-dessous :", 
-    value="HELIOS base 9",
-    key="zone_saisie_lettres"
+# ==============================================================================
+# CONFIGURATION DE LA PAGE
+# ==============================================================================
+st.set_page_config(
+    page_title="Décodeur LinkedIn 🔓",
+    page_icon="🔓",
+    layout="centered"
 )
 
-# On calcule le flux de chiffres
-flux_chiffre = encoder_message_sans_zero(texte_source)
+# Style CSS pour rendre l'interface plus sympa
+st.markdown("""
+    <style>
+    .main { text-align: center; }
+    .stButton>button { width: 100%; background-color: #0077B5; color: white; }
+    </style>
+""", unsafe_allowed_html=True)
 
-st.write("✨ **Résultat chiffré à copier :**")
-# Utilisation d'un affichage textuel basique pour éviter les erreurs de composants
-st.text(flux_chiffre)
+st.title("🔓 Le Décodeur Mystère LinkedIn")
+st.write("Trouvez les indices sur mon post LinkedIn, entrez-les ci-dessous et révélez le message secret !")
 
-st.write("---")
+st.divider()
 
-# --- SECTION 2 : DÉCODAGE ---
-st.header("🔓 Décodage de flux")
-flux_saisi = st.text_area(
-    "Collez vos chiffres (séparés par des espaces) ci-dessous :", 
-    value="",
-    placeholder="Exemple: 12 45 78...",
-    key="zone_saisie_chiffres"
-)
+# ==============================================================================
+# PARTIE 1 : VOTRE LOGIQUE DE CALCUL / VOS RÉPONSES
+# ==============================================================================
+def decoder_mon_message(nombre, mot):
+    """
+    Cette fonction prend le nombre et le mot saisis par l'utilisateur,
+    et applique votre logique pour retourner le message secret.
+    """
+    # 📝 MODIFIEZ LES VALEURS CI-DESSOUS AVEC VOS VRAIS SECRETS :
+    NOMBRE_CORRECT = 42 # Remplacez par votre nombre secret
+    MOT_CORRECT = "secret" # Remplacez par votre mot secret (en minuscules)
+    
+    # Nettoyage de la saisie utilisateur (enlève les espaces et met en minuscules)
+    mot_nettoye = mot.strip().lower()
+    
+    # Vérification des clés
+    if nombre == NOMBRE_CORRECT and mot_nettoye == MOT_CORRECT:
+        # 📝 REMPLACEZ PAR VOTRE VRAI MESSAGE FINAL ICI :
+        message_final = "🎉 Bravo ! Vous avez décodé le message. Voici l'annonce exclusive : [Votre message secret ici]"
+        return message_final
+    else:
+        # Si les clés sont fausses, on ne renvoie rien
+        return None
 
-# On calcule le texte décodé
-texte_decode = decoder_message_sans_zero(flux_saisi)
+# ==============================================================================
+# PARTIE 2 : INTERFACE GRAPHIQUE (WIDGETS)
+# ==============================================================================
+# Formulaire pour regrouper les entrées et éviter que la page se recharge à chaque frappe
+with st.form(key="formulaire_decodage"):
+    st.write("### 🔑 Entrez vos clés de décodage")
+    
+    # Champ pour le nombre secret
+    nombre_saisi = st.number_input(
+        "1. Le Nombre Secret :", 
+        step=1, 
+        value=0,
+        help="Entrez le nombre trouvé grâce à l'énigme LinkedIn"
+    )
+    
+    # Champ pour le mot secret
+    mot_saisi = st.text_input(
+        "2. Le Mot Secret :", 
+        value="",
+        placeholder="Écrivez le mot ici...",
+        help="Entrez le mot clé trouvé dans le post"
+    )
+    
+    # Bouton de validation à l'intérieur du formulaire
+    bouton_valider = st.form_submit_button(label="🔓 Tenter le décodage")
 
-st.write("📝 **Résultat décodé :**")
-if flux_saisi:
-    st.text(texte_decode)
-else:
-    st.text("En attente de chiffres...")
-
+# ==============================================================================
+# PARTIE 3 : LE DÉCLENCHEMENT DU CALCUL
+# ==============================================================================
+if bouton_valider:
+    # On vérifie d'abord que l'utilisateur a bien rempli les deux champs
+    if nombre_saisi == 0 or mot_saisi.strip() == "":
+        st.warning("⚠️ Veuillez remplir le nombre ET le mot secret pour lancer le décodage.")
+    else:
+        # Appel de la fonction de décodage avec les saisies de l'utilisateur
+        resultat = decoder_mon_message(nombre_saisi, mot_saisi)
+        
+        if resultat:
+            # Succès ! On affiche le message de manière très visuelle
+            st.success("🔓 CLÉS CORRECTES ! Le message a été déchiffré avec succès :")
+            st.info(resultat)
+            st.balloons() # Animation de ballons de célébration !
+        else:
+            # Échec
+            st.error("❌ Clés incorrectes. Le message reste crypté ! Vérifiez vos indices et réessayez.")
