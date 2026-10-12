@@ -35,53 +35,97 @@ TABLE_DES_ZEROS_PURS = {
 }
 
 # ==============================================================================
-# MOTEURS DE CALCUL (STRICTEMENT INTACTS ET SÉCURISÉS)
+# MOTEUR 1 : MULTIPLICATION PURE EN BASE 9 BIJECTIVE
 # ==============================================================================
-def b9_bijective_vers_valeur_base10(chaine_b9):
-    valeur = 0
-    for idx, char in enumerate(reversed(chaine_b9)):
-        valeur += int(char) * (9 ** idx)
-    return valeur
+def multiplier_b9_bijective(chaine_b9, multiplicateur_int):
+    if multiplicateur_int == 1:
+        return chaine_b9
+        
+    resultat = []
+    retenue = 0
+    
+    for char in reversed(chaine_b9):
+        produit = int(char) * multiplicateur_int + retenue
+        if produit == 0:
+            reste = 0
+            retenue = 0
+        else:
+            reste = produit % 9
+            if reste == 0:
+                reste = 9
+                retenue = (produit // 9) - 1
+            else:
+                retenue = produit // 9
+        resultat.append(str(reste))
+        
+    if retenue > 0:
+        if retenue % 9 == 0:
+            resultat.append("9")
+            retenue_restante = (retenue // 9) - 1
+            if retenue_restante > 0:
+                resultat.append(str(retenue_restante))
+        else:
+            resultat.append(str(retenue))
+            
+    return "".join(reversed(resultat))
 
-def convertisseur_par_segments(montant_depart_str):
-    montant_depart_str = montant_depart_str.replace(" ", "")
-    if not montant_depart_str.isdigit():
+# ==============================================================================
+# MOTEUR 2 : ADDITION PURE EN BASE 9 (AVEC SUPPORT DU 0 DE DÉPART)
+# ==============================================================================
+def additionner_b9(chaine1, chaine2):
+    resultat = []
+    retenue = 0
+    
+    max_len = max(len(chaine1), len(chaine2))
+    c1 = chaine1.zfill(max_len)
+    c2 = chaine2.zfill(max_len)
+    
+    for i in range(max_len - 1, -1, -1):
+        somme = int(c1[i]) + int(c2[i]) + retenue
+        if somme == 0:
+            reste = 0
+            retenue = 0
+        else:
+            reste = somme % 9
+            if reste == 0:
+                reste = 9
+                retenue = (somme // 9) - 1
+            else:
+                retenue = somme // 9
+        resultat.append(str(reste))
+        
+    if retenue > 0:
+        if retenue % 9 == 0:
+            resultat.append("9")
+        else:
+            resultat.append(str(retenue))
+            
+    return "".join(reversed(resultat))
+
+# ==============================================================================
+# PARTIE 1 : LA CONVERSION DIRECTE ENTIÈREMENT EN BASE 9
+# ==============================================================================
+def convertisseur_par_segments(montant_str):
+    montant_str = montant_str.replace(" ", "")
+    if not montant_str.isdigit():
         return "ERREUR SAISIE"
         
-    valeur_entiere = int(montant_depart_str)
-    somme_zeros_b10 = 0
-    longueur = len(montant_depart_str)
+    premier_chiffre = int(montant_str)
+    longueur = len(montant_str)
     
-    for idx, chiffre_char in enumerate(montant_depart_str):
-        chiffre = int(chiffre_char)
-        exposant = longueur - 1 - idx
-        
-        if chiffre == 0:
-            valeur_palier = 10 ** exposant
-            str_palier = str(valeur_palier)
-            
-            if str_palier in TABLE_DES_ZEROS_PURS:
-                chaine_b9 = TABLE_DES_ZEROS_PURS[str_palier]
-                somme_zeros_b10 += b9_bijective_vers_valeur_base10(chaine_b9)
-                
-    montant_final_b10 = valeur_entiere + somme_zeros_b10
+    str_palier = "1" + "0" * (longueur - 1)
     
-    if montant_final_b10 == 0:
-        return "0"
+    if str_palier in TABLE_DES_ZEROS_PURS:
+        sequence_b9 = TABLE_DES_ZEROS_PURS[str_palier]
+        produit_b9 = multiplier_b9_bijective(sequence_b9, premier_chiffre)
+        resultat_final = additionner_b9(montant_str, produit_b9)
+        return resultat_final
         
-    res_b9 = ""
-    n = montant_final_b10
-    while n > 0:
-        reste = n % 9
-        if reste == 0:
-            res_b9 = "9" + res_b9
-            n = (n // 9) - 1
-        else:
-            res_b9 = str(reste) + res_b9
-            n = n // 9
-            
-    return res_b9
+    return "PALIER NON PARAMÉTRÉ"
 
+# ==============================================================================
+# PARTIE 2 : LA CONVERSION INVERSE (BASE 9 -> BASE 10)
+# ==============================================================================
 def convertisseur_inverse_par_segments(montant_b9_str):
     montant_b9_str = montant_b9_str.replace(" ", "")
     if not montant_b9_str.isdigit() or "0" in montant_b9_str:
@@ -116,34 +160,33 @@ def convertisseur_inverse_par_segments(montant_b9_str):
 # ==============================================================================
 # INTERFACE GRAPHIQUE STREAMLIT
 # ==============================================================================
-st.title("💎 Convertisseur Logique Bijective")
-st.caption("Architecture mathématique par Chagnon Julien Christian Robert - Tous droits réservés.")
+st.title("💎 Convertisseur Logique Bijective (Moteur Révisé)")
+st.caption("Architecture mathématique et calculs 100% Base 9 par Chagnon Julien Christian Robert.")
 st.write("---")
 
-# 1. Sélection du sens de calcul via un menu déroulant visuel
+# Menu déroulant visuel
 choix = st.selectbox(
     "Choisissez le sens de conversion :",
     [
-        "1 : Base 10 ➔ Ajouter les décalages (Base 9 sans 0)",
+        "1 : Base 10 ➔ Ajouter les décalages (Calculs 100% Base 9)",
         "2 : Retrouver le nombre d'origine (Inverse en Base 10)"
     ]
 )
 
-# 2. Zone de texte pour entrer le nombre
-montant_saisi = st.text_input("Tapez le montant à convertir :", placeholder="Exemple: 1256302320")
+# Zone de texte
+montant_saisi = st.text_input("Tapez le montant à évaluer :", placeholder="Exemple: 5000")
 
-# 3. Bouton d'action pour lancer le traitement
-if st.button("ÉVALUER LA CONVERSION", type="primary"):
+# Bouton d'action
+if st.button("LANCER LE CALCUL", type="primary"):
     if montant_saisi.strip() == "":
-        st.warning("Veuillez saisir un nombre avant de cliquer.")
+        st.warning("Veuillez entrer une valeur.")
     else:
-        # Nettoyage et routage vers la bonne fonction selon le choix du menu
         if choix.startswith("1"):
             resultat = convertisseur_par_segments(montant_saisi)
-            if "ERREUR" in resultat:
-                st.error(f"❌ {resultat} : Veuillez entrer uniquement des chiffres.")
+            if "PALIER" in resultat or "ERREUR" in resultat:
+                st.error(f"❌ {resultat}")
             else:
-                st.success(f"📈 **RÉSULTAT EN BASE 9 BIJECTIVE :**")
+                st.success(f"📈 **RÉSULTAT EN BASE 9 :**")
                 st.code(resultat, language="text")
         else:
             resultat_inverse = convertisseur_inverse_par_segments(montant_saisi)
@@ -152,12 +195,3 @@ if st.button("ÉVALUER LA CONVERSION", type="primary"):
             else:
                 st.success(f"🔄 **RETOUR EN BASE 10 D'ORIGINE :**")
                 st.code(resultat_inverse, language="text")
-
-# Petit rappel sur la loi mathématique découverte sur LibreOffice
-with st.expander("ℹ️ Note de l'architecte sur la structure géométrique"):
-    st.write("""
-    Chaque segment supérieur de notre grille des zéros purs est généré par l'application stricte du multiplicateur **11** :
-    * **1 000** ➔ décalage de **221**
-    * **10 000** ➔ \(221 \\times 11\) = **2 431**
-    * **100 000** ➔ \(2 431 \\times 11\) = **26 741**
-    """)
