@@ -103,14 +103,15 @@ def additionner_b9(chaine1, chaine2):
     return "".join(reversed(resultat))
 
 # ==============================================================================
-# PARTIE 1 : LA CONVERSION DIRECTE ENTIÈREMENT EN BASE 9
+# PARTIE 1 : LA CONVERSION DIRECTE ENTIÈREMENT EN BASE 9 (CORRIGÉE)
 # ==============================================================================
 def convertisseur_par_segments(montant_str):
     montant_str = montant_str.replace(" ", "")
     if not montant_str.isdigit():
         return "ERREUR SAISIE"
         
-    premier_chiffre = int(montant_str)
+    # CORRECTION ICI : On prend UNIQUEMENT le tout premier caractère pour le multiplicateur
+    premier_chiffre = int(montant_str[0])
     longueur = len(montant_str)
     
     str_palier = "1" + "0" * (longueur - 1)
@@ -164,7 +165,6 @@ st.title("💎 Convertisseur Logique Bijective (Moteur Révisé)")
 st.caption("Architecture mathématique et calculs 100% Base 9 par Chagnon Julien Christian Robert.")
 st.write("---")
 
-# Menu déroulant visuel
 choix = st.selectbox(
     "Choisissez le sens de conversion :",
     [
@@ -173,10 +173,8 @@ choix = st.selectbox(
     ]
 )
 
-# Zone de texte
 montant_saisi = st.text_input("Tapez le montant à évaluer :", placeholder="Exemple: 5000")
 
-# Bouton d'action
 if st.button("LANCER LE CALCUL", type="primary"):
     if montant_saisi.strip() == "":
         st.warning("Veuillez entrer une valeur.")
