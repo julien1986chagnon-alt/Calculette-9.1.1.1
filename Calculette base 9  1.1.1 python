@@ -1,0 +1,207 @@
+import sys
+import time
+
+# Augmente la limite de conversion pour les très grands nombres
+sys.set_int_max_str_digits(1000000)
+sys.setrecursionlimit(1000000) # Brise la barrière de récursion !
+
+# ==============================================================================
+# 1. VOS FONCTIONS DE CONVERSION DE BASE (Version originale stricte sans zéro)
+# ==============================================================================
+
+def logique_sans_zero_a_decimal(nombre_str):
+    """Convertit un nombre de votre logique sans zéro (chiffres 1 à 9) vers le décimal standard."""
+    nombre_str = nombre_str.strip().replace(" ", "").replace(",", "").replace(".", "")
+    if not nombre_str:
+        return 0
+    est_negatif = nombre_str.startswith("-")
+    if est_negatif:
+        nombre_str = nombre_str[1:]
+    if not nombre_str:
+        return 0
+    if not all(c in "123456789" for c in nombre_str):
+        return None
+        
+    valeur_decimale = 0
+    for caractere in nombre_str:
+        valeur_decimale = valeur_decimale * 9 + int(caractere)
+    return -valeur_decimale if est_negatif else valeur_decimale
+
+def decimal_a_logique_sans_zero(n):
+    """Convertit un entier décimal standard vers votre logique sans zéro (chiffres 1 à 9)."""
+    if n == 0:
+        return "0"
+    est_negatif = n < 0
+    n = abs(n)
+    restes = []
+    while n > 0:
+        reste = n % 9
+        if reste == 0:
+            restes.append("9")
+            n = (n // 9) - 1
+        else:
+            restes.append(str(reste))
+            n = n // 9
+    resultat_str = "".join(reversed(restes))
+    return "-" + resultat_str if est_negatif else resultat_str
+
+# ==============================================================================
+# 2. LE MOTEUR ACCÉLÉRATEUR DE DIVISION (Fusionné depuis la 9.1.1.1)
+# ==============================================================================
+
+def chercher_extension_sans_abandon(num_str, den_str):
+    num_dec_origine = logique_sans_zero_a_decimal(num_str)
+    den_dec = logique_sans_zero_a_decimal(den_str)
+    
+    if den_dec == 0:
+        return "Erreur", "Saisie Invalide", "Division par zéro impossible"
+        
+    if num_dec_origine % den_dec == 0:
+        q_brut = num_dec_origine // den_dec
+        q_visuel = decimal_a_logique_sans_zero(q_brut)
+        return q_visuel, "Aucune", "Fermeture immédiate"
+        
+    partie_entiere_dec = num_dec_origine // den_dec
+    resultat_trouve = None
+    limite_harmonique = len(den_str.strip().replace(" ", "")) + 2
+    
+    def explorer(chaine_actuelle, dec_actuel):
+        nonlocal resultat_trouve
+        if resultat_trouve is not None:
+            return
+        if len(chaine_actuelle) >= limite_harmonique:
+            return
+            
+        for chiffre in "123456789":
+            nouvelle_chaine = chaine_actuelle + chiffre
+            nouveau_dec_actuel = dec_actuel * 9 + int(chiffre)
+            
+            if nouveau_dec_actuel % den_dec == 0:
+                q_brut = nouveau_dec_actuel // den_dec
+                q_visuel = decimal_a_logique_sans_zero(q_brut)
+                longueur_ext = len(nouvelle_chaine)
+                if len(q_visuel) >= longueur_ext:
+                    res_final = f".({q_visuel.zfill(longueur_ext)})"
+                    resultat_trouve = (res_final, nouvelle_chaine, f"Réussite en {longueur_ext} étapes.")
+                    return
+            explorer(nouvelle_chaine, nouveau_dec_actuel)
+
+    explorer("", num_dec_origine)
+    if resultat_trouve is not None:
+        return resultat_trouve
+    return "Calcul inachevé", "Infini", "Recherche interrompue."
+
+# ==============================================================================
+# 3. INTERFACE CONSOLE UNIFIÉE (Modèle type Windows)
+# ==============================================================================
+
+print("*" * 75)
+print("Calculatrice Évolutive Multi-Opérations 10.1.1.1 (Modèle Windows)")
+print("Développé par Chagnon Julien Christian Robert - Tous droits réservés.")
+print("*" * 75)
+print("Taper 'quitter' pour arrêter le programme.\n")
+
+while True:
+    try:
+        operation = input("Opération (+, -, *, /) : ").strip()
+        if operation.lower() == "quitter":
+            break
+            
+        if operation not in ["+", "-", "*", "/"]:
+            print("Opération non valide. Recommencer.\n")
+            continue
+            
+        a_saisi_brut = input("Premier nombre (Logique sans 0) : ").strip().replace(" ", "")
+        if a_saisi_brut.lower() == "quitter":
+            break
+        b_saisi_brut = input("Deuxième nombre (Logique sans 0) : ").strip().replace(" ", "")
+        if b_saisi_brut.lower() == "quitter":
+            break
+            
+        # --- TRAITEMENT SI C'EST UNE DIVISION DE LA GRANDE GRILLE (/) ---
+        if operation == "/":
+            temps_debut = time.time()
+            reponse, extension, details = chercher_extension_sans_abandon(a_saisi_brut, b_saisi_brut)
+            temps_fin = time.time()
+            temps_ecoule = temps_fin - temps_debut
+            
+            # Nettoyage et formatage du résultat de division (Suppression parenthèses + ajout du 0,)
+            if reponse.startswith(".("):
+                contenu = reponse.replace(".(", "").replace(")", "")
+                reponse_propre = f"0,{contenu}"
+            elif reponse.startswith("."):
+                reponse_propre = f"0,{reponse[1:]}"
+            else:
+                reponse_propre = reponse
+                
+            extension_propre = f"0,{extension}" if extension.isdigit() else extension
+            
+            print("\n" + "-"*50)
+            print(f" 💎 RÉSULTAT DU CALCUL : {reponse_propre}")
+            print(f" ⚡ SÉQUENCE GÉNÉRÉE : {extension_propre}")
+            print(f" ⏱️ TEMPS D'EFFORT : {temps_ecoule:.6f} secondes")
+            print("-"*50 + "\n")
+            continue
+
+        # --- TRAITEMENT STANDARD POUR LES SOUSTRACTIONS, ADDITIONS, MULTIPLICATIONS (+, -, *) ---
+        # Repérage de la virgule textuelle pour l'alignement
+        a_nettoye = a_saisi_brut.replace(",", ".")
+        b_nettoye = b_saisi_brut.replace(",", ".")
+        
+        dec_a = len(a_nettoye.split(".")[1]) if "." in a_nettoye else 0
+        dec_b = len(b_nettoye.split(".")[1]) if "." in b_nettoye else 0
+        
+        a_saisi = a_saisi_brut.replace(".", "").replace(",", "")
+        b_saisi = b_saisi_brut.replace(".", "").replace(",", "")
+        
+        a_decimal = logique_sans_zero_a_decimal(a_saisi)
+        b_decimal = logique_sans_zero_a_decimal(b_saisi)
+        
+        if a_decimal is None or b_decimal is None:
+            print("Erreur : Saisie invalide. Utilisez uniquement les chiffres de 1 à 9.\n")
+            continue
+            
+        # Exécution du calcul brut
+        if operation == "+":
+            res_decimal = a_decimal + b_decimal
+            op_inverse = "-"
+            res_inverse_decimal = res_decimal - b_decimal
+            total_dec = max(dec_a, dec_b)
+        elif operation == "-":
+            res_decimal = a_decimal - b_decimal
+            op_inverse = "+"
+            res_inverse_decimal = res_decimal + b_decimal
+            total_dec = max(dec_a, dec_b)
+        elif operation == "*":
+            res_decimal = a_decimal * b_decimal
+            op_inverse = "/"
+            res_inverse_decimal = res_decimal // b_decimal if b_decimal != 0 else 0
+            total_dec = dec_a + dec_b
+            
+        # Traduction brute en logique sans zéro
+        res_propre_brut = decimal_a_logique_sans_zero(res_decimal)
+        res_inverse_propre_brut = decimal_a_logique_sans_zero(res_inverse_decimal)
+        
+        # Ré-application de la virgule par décalage dans la chaîne de caractères
+        if total_dec > 0 and len(res_propre_brut) > total_dec:
+            pos = len(res_propre_brut) - total_dec
+            res_propre = res_propre_brut[:pos] + "," + res_propre_brut[pos:]
+        else:
+            res_propre = res_propre_brut
+            
+        if total_dec > 0 and len(res_inverse_propre_brut) > total_dec:
+            pos_inv = len(res_inverse_propre_brut) - total_dec
+            res_inverse_propre = res_inverse_propre_brut[:pos_inv] + "," + res_inverse_propre_brut[pos_inv:]
+        else:
+            res_inverse_propre = res_inverse_propre_brut
+            
+        # Affichage net et épuré pour l'utilisateur
+        print("\n" + "-" * 50)
+        print(f" VOTRE RÉPONSE : {a_saisi_brut} {operation} {b_saisi_brut} = {res_propre}")
+        print(f" RÉPONSE : {res_propre}")
+        print("-" * 50)
+        print(f" L'INVERSION INVERSE : ({res_propre}) ({op_inverse}) ({b_saisi_brut}) = {res_inverse_propre}")
+        print("-" * 50 + "\n")
+        
+    except Exception as e:
+        print(f"Erreur : Saisie invalide. Veuillez recommencer. ({e})\n")
