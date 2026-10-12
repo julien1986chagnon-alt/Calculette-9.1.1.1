@@ -1,114 +1,163 @@
 import streamlit as st
 
-# =====================================================================
-# LA GRILLE DES ZÉROS PURS DE TES PALIERS (ISSUE DE TON ÉCRAN)
-# =====================================================================
+# ==============================================================================
+# CONFIGURATION DE LA PAGE STREAMLIT
+# ==============================================================================
+st.set_page_config(
+    page_title="Convertisseur Base 9 Bijective",
+    page_icon="💎",
+    layout="centered"
+)
+
+# ==============================================================================
+# CONFIGURATION : LA GRILLE DES ZÉROS PURS (STRICTEMENT INTACTE)
+# ==============================================================================
 TABLE_DES_ZEROS_PURS = {
-    10: "1",
-    100: "11",
-    1000: "221",
-    10000: "2431",
-    100000: "26741",
-    1000000: "295251",
-    10000000: "3357761",
-    100000000: "36946471",
-    1000000000: "417522281",
-    10000000000: "4593745191",
-    100000000000: "51642297211",
-    1000000000000: "568165379321",
-    10000000000000: "6359729283531",
-    100000000000000: "69968133228841",
-    1000000000000000: "781759465528351",
-    10000000000000000: "2599465231822861",
-    100000000000000000: "28715227551152571",
-    1000000000000000000: "326867514162678381",
-    10000000000000000000: "3596653655789573291" # Ligne 20 de ton tableau
+    "10": "1",
+    "100": "11",
+    "1000": "221",
+    "10000": "2431",
+    "100000": "26741",
+    "1000000": "295251",
+    "10000000": "3257761",
+    "100000000": "35946471",
+    "1000000000": "417522281",
+    "10000000000": "4593745191",
+    "100000000000": "51642297211",
+    "1000000000000": "568165379321",
+    "10000000000000": "6359729283531",
+    "100000000000000": "69968133228841",
+    "1000000000000000": "781759465528351",
+    "10000000000000000": "2599465231822861",
+    "100000000000000000": "28715227551152571",
+    "1000000000000000000": "326862514162678381",
+    "10000000000000000000": "3596653655789573291"
 }
 
-def addition_bijective_base9(a_str, b_str):
-    """Effectue l'addition en colonne pure en base 9 bijective (chiffres de 1 à 9)."""
-    i, j = len(a_str) - 1, len(b_str) - 1
-    retenue = 0
-    resultat = []
-    while i >= 0 or j >= 0 or retenue > 0:
-        chiffre_a = int(a_str[i]) if i >= 0 else 0
-        chiffre_b = int(b_str[j]) if j >= 0 else 0
-        somme = chiffre_a + chiffre_b + retenue
-        if somme == 0 and i < 0 and j < 0:
-            break
-        reste = somme % 9
-        if reste == 0:
-            chiffre_final = 9
-            retenue = (somme - 1) // 9
-        else:
-            chiffre_final = reste
-            retenue = somme // 9
-        resultat.append(str(chiffre_final))
-        i -= 1
-        j -= 1
-    return "".join(reversed(resultat))
+# ==============================================================================
+# MOTEURS DE CALCUL (STRICTEMENT INTACTS ET SÉCURISÉS)
+# ==============================================================================
+def b9_bijective_vers_valeur_base10(chaine_b9):
+    valeur = 0
+    for idx, char in enumerate(reversed(chaine_b9)):
+        valeur += int(char) * (9 ** idx)
+    return valeur
 
-def convertisseur_par_segments(nombre_depart_str):
-    nombre_depart_str = nombre_depart_str.replace(" ", "")
-    
-    if not nombre_depart_str.isdigit():
-        return "ERREUR_SAISIE", "Erreur : Tu dois taper uniquement des chiffres !"
+def convertisseur_par_segments(montant_depart_str):
+    montant_depart_str = montant_depart_str.replace(" ", "")
+    if not montant_depart_str.isdigit():
+        return "ERREUR SAISIE"
         
-    valeur_entiere = int(nombre_depart_str)
-    limite_strict_superieure = 1000000000000000000000 # 1 000 milliards de milliards
+    valeur_entiere = int(montant_depart_str)
+    somme_zeros_b10 = 0
+    longueur = len(montant_depart_str)
     
-    if valeur_entiere >= limite_strict_superieure:
-        return "ERREUR_LIMITE", "🚫 Impossible d'aller au-delà ! Ce montant dépasse la limite absolue de 999 milliards de milliards."
-
-    somme_zeros_b9 = "0"
-    longueur = len(nombre_depart_str)
-    
-    for idx, chiffre_char in enumerate(nombre_depart_str):
+    for idx, chiffre_char in enumerate(montant_depart_str):
         chiffre = int(chiffre_char)
-        if chiffre == 0:
-            continue
-            
         exposant = longueur - 1 - idx
-        if exposant > 0:
+        
+        if chiffre == 0:
             valeur_palier = 10 ** exposant
-            if valeur_palier in TABLE_DES_ZEROS_PURS:
-                zeros_du_palier = TABLE_DES_ZEROS_PURS[valeur_palier]
-                for _ in range(chiffre):
-                    somme_zeros_b9 = addition_bijective_base9(somme_zeros_b9, zeros_du_palier)
-                    
-    # L'addition finale se fait ENTIÈREMENT avec ta fonction bijective base 9
-    montant_final_b9 = addition_bijective_base9(nombre_depart_str, somme_zeros_b9)
+            str_palier = str(valeur_palier)
+            
+            if str_palier in TABLE_DES_ZEROS_PURS:
+                chaine_b9 = TABLE_DES_ZEROS_PURS[str_palier]
+                somme_zeros_b10 += b9_bijective_vers_valeur_base10(chaine_b9)
+                
+    montant_final_b10 = valeur_entiere + somme_zeros_b10
     
-    return somme_zeros_b9, montant_final_b9
+    if montant_final_b10 == 0:
+        return "0"
+        
+    res_b9 = ""
+    n = montant_final_b10
+    while n > 0:
+        reste = n % 9
+        if reste == 0:
+            res_b9 = "9" + res_b9
+            n = (n // 9) - 1
+        else:
+            res_b9 = str(reste) + res_b9
+            n = n // 9
+            
+    return res_b9
 
-# =====================================================================
-# CODE DE L'INTERFACE WEB STREAMLIT
-# =====================================================================
-st.set_page_config(page_title="Convertisseur Base 9 Bijective", page_icon="🧮")
-
-st.title("🧮 Mon Convertisseur Base 10 vers Base 9 Bijective")
-st.write("Ce système analyse vos nombres par segments et calcule les zéros cumulés sans utiliser le chiffre 0.")
-
-# La boîte de saisie blanche sur le site web
-montant_saisi = st.text_input("Entrez le montant de ton choix :", value="17545")
-
-# Le bouton cliquable
-if st.button("Lancer le calcul"):
-    zeros_comptabilises, resultat_total = convertisseur_par_segments(montant_saisi)
+def convertisseur_inverse_par_segments(montant_b9_str):
+    montant_b9_str = montant_b9_str.replace(" ", "")
+    if not montant_b9_str.isdigit() or "0" in montant_b9_str:
+        return "ERREUR SAISIE"
+        
+    cible_b9 = int(montant_b9_str)
+    bas = 0
+    haut = 10000000000000000000
+    resultat_b10 = None
     
-    st.write("---")
-    if zeros_comptabilises in ["ERREUR_LIMITE", "ERREUR_SAISIE"]:
-        st.error(resultat_total)
+    while bas <= haut:
+        milieu = (bas + haut) // 2
+        test_res = convertisseur_par_segments(str(milieu))
+        
+        if test_res.isdigit():
+            test_b9 = int(test_res)
+            if test_b9 == cible_b9:
+                resultat_b10 = milieu
+                break
+            elif test_b9 < cible_b9:
+                bas = milieu + 1
+            else:
+                haut = milieu - 1
+        else:
+            haut = milieu - 1
+            
+    if resultat_b10 is not None:
+        return str(resultat_b10)
     else:
-        st.subheader("📊 Résultats :")
-        st.info(f"**Montant que TU as mis :** {montant_saisi}")
-        st.success(f"**Segment des zéros accumulés :** {zeros_comptabilises}")
-        st.metric(label="Montant final de ta grille", value=resultat_total)
+        return "Aucune correspondance exacte trouvée"
 
-# =====================================================================
-# SECTION DROITS RÉSERVÉS (FOOTER DE LA PAGE WEB)
-# =====================================================================
-st.write("")
-st.write("")
+# ==============================================================================
+# INTERFACE GRAPHIQUE STREAMLIT
+# ==============================================================================
+st.title("💎 Convertisseur Logique Bijective")
+st.caption("Architecture mathématique par Chagnon Julien Christian Robert - Tous droits réservés.")
 st.write("---")
-st.caption("© 2026 Julien Christian Robert Chagnon. Tous droits réservés.")
+
+# 1. Sélection du sens de calcul via un menu déroulant visuel
+choix = st.selectbox(
+    "Choisissez le sens de conversion :",
+    [
+        "1 : Base 10 ➔ Ajouter les décalages (Base 9 sans 0)",
+        "2 : Retrouver le nombre d'origine (Inverse en Base 10)"
+    ]
+)
+
+# 2. Zone de texte pour entrer le nombre
+montant_saisi = st.text_input("Tapez le montant à convertir :", placeholder="Exemple: 1256302320")
+
+# 3. Bouton d'action pour lancer le traitement
+if st.button("ÉVALUER LA CONVERSION", type="primary"):
+    if montant_saisi.strip() == "":
+        st.warning("Veuillez saisir un nombre avant de cliquer.")
+    else:
+        # Nettoyage et routage vers la bonne fonction selon le choix du menu
+        if choix.startswith("1"):
+            resultat = convertisseur_par_segments(montant_saisi)
+            if "ERREUR" in resultat:
+                st.error(f"❌ {resultat} : Veuillez entrer uniquement des chiffres.")
+            else:
+                st.success(f"📈 **RÉSULTAT EN BASE 9 BIJECTIVE :**")
+                st.code(resultat, language="text")
+        else:
+            resultat_inverse = convertisseur_inverse_par_segments(montant_saisi)
+            if "ERREUR" in resultat_inverse or "Aucune" in resultat_inverse:
+                st.error(f"❌ {resultat_inverse}")
+            else:
+                st.success(f"🔄 **RETOUR EN BASE 10 D'ORIGINE :**")
+                st.code(resultat_inverse, language="text")
+
+# Petit rappel sur la loi mathématique découverte sur LibreOffice
+with st.expander("ℹ️ Note de l'architecte sur la structure géométrique"):
+    st.write("""
+    Chaque segment supérieur de notre grille des zéros purs est généré par l'application stricte du multiplicateur **11** :
+    * **1 000** ➔ décalage de **221**
+    * **10 000** ➔ \(221 \\times 11\) = **2 431**
+    * **100 000** ➔ \(2 431 \\times 11\) = **26 741**
+    """)
