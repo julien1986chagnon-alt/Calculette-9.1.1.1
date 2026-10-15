@@ -5,9 +5,9 @@ import time
 sys.set_int_max_str_digits(1000000)
 sys.setrecursionlimit(1000000) # Brise la barrière de récursion !
 
-# ==============================================================================
+# -------------------------------------------------------------
 # 1. VOS FONCTIONS DE CONVERSION DE BASE (Version originale stricte sans zéro)
-# ==============================================================================
+# -------------------------------------------------------------
 
 def logique_sans_zero_a_decimal(nombre_str):
     nombre_str = nombre_str.strip().replace(" ", "").replace(",", "").replace(".", "")
@@ -43,9 +43,9 @@ def decimal_a_logique_sans_zero(n):
     resultat_str = "".join(reversed(restes))
     return "-" + resultat_str if est_negatif else resultat_str
 
-# ==============================================================================
-# 2. LE VÉRITABLE ACCÉLÉRATEUR CORRIGÉ (Recherche avec retour en arrière)
-# ==============================================================================
+# -------------------------------------------------------------
+# 2. LE VÉRITABLE ACCÉLÉRATEUR SANS GARDE-FOU (Profondeur infinie)
+# -------------------------------------------------------------
 
 def chercher_extension_sans_abandon(num_str, den_str):
     num_dec_origine = logique_sans_zero_a_decimal(num_str)
@@ -59,18 +59,14 @@ def chercher_extension_sans_abandon(num_str, den_str):
         q_visuel = decimal_a_logique_sans_zero(q_brut)
         return q_visuel, "Aucune", "Fermeture immédiate"
         
-    partie_entiere_dec = num_dec_origine // den_dec
     resultat_trouve = None
-    
-    limite_harmonique = len(den_str.strip().replace(" ", "")) + 2
     
     def explorer(chaine_actuelle, dec_actuel):
         nonlocal resultat_trouve
         if resultat_trouve is not None:
             return
             
-        if len(chaine_actuelle) >= limite_harmonique:
-            return
+        # LE GARDE-FOU DE LA LIMITE HARMONIQUE A ÉTÉ ENTIÈREMENT SUPPRIMÉ ICI
             
         for chiffre in "123456789":
             nouvelle_chaine = chaine_actuelle + chiffre
@@ -82,34 +78,34 @@ def chercher_extension_sans_abandon(num_str, den_str):
                 
                 longueur_ext = len(nouvelle_chaine)
                 if len(q_visuel) >= longueur_ext:
-                    res_final = f".({q_visuel.zfill(longueur_ext)})"
+                    res_final = f"0.{q_visuel.zfill(longueur_ext)}"
                     resultat_trouve = (res_final, nouvelle_chaine, f"Fermeture quantique réussie en {longueur_ext} étapes.")
                     return
-                    
+            
             explorer(nouvelle_chaine, nouveau_dec_actuel)
-
+            
     explorer("", num_dec_origine)
     
     if resultat_trouve is not None:
         return resultat_trouve
-    return "Calcul inachevé", "Infini", "Recherche interrompue."
+    return "Calcul inachevé.", "Infini", "Recherche interrompue."
 
-# ==============================================================================
+# -------------------------------------------------------------
 # 3. INTERFACE CONSOLE REFORMATÉE ET NETTOYÉE
-# ==============================================================================
+# -------------------------------------------------------------
 
 if __name__ == "__main__":
     while True:
         try:
             print("-" * 75)
-            print("CRASH-TEST TOTAL BASE 9 - RECHERCHE RAPIDE RECTIFIÉE")
+            print("CRASH-TEST TOTAL BASE 9 - RECHERCHE RAPIDE SANS LIMITE")
             print("-" * 75)
             print("(Écrivez 'quitter' pour fermer)\n")
             
-            num_input = input("Entrez le Numérateur : ").strip().replace(" ", "")
+            num_input = input("Entrer le Numérateur : ").strip().replace(" ", "")
             if num_input.lower() == "quitter":
                 break
-            den_input = input("Entrez le Dénominateur : ").strip().replace(" ", "")
+            den_input = input("Entrer le Dénominateur : ").strip().replace(" ", "")
             if den_input.lower() == "quitter":
                 break
                 
@@ -122,30 +118,28 @@ if __name__ == "__main__":
             temps_ecoule = temps_fin - temps_debut
             
             # --- BLOC DE NETTOYAGE VISUEL REFORMATÉ ---
-            # 1. Nettoyage de la réponse principale (Suppression des parenthèses et ajout du zéro initial)
             reponse_propre = reponse
-            if reponse_propre.startswith(".("):
-                # Enlève le point et les parenthèses, et ajoute le vrai zéro virgule initial
-                contenu = reponse_propre.replace(".(", "").replace(")", "")
+            if reponse_propre.startswith("("):
+                contenu = reponse_propre.replace("(", "").replace(")", "").replace(".", "")
                 reponse_propre = f"0,{contenu}"
             elif reponse_propre.startswith("."):
-                reponse_propre = f"0,{reponse_propre[1:]}"
+                reponse_propre = f"0{reponse_propre.replace('.', ',')}"
                 
-            # 2. Nettoyage de la séquence générée pour l'afficher sous forme décimale
             if extension.isdigit():
                 extension_propre = f"0,{extension}"
             else:
                 extension_propre = extension
-            
+                
             # --- AFFICHAGE FINAL ÉPURÉ ---
-            print("\n" + "+" + "="*68 + "+")
-            print(f" 💎 RÉSULTAT DU CALCUL : {reponse_propre}")
-            print(f" ⚡ SÉQUENCE GÉNÉRÉE : {extension_propre}")
-            print(f" ⏱️ TEMPS D'EFFORT : {temps_ecoule:.6f} secondes")
-            print("+" + "="*68 + "+\n")
+            print("\n" + "=" * 60 + "\n")
+            print(f" RÉSULTAT DU CALCUL : {reponse_propre}")
+            print(f" SÉQUENCE GÉNÉRÉE : {extension_propre}")
+            print(f" TEMPS D'EFFORT : {temps_ecoule:.6f} secondes")
+            print(f" DÉTAILS DU MOTEUR : {details}")
+            print("=" * 60 + "\n")
             
         except KeyboardInterrupt:
-            print("\n[!] Test stoppé manuellement (Ctrl+C).")
+            print("\n[!] Test stoppé manuellement. (Ctrl+C)\n")
             break
         except Exception as e:
             print(f"\n[!] Erreur : {e}\n")
