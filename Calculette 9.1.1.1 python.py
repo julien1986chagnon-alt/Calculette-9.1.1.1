@@ -1,8 +1,9 @@
 import sys
 import time
 
-# Augmentation de la sécurité pour la manipulation de grands nombres textuels
-sys.set_int_max_str_digits(100000)
+# Suppression absolue de TOUTES les sécurités logicielles internes
+sys.set_int_max_str_digits(1000000)
+sys.setrecursionlimit(1000000) # Brise la barrière de récursion !
 
 # ==============================================================================
 # 1. VOS FONCTIONS DE CONVERSION DE BASE (Version originale stricte sans zéro)
@@ -15,7 +16,8 @@ def logique_sans_zero_a_decimal(nombre_str):
     est_negatif = nombre_str.startswith("-")
     if est_negatif:
         nombre_str = nombre_str[1:]
-        
+    if not nombre_str:
+        return 0
     if not all(c in "123456789" for c in nombre_str):
         return None
         
@@ -32,25 +34,17 @@ def decimal_a_logique_sans_zero(n):
     restes = []
     while n > 0:
         reste = n % 9
-        quotient = n // 9
         if reste == 0:
-            reste = 9
-            n = quotient - 1
+            restes.append("9")
+            n = (n // 9) - 1
         else:
-            n = quotient
-        restes.append(str(reste))
-    
+            restes.append(str(reste))
+            n = n // 9
     resultat_str = "".join(reversed(restes))
     return "-" + resultat_str if est_negatif else resultat_str
 
-def traduire_en_votre_reponse_papier(quotient_b9_brut):
-    """ Règle de fermeture structurelle en fin de bloc (39 -> 40) """
-    if quotient_b9_brut.endswith("39"):
-        return quotient_b9_brut[:-2] + "40"
-    return quotient_b9_brut
-
 # ==============================================================================
-# 2. LE MOTEUR QUANTIQUE PROTOCOLLÉ (Sécurité proportionnelle et RAM protégée)
+# 2. LE VÉRITABLE ACCÉLÉRATEUR CORRIGÉ (Recherche avec retour en arrière)
 # ==============================================================================
 
 def chercher_extension_sans_abandon(num_str, den_str):
@@ -60,107 +54,98 @@ def chercher_extension_sans_abandon(num_str, den_str):
     if den_dec == 0:
         return "Erreur", "Saisie Invalide", "Division par zéro impossible"
         
-    # Cas direct immédiat
     if num_dec_origine % den_dec == 0:
-        q_brut = decimal_a_logique_sans_zero(num_dec_origine // den_dec)
-        q_visuel = traduire_en_votre_reponse_papier(q_brut)
-        return q_visuel, "Aucune (Tombe juste directement)", "Fermeture directe"
-
-    # LOI DE PROPORTIONNALITÉ : La virgule fait au maximum la taille du dénominateur + 2 chiffres
-    limite_harmonique = len(den_str.strip().replace(" ", "")) + 2
+        q_brut = num_dec_origine // den_dec
+        q_visuel = decimal_a_logique_sans_zero(q_brut)
+        return q_visuel, "Aucune", "Fermeture immédiate"
+        
     partie_entiere_dec = num_dec_origine // den_dec
-
     resultat_trouve = None
-
-    # Exploration par vagues en profondeur (DFS) avec nettoyage en direct de la RAM
+    
+    limite_harmonique = len(den_str.strip().replace(" ", "")) + 2
+    
     def explorer(chaine_actuelle, dec_actuel):
         nonlocal resultat_trouve
-        
         if resultat_trouve is not None:
             return
             
         if len(chaine_actuelle) >= limite_harmonique:
             return
-
+            
         for chiffre in "123456789":
             nouvelle_chaine = chaine_actuelle + chiffre
             nouveau_dec_actuel = dec_actuel * 9 + int(chiffre)
-
-            # Raccordement exact trouvé !
+            
             if nouveau_dec_actuel % den_dec == 0:
-                q_brut = decimal_a_logique_sans_zero(nouveau_dec_actuel // den_dec)
-                q_visuel = traduire_en_votre_reponse_papier(q_brut)
+                q_brut = nouveau_dec_actuel // den_dec
+                q_visuel = decimal_a_logique_sans_zero(q_brut)
                 
                 longueur_ext = len(nouvelle_chaine)
                 if len(q_visuel) >= longueur_ext:
-                    res_final = f"{q_visuel[:-longueur_ext]}.{q_visuel[-longueur_ext:]}"
-                else:
-                    res_final = f"0.{q_visuel.zfill(longueur_ext)}"
-                
-                resultat_trouve = (res_final, nouvelle_chaine, f"Fermeture quantique réussie avec un segment de {longueur_ext} chiffres.")
-                return
+                    res_final = f".({q_visuel.zfill(longueur_ext)})"
+                    resultat_trouve = (res_final, nouvelle_chaine, f"Fermeture quantique réussie en {longueur_ext} étapes.")
+                    return
+                    
+            explorer(nouvelle_chaine, nouveau_dec_actuel)
 
-            # Continuer l'exploration sous le seuil harmonique
-            if len(nouvelle_chaine) < limite_harmonique:
-                explorer(nouvelle_chaine, nouveau_dec_actuel)
-
-    # Lancement du scan sécurisé
     explorer("", num_dec_origine)
-
+    
     if resultat_trouve is not None:
         return resultat_trouve
-        
-    return "Calcul restreint", "Limite harmonique atteinte", f"Aucun raccord court trouvé sous le seuil de {limite_harmonique} chiffres."
+    return "Calcul inachevé", "Infini", "Recherche interrompue."
 
 # ==============================================================================
-# 3. INTERFACE CONSOLE STRICTEMENT LIMITÉE À 6 CHIFFRES AU DÉNOMINATEUR
+# 3. INTERFACE CONSOLE REFORMATÉE ET NETTOYÉE
 # ==============================================================================
 
 if __name__ == "__main__":
     while True:
         try:
             print("-" * 75)
-            print("CALCULATRICE CONSOLE BASE 9 — VERSION SÉCURISÉE 6 CHIFFRES")
-            print("Sécurité matérielle : Dénominateur STRICTEMENT limité à 6 chiffres max")
+            print("CRASH-TEST TOTAL BASE 9 - RECHERCHE RAPIDE RECTIFIÉE")
             print("-" * 75)
             print("(Écrivez 'quitter' pour fermer)\n")
             
-            num_input = input("Entrez le Numérateur (Longueur libre) : ").strip().replace(" ", "")
+            num_input = input("Entrez le Numérateur : ").strip().replace(" ", "")
             if num_input.lower() == "quitter":
                 break
-            den_input = input("Entrez le Dénominateur (Maximum 6 chiffres) : ").strip().replace(" ", "")
+            den_input = input("Entrez le Dénominateur : ").strip().replace(" ", "")
             if den_input.lower() == "quitter":
                 break
                 
             if not num_input or not den_input:
                 continue
                 
-            # 🛡️ LE VERROU MATÉRIEL SÉCURISÉ : Blocage immédiat sur le clavier si > 6 chiffres
-            taille_den = len(den_input.replace(".", "").replace("-", ""))
-            if taille_den > 6:
-                print(f"\n[!] ERREUR SÉCURITÉ : Votre dénominateur fait {taille_den} chiffres.")
-                print("[!] Ce fichier est configuré pour bloquer strictement à 6 chiffres MAXIMUM.\n")
-                continue
-                
-            print("\n[i] Analyse du raccordement et lancement du chronomètre...")
-            
-            # ⏱️ DEBUT DU CHRONOMÈTRE
             temps_debut = time.time()
-            
             reponse, extension, details = chercher_extension_sans_abandon(num_input, den_input)
-            
-            # ⏱️ FIN DU CHRONOMÈTRE
             temps_fin = time.time()
             temps_ecoule = temps_fin - temps_debut
             
-            print("\n" + "=" * 70)
-            print(f"📥 RÉSULTAT OBTENU : {reponse}")
-            print(f"⚡ SÉQUENCE DANS LA VIRGULE : {extension if extension else 'Aucune'}")
-            print(f"🔮 STATUT DE LA STRUCTURE : {details}")
-            print(f"⏱️ TEMPS DE CALCUL MACHINE : {temps_ecoule:.6f} secondes")
-            print("=" * 70 + "\n")
+            # --- BLOC DE NETTOYAGE VISUEL REFORMATÉ ---
+            # 1. Nettoyage de la réponse principale (Suppression des parenthèses et ajout du zéro initial)
+            reponse_propre = reponse
+            if reponse_propre.startswith(".("):
+                # Enlève le point et les parenthèses, et ajoute le vrai zéro virgule initial
+                contenu = reponse_propre.replace(".(", "").replace(")", "")
+                reponse_propre = f"0,{contenu}"
+            elif reponse_propre.startswith("."):
+                reponse_propre = f"0,{reponse_propre[1:]}"
+                
+            # 2. Nettoyage de la séquence générée pour l'afficher sous forme décimale
+            if extension.isdigit():
+                extension_propre = f"0,{extension}"
+            else:
+                extension_propre = extension
+            
+            # --- AFFICHAGE FINAL ÉPURÉ ---
+            print("\n" + "+" + "="*68 + "+")
+            print(f" 💎 RÉSULTAT DU CALCUL : {reponse_propre}")
+            print(f" ⚡ SÉQUENCE GÉNÉRÉE : {extension_propre}")
+            print(f" ⏱️ TEMPS D'EFFORT : {temps_ecoule:.6f} secondes")
+            print("+" + "="*68 + "+\n")
             
         except KeyboardInterrupt:
-            print("\n[!] Calcul arrêté proprement par l'utilisateur.")
+            print("\n[!] Test stoppé manuellement (Ctrl+C).")
+            break
         except Exception as e:
-            print(f"\n[!] Une interruption est survenue : {e}\n")
+            print(f"\n[!] Erreur : {e}\n")
