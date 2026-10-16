@@ -135,7 +135,7 @@ st.write("---")
 montant_saisi = st.text_input(
     "Entrez le montant en Base 10 à convertir (Jusqu'à 22 chiffres) :", 
     value="1002003004005006007000",
-    max_chars=20
+    max_chars=22
 )
 
 if st.button("Lancer la conversion bijective ➔", type="primary"):
