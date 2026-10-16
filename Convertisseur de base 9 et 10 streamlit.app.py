@@ -1,8 +1,8 @@
 import streamlit as st
 
-# =============================================================================
-# CONFIGURATION DEFINITIVE : LA PYRAMIDE RECTIFIÉE DE CHAGNON JULIEN
-# =============================================================================
+# ==============================================================================
+# CONFIGURATION DÉFINITIVE : LA PYRAMIDE RECTIFIÉE DE CHAGNON JULIEN
+# ==============================================================================
 
 TABLE_DES_ZEROS_PURS = {
     "10": "11", # 10 = 1 passages zéro
@@ -28,8 +28,9 @@ TABLE_DES_ZEROS_PURS = {
     "1000000000000000000000": "2655772711549571852431" # 1.000.000.000.000.000.000.000 = 1.655.772.711.549.571.852.431 passages zéro
 }
 
-
+# ==============================================================================
 # MOTEUR 1 : MULTIPLICATION PURE EN BASE 9 BIJECTIVE
+# ==============================================================================
 def multiplier_b9_bijective(chaine_b9, multiplicateur_int):
     if multiplicateur_int == 1:
         return chaine_b9
@@ -62,7 +63,9 @@ def multiplier_b9_bijective(chaine_b9, multiplicateur_int):
             
     return "".join(reversed(resultat))
 
+# ==============================================================================
 # MOTEUR 2 : ADDITION PURE EN BASE 9 (AVEC SUPPORT DU 0 DE DÉPART)
+# ==============================================================================
 def additionner_b9(chaine1, chaine2):
     resultat = []
     retenue = 0
@@ -93,9 +96,13 @@ def additionner_b9(chaine1, chaine2):
             
     return "".join(reversed(resultat))
 
-# CONVERSION DIRECTE ENTIÈREMENT EN BASE 9
+# ==============================================================================
+# CONVERSION DIRECTE ENTIÈREMENT EN BASE 9 (CORRIGÉE ET FIABILISÉE)
+# ==============================================================================
 def convertisseur_par_segments(montant_str):
-    montant_str = montant_str.replace(" ", "")
+    # Nettoyage rigoureux des espaces insérés automatiquement par Streamlit
+    montant_str = str(montant_str).strip().replace(" ", "").replace(",", "").replace(".", "")
+    
     if not montant_str.isdigit():
         return "ERREUR : Saisie non numérique"
         
@@ -109,19 +116,32 @@ def convertisseur_par_segments(montant_str):
     
     if str_palier in TABLE_DES_ZEROS_PURS:
         sequence_b9 = TABLE_DES_ZEROS_PURS[str_palier]
-        produit_b9 = multiplier_b9_bijective(sequence_b9, premier_chiffre)
-        resultat_final = additionner_b9(montant_str, produit_b9)
-        return resultat_final
         
-    return "PALIER NON PARAMÉTRÉ (Limite maximale de 20 chiffres atteinte)"
+        # CAS 1 : Puissance de 10 PURE (Ex: 1000... sans autre chiffre à droite)
+        if premier_chiffre == 1 and montant_str == str_palier:
+            # Correction majeure : Plus d'addition parasite, on applique seulement la multiplication
+            return multiplier_b9_bijective(sequence_b9, premier_chiffre)
+            
+        # CAS 2 : Nombre COMPOSITE (Ex: 15000... ou 3000...)
+        else:
+            produit_b9 = multiplier_b9_bijective(sequence_b9, premier_chiffre)
+            
+            # Isolement du reste numérique pour la récursion
+            reste_montant = str(int(montant_str) - (premier_chiffre * int(str_palier)))
+            
+            # S'il reste une valeur à calculer à droite, on l'ajoute bijectivement
+            if int(reste_montant) > 0:
+                return additionner_b9(produit_b9, convertisseur_par_segments(reste_montant))
+            return produit_b9
+            
+    return "PALIER NON PARAMÉTRÉ (Limite maximale de la grille atteinte)"
 
-# =============================================================================
+# ==============================================================================
 # INTERFACE GRAPHIQUE STREAMLIT UNIFIÉE
-# =============================================================================
+# ==============================================================================
+st.set_page_config(page_title="Projet 9 - Chagnon Julien", page_icon="🔢", layout="centered")
 
-st.set_page_config(page_title="Projet 9 - Chagnon Julien", page_icon="🌐", layout="centered")
-
-st.title("🌐 Architecture Mathématique - Projet 9")
+st.title("🔢 Architecture Mathématique - Projet 9")
 st.subheader("Calculs 100% Base 9 par Chagnon Julien Christian Robert")
 
 st.markdown("""
@@ -133,22 +153,20 @@ st.write("---")
 
 # Zone de saisie unique
 montant_saisi = st.text_input(
-    "Entrez le montant en Base 10 à convertir (Jusqu'à 22 chiffres) :", 
-    value="1002003004005006007000",
+    "Entrez le montant en Base 10 à convertir (Jusqu'à 22 chiffres) :",
+    value="100000000000000000", # Valeur par défaut à 18 chiffres (10¹⁷)
     max_chars=22
 )
 
 if st.button("Lancer la conversion bijective ➔", type="primary"):
     with st.spinner("Calcul des décalages matriciels..."):
+        # Appel du moteur corrigé
         resultat = convertisseur_par_segments(montant_saisi)
         
-        if "ERREUR" in resultat or "NON PARAMÉTRÉ" in resultat:
-            st.error(resultat)
-        else:
-            st.success("Conversion réussie avec succès !")
-            st.markdown("### 🎯 COMPOSANTE BASE 9 PLEINE :")
-            st.code(resultat, language="text")
-            st.caption(f"Longueur du résultat : {len(resultat)} chiffres actifs (de 1 à 9). Aucun déchet numérique.")
-
-st.write("---")
-st.caption("© 2026 - Chagnon Julien Christian Robert. Tous droits réservés. Publication officielle Zenodo ID: 23418847.")
+    if "ERREUR" in resultat or "PALIER" in resultat:
+        st.error(resultat)
+    else:
+        st.success("Conversion réussie avec succès !")
+        st.markdown("### 🔴 COMPOSANTE BASE 9 PLEINE :")
+        st.code(resultat, language="text")
+        st.caption(f"Longueur du résultat : {len(resultat)} chiffres actifs (de 1 à 9). Aucun déchet numérique.")
