@@ -133,8 +133,8 @@ st.write("---")
 
 # Zone de saisie unique
 montant_saisi = st.text_input(
-    "Entrez le montant en Base 10 à convertir (Jusqu'à 20 chiffres) :", 
-    value="10020030040050060070",
+    "Entrez le montant en Base 10 à convertir (Jusqu'à 22 chiffres) :", 
+    value="1002003004005006007000",
     max_chars=20
 )
 
