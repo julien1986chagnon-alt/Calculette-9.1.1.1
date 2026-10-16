@@ -1,29 +1,30 @@
 import streamlit as st
 
 # =============================================================================
-# CONFIGURATION : LA GRILLE DES ZÉROS PURS (STRICTEMENT ISSUE DE VOTRE TABLEAU)
+# CONFIGURATION DEFINITIVE : LA PYRAMIDE RECTIFIÉE DE CHAGNON JULIEN
 # =============================================================================
 
 TABLE_DES_ZEROS_PURS = {
     "10": "9",
     "100": "11",
     "1000": "221",
-    "10000": "2431",
-    "100000": "26741",
-    "1000000": "295251",
-    "10000000": "3257761",
-    "100000000": "35946471",
-    "1000000000": "417522281",
-    "10000000000": "4593745191",
-    "100000000000": "51642297211",
-    "1000000000000": "568165379321",
-    "10000000000000": "6359729283531",
-    "100000000000000": "6996813322841",
-    "1000000000000000": "781759465528351",
-    "10000000000000000": "2599465231822861",
-    "100000000000000000": "28715227551152571",
-    "1000000000000000000": "326862514162678381",
-    "10000000000000000000": "3596653655789573291"
+    "10000": "1221",
+    "100000": "12541",
+    "1000000": "127951",
+    "10000000": "1318561",
+    "100000000": "13515271",
+    "1000000000": "138667981",
+    "10000000000": "1436458891",
+    "100000000000": "14812158911",
+    "1000000000000": "153933759121",
+    "10000000000000": "1594372461331",
+    "100000000000000": "16648197174641",
+    "1000000000000000": "174241278932151",
+    "10000000000000000": "1826654179353661",
+    "100000000000000000": "19194295983891371",
+    "1000000000000000000": "212247366933915181",
+    "10000000000000000000": "2234732147374166991",
+    "100000000000000000000": "23583153632226848111"
 }
 
 # MOTEUR 1 : MULTIPLICATION PURE EN BASE 9 BIJECTIVE
@@ -99,7 +100,6 @@ def convertisseur_par_segments(montant_str):
     if montant_str == "0" or not montant_str.lstrip("0"):
         return "0"
         
-    # LOGIQUE REVISÉE INITIALE : Extraction du premier chiffre pour la table
     premier_chiffre = int(montant_str[0])
     longueur = len(montant_str)
     
@@ -111,10 +111,10 @@ def convertisseur_par_segments(montant_str):
         resultat_final = additionner_b9(montant_str, produit_b9)
         return resultat_final
         
-    return "PALIER NON PARAMÉTRÉ (Limite maximale atteinte)"
+    return "PALIER NON PARAMÉTRÉ (Limite maximale de 20 chiffres atteinte)"
 
 # =============================================================================
-# INTERFACE GRAPHIQUE STREAMLIT SIMPLE ET ÉPURÉE
+# INTERFACE GRAPHIQUE STREAMLIT UNIFIÉE
 # =============================================================================
 
 st.set_page_config(page_title="Projet 9 - Chagnon Julien", page_icon="🌐", layout="centered")
@@ -123,13 +123,13 @@ st.title("🌐 Architecture Mathématique - Projet 9")
 st.subheader("Calculs 100% Base 9 par Chagnon Julien Christian Robert")
 
 st.markdown("""
-Cette application applique les tables de correspondances géométriques de la base 9 bijective.
-Entrez votre montant en Base 10 pour extraire sa composante continue, pure et sans aucun zéro de calcul.
+Cette application applique les tables de correspondances géométriques de la base 9 bijective rectifiée.
+Entrez un montant en Base 10 pour extraire sa composante continue, dense et sans aucun zéro de valeur.
 """)
 
 st.write("---")
 
-# Une seule zone de saisie propre, sans double barre
+# Zone de saisie unique
 montant_saisi = st.text_input(
     "Entrez le montant en Base 10 à convertir (Jusqu'à 20 chiffres) :", 
     value="10020030040050060070",
@@ -149,5 +149,4 @@ if st.button("Lancer la conversion bijective ➔", type="primary"):
             st.caption(f"Longueur du résultat : {len(resultat)} chiffres actifs (de 1 à 9). Aucun déchet numérique.")
 
 st.write("---")
-st.info("💡 Note : Le module de retour inverse est suspendu pour recalibrage. L'application se concentre exclusivement sur le moteur de conversion directe validé.")
-st.caption("© 2026 - Chagnon Julien Christian Robert. Publication officielle Zenodo ID: 23418847.")
+st.caption("© 2026 - Chagnon Julien Christian Robert. Tous droits réservés. Publication officielle Zenodo ID: 23418847.")
