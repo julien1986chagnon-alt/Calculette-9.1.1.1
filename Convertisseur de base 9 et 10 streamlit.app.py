@@ -163,27 +163,18 @@ st.caption("Par Chagnon Julien Christian Robert")
 st.divider()
 
 # Sélection du sens de conversion via des boutons radio
-sens = st.radio(
+choix = st.radio(
     "Choisissez le sens de la conversion :",
-    ("Base 10 ➔ Base 9 bijective", "Base 9 bijective ➔ Base 10")
+    ("1 : Base 10 ==> Base 9 bijective", "2 : Base 9 bijective ==> Base 10")
 )
 
-# Variable unique pour stocker la saisie utilisateur
-valeur_saisie = ""
+st.write("---")
 
-# Utilisation d'un formulaire pour capturer la validation sans rechargement intempestif
-with st.form(key="conversion_form"):
-    if sens == "Base 10 ➔ Base 9 bijective":
-        valeur_saisie = st.text_input("Entrez le montant en Base 10 :", placeholder="Ex: 100020003000")
-    else:
-        valeur_saisie = st.text_input("Entrez le nombre en Base 9 (chiffres de 1 à 9 uniquement) :", placeholder="Ex: 153861888446")
-        
-    bouton_valider = st.form_submit_button(label="Calculer la conversion")
-
-# Traitement du calcul lors de l'appui sur le bouton
-if bouton_valider and valeur_saisie:
-    if sens == "Base 10 ➔ Base 9 bijective":
-        resultat = convertisseur_par_segments(valeur_saisie)
+if "1 :" in choix:
+    montant_saisi = st.text_input("Entrez le montant en Base 10 à convertir :", key="base10_in")
+    
+    if montant_saisi:
+        resultat = convertisseur_par_segments(montant_saisi)
         
         if "ERREUR" in resultat or "PALIER" in resultat:
             st.error(f"❌ {resultat}")
@@ -191,9 +182,13 @@ if bouton_valider and valeur_saisie:
             st.success("### 💎 Composante Base 9 Pleine :")
             st.code(resultat, language="text")
             st.info(f"📏 **Longueur du résultat :** {len(resultat)} chiffres (Aucun zéro).")
-            
-    else:
-        resultat = convertisseur_base9_vers_base10(valeur_saisie)
+
+elif "2 :" in choix:
+    # CORRECTION ICI : Le nom de la variable est maintenant correct (valeur_saisie remplacé par montant_saisi)
+    montant_saisi = st.text_input("Entrez le nombre en Base 9 à convertir :", key="base9_in")
+    
+    if montant_saisi:
+        resultat = convertisseur_base9_vers_base10(montant_saisi)
         
         if "ERREUR" in resultat:
             st.error(f"❌ {resultat}")
@@ -215,3 +210,4 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
+
