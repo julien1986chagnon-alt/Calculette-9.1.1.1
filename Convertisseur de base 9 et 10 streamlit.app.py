@@ -122,6 +122,8 @@ def est_inferieur_ou_egal_b9(chaine1, chaine2):
         return len(chaine1) < len(chaine2)
     return chaine1 <= chaine2
 
+# Optimisation Streamlit pour le traitement du chemin inverse par paliers
+@st.cache_data
 def convertisseur_base9_vers_base10(chaine_b9_cible):
     chaine_b9_cible = str(chaine_b9_cible).strip().replace(" ", "")
     if not chaine_b9_cible:
@@ -170,17 +172,14 @@ sens = st.radio(
 
 st.write("---")
 
-# Variable unifiée pour capturer l'entrée utilisateur
-valeur_saisie = ""
-
 if sens == "Base 10 ➔ Base 9 bijective":
-    # Consignes avec la limite des 20 chiffres intégrée
     st.info("💡 **Instruction :** Pour comptabiliser correctement les segments dans ce sens, vous devez intégrer des zéros dans votre montant de départ (Ex: 100020003000).")
     st.warning("⚠️ **Limite de capacité :** Ce convertisseur accepte un montant maximum de **20 chiffres**.")
-    valeur_saisie = st.text_input("Entrez le montant en Base 10 :", placeholder="Ex: 100020003000")
     
-    if valeur_saisie:
-        resultat = convertisseur_par_segments(valeur_saisie)
+    valeur_saisie_10 = st.text_input("Entrez le montant en Base 10 :", placeholder="Ex: 100020003000", key="input_b10")
+    
+    if valeur_saisie_10:
+        resultat = convertisseur_par_segments(valeur_saisie_10)
         if "ERREUR" in resultat or "PALIER" in resultat:
             st.error(f"❌ {resultat}")
         else:
@@ -189,13 +188,13 @@ if sens == "Base 10 ➔ Base 9 bijective":
             st.info(f"📏 **Longueur du résultat :** {len(resultat)} chiffres (Aucun zéro).")
 
 elif sens == "Base 9 bijective ➔ Base 10":
-    # Consignes avec la limite des 18 chiffres intégrée
     st.info("💡 **Instruction :** Dans ce sens de conversion inverse, le nombre saisi ne doit comporter **aucun zéro** (Chiffres de 1 à 9 uniquement).")
     st.warning("⚠️ **Limite de capacité :** Ce convertisseur inverse accepte un nombre maximum de **18 chiffres**.")
-    valeur_saisie = st.text_input("Entrez le nombre en Base 9 à reconvertir :", placeholder="Ex: 1221")
     
-    if valeur_saisie:
-        resultat = convertisseur_base9_vers_base10(valeur_saisie)
+    valeur_saisie_9 = st.text_input("Entrez le nombre en Base 9 à reconvertir :", placeholder="Ex: 1221", key="input_b9")
+    
+    if valeur_saisie_9:
+        resultat = convertisseur_base9_vers_base10(valeur_saisie_9)
         if "ERREUR" in resultat:
             st.error(f"❌ {resultat}")
         else:
@@ -216,3 +215,4 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
+
