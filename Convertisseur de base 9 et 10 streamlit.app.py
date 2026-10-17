@@ -33,10 +33,7 @@ TABLE_DES_ZEROS_PURS = {
     "100000000000000000000": "2495244995464539221"
 }
 
-# =================================================================
 # ALGORITHMES ET MOTEURS LOGIQUES ORIGINAUX
-# =================================================================
-
 def multiplier_b9_bijective(chaine_b9, multiplicateur_int):
     if multiplicateur_int == 0:
         return "0"
@@ -152,10 +149,7 @@ def convertisseur_base9_vers_base10(chaine_b9_cible):
             
     return str(montant_decimale_cumul)
 
-# =================================================================
 # INTERFACE GRAPHIQUE STREAMLIT
-# =================================================================
-
 st.title("🔢 Architecture Mathématique")
 st.subheader("Moteur Double : Base 10 <=> Base 9 Bijective")
 st.caption("Par Chagnon Julien Christian Robert")
@@ -173,7 +167,8 @@ with st.form(key="conversion_form"):
     if sens == "Base 10 ➔ Base 9 bijective":
         valeur_saisie = st.text_input("Entrez le montant en Base 10 :", placeholder="Ex: 100020003000")
     else:
-        valeur_saisi = st.text_input("Entrez le nombre en Base 9 (chiffres de 1 à 9 uniquement) :", placeholder="Ex: 153861888446")
+        # ICI : Correction du bug (valeur_saisi devient valeur_saisie avec un e)
+        valeur_saisie = st.text_input("Entrez le nombre en Base 9 (chiffres de 1 à 9 uniquement) :", placeholder="Ex: 153861888446")
         
     bouton_valider = st.form_submit_button(label="Calculer la conversion")
 
@@ -181,7 +176,6 @@ with st.form(key="conversion_form"):
 if bouton_valider and valeur_saisie:
     if sens == "Base 10 ➔ Base 9 bijective":
         resultat = convertisseur_par_segments(valeur_saisie)
-        
         if "ERREUR" in resultat or "PALIER" in resultat:
             st.error(f"❌ {resultat}")
         else:
@@ -191,7 +185,6 @@ if bouton_valider and valeur_saisie:
             
     else:
         resultat = convertisseur_base9_vers_base10(valeur_saisie)
-        
         if "ERREUR" in resultat:
             st.error(f"❌ {resultat}")
         else:
@@ -200,9 +193,7 @@ if bouton_valider and valeur_saisie:
 
 st.divider()
 
-# =================================================================
-# SECTION MENTION LEGALE - DROITS RESERVES
-# =================================================================
+# MENTION LEGALE - DROITS RESERVES
 st.markdown(
     """
     <div style="text-align: center; color: gray; font-size: 0.85em; margin-top: 50px;">
