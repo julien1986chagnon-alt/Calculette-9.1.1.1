@@ -55,20 +55,18 @@ def convertisseur_base9_vers_base10(chaine_b9_cible):
 # INTERFACE GRAPHIQUE STREAMLIT
 # ==========================================================================
 
-# Configuration de la page de l'application
 st.set_page_config(
     page_title="Architecture Mathématique - Base 9",
     page_icon="🔢",
     layout="centered"
 )
 
-# Titre principal et en-tête de votre projet
 st.title("🔢 Architecture Mathématique")
 st.subheader("Par Chagnon Julien Christian Robert")
 st.markdown("### *Moteur Double : Base 10 ⇔ Bijective Base 9*")
 st.divider()
 
-# Création de deux onglets distincts pour remplacer les choix de la console
+# Création des onglets
 onglet1, onglet2 = st.tabs([
     "📥 (1) Base 10 ➔ Base 9 Bijective", 
     "📤 (2) Base 9 Bijective ➔ Base 10"
@@ -85,7 +83,7 @@ with onglet1:
     ).strip()
     
     if saisie_b10:
-        # Vérification stricte de votre limite de 18 chiffres
+        # LIMITE STRICTE À 18 CHIFFRES MAXIMUM
         if len(saisie_b10) > 18:
             st.error(f"⚠️ ERREUR : La saisie dépasse la limite maximale autorisée de 18 chiffres (Actuel : {len(saisie_b10)}).")
         else:
@@ -95,13 +93,10 @@ with onglet1:
                 st.error(f"❌ {resultat_b9}")
             else:
                 st.success("✅ Conversion réussie !")
-                
-                # Zone de texte pour copier facilement le résultat pour LinkedIn
                 st.text_area(
                     "[+] COMPOSANTE BASE 9 PLEINE :", 
                     value=resultat_b9, 
-                    height=70,
-                    help="Vous pouvez copier ce segment"
+                    height=70
                 )
                 st.caption(f"📏 Longueur du résultat : **{len(resultat_b9)}** chiffres")
 
@@ -116,7 +111,7 @@ with onglet2:
     ).strip()
     
     if saisie_b9:
-        # Vérification stricte de votre limite de 18 chiffres
+        # LIMITE STRICTE À 18 CHIFFRES MAXIMUM
         if len(saisie_b9) > 18:
             st.error(f"⚠️ ERREUR : La saisie dépasse la limite maximale autorisée de 18 chiffres (Actuel : {len(saisie_b9)}).")
         else:
@@ -126,7 +121,6 @@ with onglet2:
                 st.error(f"❌ {resultat_b10}")
             else:
                 st.success("✅ Conversion réciproque réussie !")
-                
                 st.text_area(
                     "[+] EQUIVALENT BASE 10 ENTIER :", 
                     value=resultat_b10, 
@@ -135,4 +129,5 @@ with onglet2:
                 st.caption(f"📏 Longueur du résultat : **{len(resultat_b10)}** chiffres")
 
 st.divider()
-st.info("💡 Ce moteur respecte la structure analytique pure et intègre une sécurité matérielle fixée à 18 chiffres maximum.")
+st.info("💡 Ce moteur respecte la structure analytique pure et intègre une sécurité matérielle fixée à 18 chiffres maximum sur les deux modules de calcul.")
+
