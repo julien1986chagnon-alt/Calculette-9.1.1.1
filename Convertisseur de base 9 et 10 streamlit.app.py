@@ -118,11 +118,13 @@ def convertisseur_par_segments(montant_str):
         return "PALIER NON PARAMETRE (Limite maximale de la grille atteinte)"
 
 def est_inferieur_ou_egal_b9(chaine1, chaine2):
-    if len(chaine1) != len(chaine2):
-        return len(chaine1) < len(chaine2)
-    return chaine1 <= chaine2
+    c1 = chaine1.strip().replace(" ", "")
+    c2 = chaine2.strip().replace(" ", "")
+    if len(c1) != len(c2):
+        return len(c1) < len(c2)
+    return c1 <= c2
 
-# Optimisation Streamlit pour le traitement du chemin inverse par paliers
+# MOTEUR INVERSE FIABILISÉ (RECHERCHE GLOBALE SANS INTERPRÉTATION INDIVIDUELLE)
 @st.cache_data
 def convertisseur_base9_vers_base10(chaine_b9_cible):
     chaine_b9_cible = str(chaine_b9_cible).strip().replace(" ", "")
@@ -133,26 +135,27 @@ def convertisseur_base9_vers_base10(chaine_b9_cible):
     if len(chaine_b9_cible) == 1:
         return chaine_b9_cible
 
-    paliers_decimaux = sorted([int(k) for k in TABLE_DES_ZEROS_PURS.keys()], reverse=True)
-    montant_decimale_cumul = 0
-    
-    for palier in paliers_decimaux:
-        for chiffre_test in range(9, -1, -1):
-            test_valeur_decimale = montant_decimale_cumul + (chiffre_test * palier)
-            if test_valeur_decimale == 0:
-                continue
-            resultat_b9_test = convertisseur_par_segments(str(test_valeur_decimale))
-            if est_inferieur_ou_egal_b9(resultat_b9_test, chaine_b9_cible):
-                montant_decimale_cumul = test_valeur_decimale
-                break
-                
-    for unite_test in range(9, -1, -1):
-        test_valeur_decimale = montant_decimale_cumul + unite_test
-        resultat_b9_test = convertisseur_par_segments(str(test_valeur_decimale))
-        if resultat_b9_test == chaine_b9_cible:
-            return str(test_valeur_decimale)
+    low = 1
+    high = 10**45  
+    resultat_valide = None
+
+    while low <= high:
+        mid = (low + high) // 2
+        res_b9_test = convertisseur_par_segments(str(mid)).strip().replace(" ", "")
+        
+        if res_b9_test == chaine_b9_cible:
+            return str(mid)
             
-    return str(montant_decimale_cumul)
+        if est_inferieur_ou_egal_b9(res_b9_test, chaine_b9_cible):
+            resultat_valide = mid
+            low = mid + 1
+        else:
+            high = mid - 1
+            
+    if resultat_valide is not None and convertisseur_par_segments(str(resultat_valide)).strip().replace(" ", "") == chaine_b9_cible:
+        return str(resultat_valide)
+        
+    return "ERREUR : Correspondance exacte introuvable"
 
 # =================================================================
 # INTERFACE GRAPHIQUE STREAMLIT
@@ -164,7 +167,6 @@ st.caption("Par Chagnon Julien Christian Robert")
 
 st.divider()
 
-# Sélection du sens de conversion via des boutons radio
 sens = st.radio(
     "Choisissez le sens de la conversion :",
     ("Base 10 ➔ Base 9 bijective", "Base 9 bijective ➔ Base 10")
@@ -203,9 +205,7 @@ elif sens == "Base 9 bijective ➔ Base 10":
 
 st.divider()
 
-# =================================================================
 # SECTION MENTION LÉGALE - COPYRIGHT DÉFINITIF
-# =================================================================
 st.markdown(
     """
     <div style="text-align: center; color: gray; font-size: 0.85em; margin-top: 50px;">
@@ -215,4 +215,3 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
-
