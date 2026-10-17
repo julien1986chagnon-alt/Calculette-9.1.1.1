@@ -76,58 +76,53 @@ onglet1, onglet2 = st.tabs([
 with onglet1:
     st.markdown("#### Convertir un montant depuis la Base 10")
     
+    # L'argument max_chars=18 bloque physiquement le clavier à 18 chiffres maximum
     saisie_b10 = st.text_input(
-        "Entrez le montant en Base 10 :", 
+        "Entrez le montant en Base 10 (18 chiffres maximum) :", 
         key="input_b10",
-        placeholder="Exemple: 1234554321"
+        placeholder="Exemple: 1234554321",
+        max_chars=18
     ).strip()
     
     if saisie_b10:
-        # LIMITE STRICTE À 18 CHIFFRES MAXIMUM
-        if len(saisie_b10) > 18:
-            st.error(f"⚠️ ERREUR : La saisie dépasse la limite maximale autorisée de 18 chiffres (Actuel : {len(saisie_b10)}).")
+        resultat_b9 = convertisseur_base10_vers_base9(saisie_b10)
+        
+        if "ERREUR" in resultat_b9:
+            st.error(f"❌ {resultat_b9}")
         else:
-            resultat_b9 = convertisseur_base10_vers_base9(saisie_b10)
-            
-            if "ERREUR" in resultat_b9:
-                st.error(f"❌ {resultat_b9}")
-            else:
-                st.success("✅ Conversion réussie !")
-                st.text_area(
-                    "[+] COMPOSANTE BASE 9 PLEINE :", 
-                    value=resultat_b9, 
-                    height=70
-                )
-                st.caption(f"📏 Longueur du résultat : **{len(resultat_b9)}** chiffres")
+            st.success("✅ Conversion réussie !")
+            st.text_area(
+                "[+] COMPOSANTE BASE 9 PLEINE :", 
+                value=resultat_b9, 
+                height=70
+            )
+            st.caption(f"📏 Longueur du résultat : **{len(resultat_b9)}** chiffres")
 
 # --- ONGLET 2 : BASE 9 VERS BASE 10 ---
 with onglet2:
     st.markdown("#### Convertir un nombre depuis la Base 9 Bijective")
     
+    # L'argument max_chars=18 bloque également le clavier ici
     saisie_b9 = st.text_input(
-        "Entrez le nombre en Base 9 (Chiffres de 1 à 9 uniquement) :", 
+        "Entrez le nombre en Base 9 (Chiffres de 1 à 9 uniquement, 18 maximum) :", 
         key="input_b9",
-        placeholder="Exemple: 6175521322"
+        placeholder="Exemple: 6175521322",
+        max_chars=18
     ).strip()
     
     if saisie_b9:
-        # LIMITE STRICTE À 18 CHIFFRES MAXIMUM
-        if len(saisie_b9) > 18:
-            st.error(f"⚠️ ERREUR : La saisie dépasse la limite maximale autorisée de 18 chiffres (Actuel : {len(saisie_b9)}).")
+        resultat_b10 = convertisseur_base9_vers_base10(saisie_b9)
+        
+        if "ERREUR" in resultat_b10:
+            st.error(f"❌ {resultat_b10}")
         else:
-            resultat_b10 = convertisseur_base9_vers_base10(saisie_b9)
-            
-            if "ERREUR" in resultat_b10:
-                st.error(f"❌ {resultat_b10}")
-            else:
-                st.success("✅ Conversion réciproque réussie !")
-                st.text_area(
-                    "[+] EQUIVALENT BASE 10 ENTIER :", 
-                    value=resultat_b10, 
-                    height=70
-                )
-                st.caption(f"📏 Longueur du résultat : **{len(resultat_b10)}** chiffres")
+            st.success("✅ Conversion réciproque réussie !")
+            st.text_area(
+                "[+] EQUIVALENT BASE 10 ENTIER :", 
+                value=resultat_b10, 
+                height=70
+            )
+            st.caption(f"📏 Longueur du résultat : **{len(resultat_b10)}** chiffres")
 
 st.divider()
-st.info("💡 Ce moteur respecte la structure analytique pure et intègre une sécurité matérielle fixée à 18 chiffres maximum sur les deux modules de calcul.")
-
+st.info("💡 La saisie dans les cases est limitée physiquement à 18 caractères maximum pour protéger l'architecture de calcul.")
