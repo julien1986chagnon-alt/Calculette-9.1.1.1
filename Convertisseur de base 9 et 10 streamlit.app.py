@@ -99,7 +99,7 @@ def convertisseur_par_segments(montant_str):
     if len(montant_str) == 1:
         return montant_str
         
-    premier_chiffre = int(montant_str[0])
+    premier_chiffre = int(montant_str)
     longueur = len(montant_str)
     str_palier = "1" + "0" * (longueur - 1)
     
@@ -168,12 +168,15 @@ sens = st.radio(
     ("Base 10 ➔ Base 9 bijective", "Base 9 bijective ➔ Base 10")
 )
 
-# Utilisation d'un formulaire pour capturer la validation
+# Variable unique pour stocker la saisie utilisateur
+valeur_saisie = ""
+
+# Utilisation d'un formulaire pour capturer la validation sans rechargement intempestif
 with st.form(key="conversion_form"):
     if sens == "Base 10 ➔ Base 9 bijective":
         valeur_saisie = st.text_input("Entrez le montant en Base 10 :", placeholder="Ex: 100020003000")
     else:
-        valeur_saisi = st.text_input("Entrez le nombre en Base 9 (chiffres de 1 à 9 uniquement) :", placeholder="Ex: 153861888446")
+        valeur_saisie = st.text_input("Entrez le nombre en Base 9 (chiffres de 1 à 9 uniquement) :", placeholder="Ex: 153861888446")
         
     bouton_valider = st.form_submit_button(label="Calculer la conversion")
 
