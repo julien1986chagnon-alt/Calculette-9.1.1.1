@@ -1,5 +1,5 @@
 # =============================================================================
-# CONFIGURATION STREAMLIT : VERSION INTERACTIVE STRICTEMENT SANS PARASITE
+# CONFIGURATION STREAMLIT : BLOCAGE STRICT À LA SAISIE (MAX 18 CARACTÈRES)
 # NOM DU PROJET : ARCHITECTURE MATHÉMATIQUE PAR CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
@@ -9,27 +9,27 @@ st.set_page_config(page_title="Architecture Mathématique", page_icon="🔢", la
 
 # Références strictes de votre tableur LibreOffice (colonne centrale des zéros)
 TABLEUR_PASSAGES_ZERO = {
-    10: 1, # Ligne 1
-    100: 11, # Ligne 2
-    1000: 221, # Ligne 3
-    10000: 2541, # Ligne 4
-    100000: 27951, # Ligne 5
-    1000000: 318561, # Ligne 6
-    10000000: 3515271, # Ligne 7
-    100000000: 38667981, # Ligne 8
-    1000000000: 436458891, # Ligne 9
-    10000000000: 4812158911, # Ligne 10
-    100000000000: 53933759121, # Ligne 11
-    1000000000000: 594372461331, # Ligne 12
-    10000000000000: 6648197174641, # Ligne 13
-    100000000000000: 74241278932151, # Ligne 14
-    1000000000000000: 826654179353661, # Ligne 15
-    10000000000000000: 9194295983891371, # Ligne 16
-    100000000000000000: 112247366933915181, # Ligne 17
-    1000000000000000000: 1234732147374166991, # Ligne 18
-    10000000000000000000: 13583153632226848111, # Ligne 19
-    100000000000000000000: 149524689954496439221, # Ligne 20
-    1000000000000000000000: 1655772711549571852431 # Ligne 21
+    10: 1,                       
+    100: 11,                     
+    1000: 221,                   
+    10000: 2541,                 
+    100000: 27951,               
+    1000000: 318561,             
+    10000000: 3515271,           
+    100000000: 38667981,         
+    1000000000: 436458891,       
+    10000000000: 4812158911,     
+    100000000000: 53933759121,   
+    1000000000000: 594372461331, 
+    10000000000000: 6648197174641, 
+    100000000000000: 74241278932151, 
+    1000000000000000: 826654179353661, 
+    10000000000000000: 9194295983891371, 
+    100000000000000000: 112247366933915181, 
+    1000000000000000000: 1234732147374166991, 
+    10000000000000000000: 13583153632226848111, 
+    100000000000000000000: 149524689954496439221, 
+    1000000000000000000000: 1655772711549571852431
 }
 
 def addition_comptable_base9(str_n1, str_n2):
@@ -162,14 +162,13 @@ st.markdown("---")
 
 if "ÉTAPES 1" in mode:
     st.subheader("Mode Aller : Base 10 ➔ Base 9 (Comptabilité Base 9)")
-    saisie_b10 = st.text_input("Entrez le montant initial (Base 10) :", placeholder="Exemple : 1444444")
+    
+    # AJOUT RECTIFIÉ : max_chars=18 bloque physiquement le clavier de l'utilisateur à 18 chiffres
+    saisie_b10 = st.text_input("Entrez le montant initial (Base 10) :", placeholder="Exemple : 1444444", max_chars=18)
     saisie_propre = saisie_b10.strip().replace(" ", "").replace(".", "")
     
     if saisie_propre:
-        # Sécurité stricte : limite de 18 chiffres maximum
-        if len(saisie_propre) > 18:
-            st.error(f"⚠️ Limite stricte dépassée : {len(saisie_propre)} chiffres. Maximum autorisé : 18 chiffres.")
-        elif not saisie_propre.isdigit():
+        if not saisie_propre.isdigit():
             st.error("❌ Erreur : Saisie non numérique.")
         else:
             zeros, res, details = executer_etape_1(saisie_propre)
@@ -182,14 +181,13 @@ if "ÉTAPES 1" in mode:
 
 else:
     st.subheader("Mode Retour : Base 9 ➔ Base 10 (Comptabilité Base 10)")
-    saisie_b9 = st.text_input("Entrez le nombre à traiter (Base 9 - sans 0) :", placeholder="Exemple : 1912723")
+    
+    # AJOUT RECTIFIÉ : max_chars=18 bloque également la saisie de retour à 18 caractères
+    saisie_b9 = st.text_input("Entrez le nombre à traiter (Base 9 - sans 0) :", placeholder="Exemple : 1912723", max_chars=18)
     saisie_propre = saisie_b9.strip().replace(" ", "").replace(".", "")
     
     if saisie_propre:
-        # Sécurité stricte : limite de 18 chiffres maximum
-        if len(saisie_propre) > 18:
-            st.error(f"⚠️ Limite stricte dépassée : {len(saisie_propre)} chiffres. Maximum autorisé : 18 chiffres.")
-        elif not saisie_propre.isdigit():
+        if not saisie_propre.isdigit():
             st.error("❌ Erreur : Saisie non numérique.")
         elif '0' in saisie_propre:
             st.error("❌ Erreur : Le chiffre 0 est interdit en Base 9 Bijective.")
