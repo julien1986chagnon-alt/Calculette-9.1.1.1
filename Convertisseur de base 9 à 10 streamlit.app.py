@@ -1,66 +1,107 @@
 # =============================================================================
-# CONFIGURATION STREAMLIT : BLOCAGE STRICT À LA SAISIE (MAX 18 CARACTÈRES)
-# NOM DU PROJET : ARCHITECTURE MATHÉMATIQUE PAR CHAGNON JULIEN CHRISTIAN ROBERT
+# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE (LOGIQUE BIJECTIVE PURE)
+# CALCULATEUR DISJOINT SANS DICHOTOMIE - LECTURE INTEGRALE DE LA TRAJECTOIRE
+# CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
 import streamlit as st
 
-st.set_page_config(page_title="Architecture Mathématique", page_icon="🔢", layout="centered")
+# Configuration de la page internet
+st.set_page_config(
+    page_title="Architecture Mathématique",
+    page_icon="🧮",
+    layout="centered"
+)
 
-# Références strictes de votre tableur LibreOffice (colonne centrale des zéros)
+# --- MATRICE DE COEFFICIENTS D'ORIGINE ---
 TABLEUR_PASSAGES_ZERO = {
-    10: 1,                       
-    100: 11,                     
-    1000: 221,                   
-    10000: 2541,                 
-    100000: 27951,               
-    1000000: 318561,             
-    10000000: 3515271,           
-    100000000: 38667981,         
-    1000000000: 436458891,       
-    10000000000: 4812158911,     
-    100000000000: 53933759121,   
-    1000000000000: 594372461331, 
-    10000000000000: 6648197174641, 
-    100000000000000: 74241278932151, 
-    1000000000000000: 826654179353661, 
-    10000000000000000: 9194295983891371, 
-    100000000000000000: 112247366933915181, 
-    1000000000000000000: 1234732147374166991, 
-    10000000000000000000: 13583153632226848111, 
-    100000000000000000000: 149524689954496439221, 
-    1000000000000000000000: 1655772711549571852431
+    10: 1, # Ligne 1
+    100: 11, # Ligne 2
+    1000: 221, # Ligne 3
+    10000: 2541, # Ligne 4
+    100000: 27951, # Ligne 5
+    1000000: 310561, # Ligne 6
+    10000000: 3515271, # Ligne 7
+    100000000: 38667981, # Ligne 8
+    1000000000: 436458891, # Ligne 9
+    10000000000: 4812158911, # Ligne 10
+    100000000000: 53933759121, # Ligne 11
+    1000000000000: 594372461331, # Ligne 12
+    10000000000000: 6648197174641, # Ligne 13
+    100000000000000: 74241278932151, # Ligne 14
+    1000000000000000: 826654179353661, # Ligne 15
+    10000000000000000: 9194295903891371, # Ligne 16
+    100000000000000000: 112247366933915181, # Ligne 17
+    1000000000000000000: 1234732147374166991, # Ligne 18
+    10000000000000000000: 13583153632226848111, # Ligne 19
+    100000000000000000000: 149524689954496439221, # Ligne 20
+    1000000000000000000000: 1655772711549571852431 # Ligne 21
 }
 
-def addition_comptable_base9(str_n1, str_n2):
-    val1 = 0
-    for c in str_n1: val1 = val1 * 9 + int(c)
-    val2 = 0
-    for c in str_n2: val2 = val2 * 9 + int(c)
-    somme = val1 + val2
-    if somme == 0: return "0"
+# --- FONCTIONS DE CALCUL BIJECTIVES COMPTABLES ---
+
+def int_vers_b9_bijective_pure(nombre_int):
+    """ Convertit un entier pur en base 9 bijective sans aucun 0 """
+    if nombre_int <= 0:
+        return ""
     digits = []
-    while somme > 0:
-        reste = somme % 9
+    while nombre_int > 0:
+        reste = nombre_int % 9
         if reste == 0:
             digits.append('9')
-            somme = (somme // 9) - 1
+            nombre_int = (nombre_int // 9) - 1
         else:
             digits.append(str(reste))
-            somme //= 9
+            nombre_int //= 9
     return "".join(reversed(digits))
 
-# =============================================================================
-# ÉTAPE 1 : DE LA BASE 10 À LA BASE 9 (STREAMLIT)
-# =============================================================================
+def addition_comptable_verticale_b9(str_n1, str_n2):
+    """ Calcule la somme de deux blocs selon votre logique bijective """
+    val1 = 0
+    for c in str_n1: 
+        if c != '0': val1 = val1 * 9 + int(c)
+    val2 = 0
+    for c in str_n2: 
+        if c != '0': val2 = val2 * 9 + int(c)
+    somme = val1 + val2
+    return int_vers_b9_bijective_pure(somme)
+
+def b9_bijective_vers_quantite(chaine_b9):
+    """ Évalue la quantité d'une chaîne composée de 1 à 9 """
+    total = 0
+    for c in chaine_b9: 
+        if c != '0': total = total * 9 + int(c)
+    return total
+
+def simuler_etape_1_pure(saisie_b10):
+    """ Simulation interne muette pour l'Étape 2 """
+    longueur = len(saisie_b10)
+    somme_zeros_brute = 0
+    for i, chiffre_str in enumerate(saisie_b10):
+        chiffre = int(chiffre_str)
+        if chiffre > 0:
+            puissance_dix = 10 ** (longueur - 1 - i)
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                somme_zeros_brute += chiffre * TABLEUR_PASSAGES_ZERO[puissance_dix]
+    str_zeros_b9 = int_vers_b9_bijective_pure(somme_zeros_brute)
+    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie_b10))
+    return addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
+
+
+# --- LOGIQUE PRINCIPALE DU CALCULATEUR ---
+
 def executer_etape_1(montant_b10_str):
-    saisie = montant_b10_str.strip().replace(" ", "").replace(".", "")
+    saisie = montant_b10_str.strip().replace(" ", "").replace(".", "").replace(",", "")
+    if not saisie.isdigit() or int(saisie) == 0:
+        return None, "ERREUR : Saisie invalide."
+    
     longueur = len(saisie)
     somme_zeros_brute = 0
-    lignes_detail = []
+    lignes_details = []
     
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
+        # Traitement purifié : on ignore les 0 visuels de la base 10
         if chiffre > 0:
             puissance_dix = 10 ** (longueur - 1 - i)
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
@@ -68,133 +109,116 @@ def executer_etape_1(montant_b10_str):
                 partiel = chiffre * ref_tableur
                 somme_zeros_brute += partiel
                 
-                # Traduction de l'affichage partiel en base 9 bijective (sans 0)
-                val1 = 0
-                for c in str(partiel): val1 = val1 * 9 + int(c)
-                digits_p = []
-                while val1 > 0:
-                    r = val1 % 9
-                    if r == 0: digits_p.append('9'); val1 = (val1 // 9) - 1
-                    else: digits_p.append(str(r)); val1 //= 9
-                partiel_b9 = "".join(reversed(digits_p)) if partiel > 0 else ""
+                partiel_b9 = int_vers_b9_bijective_pure(partiel)
+                lignes_details.append(f"Rang **{puissance_dix}** ➔ {chiffre} x {ref_tableur} = (en Base 9 Bijective : `{partiel_b9}`)")
                 
-                if partiel_b9:
-                    lignes_detail.append(f"Rang {puissance_dix:,} ➔ {chiffre} x {ref_tableur:,} = {partiel_b9} zéros (en Base 9)")
+    str_zeros_b9 = int_vers_b9_bijective_pure(somme_zeros_brute)
+    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie))
+    resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
+    
+    return lignes_details, str_zeros_b9, resultat_final_b9
 
-    # Calibrage chirurgical automatique basé sur votre calcul manuscrit
-    if saisie == "1444444" or somme_zeros_brute == 456047:
-        return "457268", "1912723", lignes_detail
-
-    str_zeros_b9 = addition_comptable_base9(str(somme_zeros_brute), "0")
-    str_montant_b9 = addition_comptable_base9(saisie, "0")
-    resultat_final_b9 = addition_comptable_base9(str_montant_b9, str_zeros_b9)
-    return str_zeros_b9, resultat_final_b9, lignes_detail
-
-# =============================================================================
-# ÉTAPE 2 : DE LA BASE 9 À LA BASE 10 (STREAMLIT)
-# =============================================================================
-def b9_bijective_vers_quantite(chaine_b9):
-    total = 0
-    for c in chaine_b9: total = total * 9 + int(c)
-    return total
-
-def calculer_zeros_pour_base10(montant_b10_str):
-    longueur = len(montant_b10_str)
-    total_zeros = 0
-    for i, chiffre_str in enumerate(montant_b10_str):
-        chiffre = int(chiffre_str)
-        if chiffre > 0:
-            puissance_dix = 10 ** (longueur - 1 - i)
-            if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                total_zeros += chiffre * TABLEUR_PASSAGES_ZERO[puissance_dix]
-    return total_zeros
 
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip().replace(" ", "").replace(".", "")
-    if saisie == "1912723":
-        return 1444444
+    if not saisie.isdigit() or '0' in saisie:
+        return "ERREUR : Le chiffre 0 est interdit."
         
-    val_cible = b9_bijective_vers_quantite(saisie)
-    bas = 1
-    haut = 9999999999999999999999
-    solution = None
+    cible_val = b9_bijective_vers_quantite(saisie)
     
-    while bas <= haut:
-        milieu = (bas + haut) // 2
-        str_milieu = str(milieu)
-        
-        if str_milieu == "1444444":
-            zeros_candidat = 456047
-            candidat_final_b9 = "1912723"
-        else:
-            zeros_candidat = calculer_zeros_pour_base10(str_milieu)
-            str_zeros_candidat_b9 = addition_comptable_base9(str(zeros_candidat), "0")
-            str_montant_candidat_b9 = addition_comptable_base9(str_milieu, "0")
-            candidat_final_b9 = addition_comptable_base9(str_montant_candidat_b9, str_zeros_candidat_b9)
-        
-        if candidat_final_b9 == saisie:
-            solution = milieu
+    # Détermination séquentielle de la longueur en Base 10
+    longueur_b10 = 1
+    while True:
+        max_test = "9" * longueur_b10
+        val_max_b9 = simuler_etape_1_pure(max_test)
+        if b9_bijective_vers_quantite(val_max_b9) >= cible_val:
             break
-            
-        val_cand = 0
-        for c in candidat_final_b9: val_cand = val_cand * 9 + int(c)
+        longueur_b10 += 1
         
-        if val_cand < val_cible:
-            bas = milieu + 1
-        else:
-            haut = milieu - 1
+    # Parcours pas à pas pour continuer le calcul sans sauter de blocs
+    candidat_b10 = ["0"] * longueur_b10
+    for position in range(longueur_b10):
+        for test_chiffre in "123456789":
+            candidat_b10[position] = test_chiffre
+            chaine_test = "".join(candidat_b10)
+            resultat_b9_simule = simuler_etape_1_pure(chaine_test)
             
-    return solution
+            if b9_bijective_vers_quantite(resultat_b9_simule) > cible_val:
+                candidat_b10[position] = str(max(0, int(test_chiffre) - 1))
+                break
+        else:
+            candidat_b10[position] = "9"
 
-# =============================================================================
-# INTERFACE GRAPHIQUE STREAMLIT
-# =============================================================================
-st.title("🔢 Architecture Mathématique")
-st.caption("Par Chagnon Julien Christian Robert")
+    solution_finale = "".join(candidat_b10).lstrip("0")
+    if solution_finale == "": solution_finale = "0"
+    
+    if simuler_etape_1_pure(solution_finale) == saisie:
+        return solution_finale
+        
+    return "ERREUR : Déviation détectée dans la pyramide des constantes."
+
+
+# --- INTERFACE GRAPHIQUE STREAMLIT ---
+
+st.title("Architecture Mathématique")
+st.subheader("Calculateur Disjoint Bijectif Pur — Par Chagnon Julien Christian Robert")
 st.markdown("---")
 
-mode = st.radio(
-    "Choisissez l'action à réaliser :",
-    ("ÉTAPES 1 : Calcul de Base 10 vers Base 9", "ÉTAPES 2 : Calcul de Base 9 vers Base 10")
-)
+st.markdown("""
+Ce système utilise une **arithmétique positionnelle bijective de base 9**. 
+L'alphabet numérique y est exclusivement composé des symboles pleins de **1 à 9**, le chiffre 0 y est totalement exclu.
+""")
 
+onglet1, onglet2 = st.tabs([
+    "1️⃣ ÉTAPE 1 : Base 10 ➔ Base 9 Bijective", 
+    "2️⃣ ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
+])
+
+# --- ONGLET 1 : DE LA BASE 10 À LA BASE 9 ---
+with onglet1:
+    st.header("Comptabilité en Base 9")
+    
+    saisie_b10 = st.text_input(
+        "Saisissez le montant initial (Base 10) :",
+        key="input_b10",
+        placeholder="Entrez votre grand nombre ici..."
+    )
+    
+    if saisie_b10:
+        lignes, zeros_b9, res_final = executer_etape_1(saisie_b10)
+        
+        if lignes is None:
+            st.error(res_final)
+        else:
+            st.markdown("### 📋 Décomposition brute selon votre architecture :")
+            for lignement in lignes:
+                st.markdown(lignement)
+                
+            st.markdown("---")
+            st.info(f"**Passages extraits (en Base 9 Bijective) :** `{zeros_b9}`")
+            st.success("### 👉 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :")
+            st.code(res_final, language="text")
+
+# --- ONGLET 2 : DE LA BASE 9 À LA BASE 10 ---
+with onglet2:
+    st.header("Anatomie Restaurée en Base 10")
+    
+    saisie_b9 = st.text_input(
+        "Saisissez le nombre à traiter (Base 9 - Chiffres de 1 à 9) :",
+        key="input_b9",
+        placeholder="Entrez la suite de chiffres bijectifs..."
+    )
+    
+    if saisie_b9:
+        resultat_b10 = executer_etape_2(saisie_b9)
+        
+        if "ERREUR" in resultat_b10:
+            st.error(resultat_b10)
+        else:
+            st.success("### 👉 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
+            st.code(resultat_b10, language="text")
+
+# Pied de page
 st.markdown("---")
+st.caption("© Architecture Mathématique Appliquée — Tous droits réservés.")
 
-if "ÉTAPES 1" in mode:
-    st.subheader("Mode Aller : Base 10 ➔ Base 9 (Comptabilité Base 9)")
-    
-    # AJOUT RECTIFIÉ : max_chars=18 bloque physiquement le clavier de l'utilisateur à 18 chiffres
-    saisie_b10 = st.text_input("Entrez le montant initial (Base 10) :", placeholder="Exemple : 1444444", max_chars=9)
-    saisie_propre = saisie_b10.strip().replace(" ", "").replace(".", "")
-    
-    if saisie_propre:
-        if not saisie_propre.isdigit():
-            st.error("❌ Erreur : Saisie non numérique.")
-        else:
-            zeros, res, details = executer_etape_1(saisie_propre)
-            st.markdown("**🔍 Décomposition brute selon le tableur :**")
-            for ligne in details:
-                st.text(ligne)
-            st.markdown("---")
-            st.success(f"📈 **Passages zéro extraits du tableur :** {zeros}")
-            st.info(f"✅ **RÉSULTAT COMPTABILISÉ EN BASE 9 :** {res}")
-
-else:
-    st.subheader("Mode Retour : Base 9 ➔ Base 10 (Comptabilité Base 10)")
-    
-    # AJOUT RECTIFIÉ : max_chars=18 bloque également la saisie de retour à 18 caractères
-    saisie_b9 = st.text_input("Entrez le nombre à traiter (Base 9 - sans 0) :", placeholder="Exemple : 1912723", max_chars=10)
-    saisie_propre = saisie_b9.strip().replace(" ", "").replace(".", "")
-    
-    if saisie_propre:
-        if not saisie_propre.isdigit():
-            st.error("❌ Erreur : Saisie non numérique.")
-        elif '0' in saisie_propre:
-            st.error("❌ Erreur : Le chiffre 0 est interdit en Base 9 Bijective.")
-        else:
-            res_b10 = executer_etape_2(saisie_propre)
-            st.markdown("---")
-            if res_b10 is not None:
-                st.success(f"✅ **ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :** {res_b10:,}".replace(",", " "))
-            else:
-                st.error("❌ Erreur : Analyse inverse impossible.")
