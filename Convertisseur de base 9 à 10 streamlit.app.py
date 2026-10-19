@@ -164,7 +164,7 @@ if "ÉTAPES 1" in mode:
     st.subheader("Mode Aller : Base 10 ➔ Base 9 (Comptabilité Base 9)")
     
     # AJOUT RECTIFIÉ : max_chars=18 bloque physiquement le clavier de l'utilisateur à 18 chiffres
-    saisie_b10 = st.text_input("Entrez le montant initial (Base 10) :", placeholder="Exemple : 1444444", max_chars=18)
+    saisie_b10 = st.text_input("Entrez le montant initial (Base 10) :", placeholder="Exemple : 1444444", max_chars=22)
     saisie_propre = saisie_b10.strip().replace(" ", "").replace(".", "")
     
     if saisie_propre:
