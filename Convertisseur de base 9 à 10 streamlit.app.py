@@ -173,8 +173,8 @@ with onglet1:
     st.header("Comptabilité en Base 9")
     
     saisie_b10 = st.text_input(
-        "Saisissez le montant initial (Base 10 - Max 18 chiffres) :",
-        max_chars=18,
+        "Saisissez le montant initial (Base 10 - Max 20 chiffres) :",
+        max_chars=20,
         key="input_b10",
         placeholder="Entrez votre nombre de 1 à 18 chiffres..."
     )
@@ -199,8 +199,8 @@ with onglet2:
     st.header("Anatomie Restaurée en Base 10")
     
     saisie_b9 = st.text_input(
-        "Saisissez le nombre à traiter (Base 9 - Max 18 chiffres) :",
-        max_chars=18,
+        "Saisissez le nombre à traiter (Base 9 - Max 20 chiffres) :",
+        max_chars=20,
         key="input_b9",
         placeholder="Colle la suite de chiffres bijectifs ici..."
     )
