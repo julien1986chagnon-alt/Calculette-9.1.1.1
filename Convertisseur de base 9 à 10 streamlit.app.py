@@ -1,7 +1,7 @@
 # =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHÉMATIQUE (BASE 9 BIJECTIVE)
-# LOGIQUE SANS TABLE NI PYRAMIDE - SANS AUCUNE INTERFÉRENCE DE ZÉROS
-# CONCEPTRICE / CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
+# APPLICATION STREAMLIT : ARCHITECTURE MATHÉMATIQUE (VERSION DÉCIMALE NEUTRE)
+# LOGIQUE SANS INTERFÉRENCE DE ZÉROS - PRÉCISION ENTIÈRE COUPLÉE
+# CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
 import streamlit as st
@@ -13,52 +13,85 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- MOTEUR DE CALCUL INTERNE (LOGIQUE BIJECTIVE SIMPLIFIÉE) ---
+# --- MOTEUR DE CALCUL INTERNE (LOGIQUE BIJECTIVE NEUTRE SPATIAL) ---
 
-def base10_vers_base9_bijective(montant_b10_str):
+def executer_etape_1(montant_b10_str):
     """
-    Convertit directement la base 10 en base 9 bijective (alphabet 1 à 9).
-    Logique : Chaque fois qu'un reste vaut 0, on le remplace par 9 et on ajuste.
+    Convertit la base 10 en base 9 bijective (alphabet 1 à 9).
+    Traite la virgule comme un simple marqueur visuel sans calcul décimal.
     """
-    # Nettoyage complet des espaces ou points pour éviter les bugs
-    saisie = montant_b10_str.strip().replace(" ", "").replace(".", "").replace(",", "")
-    if not saisie.isdigit():
-        return "ERREUR : Saisie Invalide (Entrez uniquement des chiffres)."
+    saisie = montant_b10_str.strip().replace(" ", "").replace(".", ",")
     
-    nombre = int(saisie)
-    if nombre == 0:
-        return "0"
-        
-    digits = []
-    while nombre > 0:
-        reste = nombre % 9
-        if reste == 0:
-            digits.append('9')          # Règle bijective : le 0 devient un 9
-            nombre = (nombre // 9) - 1  # Ajustement du quotient supérieur
-        else:
-            digits.append(str(reste))
-            nombre //= 9
+    # Si c'est un nombre à virgule commençant par 0,
+    if saisie.startswith("0,"):
+        segment_chiffres = saisie[2:] # On isole les chiffres APRÈS le 0,
+        if not segment_chiffres.isdigit():
+            return "ERREUR : Saisie Invalide."
             
-    return "".join(reversed(digits))
+        nombre = int(segment_chiffres)
+        if nombre == 0:
+            return "0,0"
+            
+        digits = []
+        while nombre > 0:
+            reste = nombre % 9
+            if reste == 0:
+                digits.append('9')
+                nombre = (nombre // 9) - 1
+            else:
+                digits.append(str(reste))
+                nombre //= 9
+        
+        # On recolle le 0, visuel au tout début
+        return "0密" + "".join(reversed(digits))
+        
+    else:
+        # --- MONDE DES ENTIERS STANDARDS ---
+        saisie_nettoye = saisie.replace(",", "")
+        if not saisie_nettoye.isdigit():
+            return "ERREUR : Saisie Invalide."
+        nombre = int(saisie_nettoye)
+        if nombre == 0:
+            return "0"
+        digits = []
+        while nombre > 0:
+            reste = nombre % 9
+            if reste == 0:
+                digits.append('9')
+                nombre = (nombre // 9) - 1
+            else:
+                digits.append(str(reste))
+                nombre //= 9
+        return "".join(reversed(digits))
 
 
-def base9_bijective_vers_base10(chaine_b9_str):
+def executer_etape_2(chaine_b9_str):
     """
-    Restaure l'anatomie en base 10 de manière directe et instantanée.
-    Logique : Évaluation polynomiale pure de l'alphabet de 1 à 9.
+    Restaure l'anatomie en base 10 à partir de la base 9 bijective.
+    Retire le 0, visuel pour calculer l'entier pur, puis le remet à la fin.
     """
-    saisie = chaine_b9_str.strip().replace(" ", "").replace(".", "").replace(",", "")
-    if not saisie.isdigit():
-        return "ERREUR : Saisie Invalide."
-    if '0' in saisie:
-        return "ERREUR : Le chiffre 0 est strictement interdit en Base 9 Bijective."
+    saisie = chaine_b9_str.strip().replace(" ", "").replace(".", ",")
+    
+    if saisie.startswith("0,"):
+        segment_chiffres = saisie[2:] # On isole les chiffres de 1 à 9
+        if not segment_chiffres.isdigit() or '0' in segment_chiffres:
+            return "ERREUR : Le chiffre 0 est interdit dans l'alphabet bijective."
+            
+        total_base10 = 0
+        for caractere in segment_chiffres:
+            total_base10 = total_base10 * 9 + int(caractere)
+            
+        # On réinjecte le 0, visuel devant la réponse restaurée
+        return "0," + str(total_base10)
         
-    total_base10 = 0
-    for caractere in saisie:
-        # Évaluation cumulative de la position
-        total_base10 = total_base10 * 9 + int(caractere)
-        
-    return str(total_base10)
+    else:
+        # --- MONDE DES ENTIERS STANDARDS ---
+        if not saisie.isdigit() or '0' in saisie:
+            return "ERREUR : Saisie Invalide ou présence de 0."
+        total_base10 = 0
+        for caractere in saisie:
+            total_base10 = total_base10 * 9 + int(caractere)
+        return str(total_base10)
 
 
 # --- INTERFACE GRAPHIQUE STREAMLIT ---
@@ -69,7 +102,7 @@ st.markdown("---")
 
 st.markdown("""
 Ce système utilise une **arithmétique positionnelle bijective de base 9**. 
-L'alphabet numérique y est exclusivement composé des symboles pleins de **1 à 9**, le chiffre 0 y est totalement exclu.
+L'alphabet numérique y est exclusivement composé des symboles pleins de **1 à 9**, le chiffre 0 y est totalement exclu des calculs entiers et fractionnaires.
 """)
 
 # Création des onglets pour séparer proprement l'Étape 1 et l'Étape 2
@@ -82,38 +115,36 @@ onglet1, onglet2 = st.tabs([
 with onglet1:
     st.header("Comptabilité en Base 9")
     
-    # Utilisation stratégique de text_input pour briser la barrière de précision machine
     saisie_b10 = st.text_input(
-        "Saisissez le montant initial (Base 10 standard) :",
+        "Saisissez le montant initial (Ex: 5847 ou 0,123456789) :",
         key="input_b10",
-        placeholder="Ex: 987654321123456789987654321123456789"
+        placeholder="Entrez votre nombre ici..."
     )
     
     if saisie_b10:
-        resultat_b9 = base10_vers_base9_bijective(saisie_b10)
+        resultat_b9 = executer_etape_1(saisie_b10)
         
-        st.info(f"**Longueur saisie :** {len(saisie_b10.strip().replace(' ', ''))} chiffres")
+        st.info(f"**Longueur saisie :** {len(saisie_b10.strip().replace(' ', ''))} caractères")
         
         if "ERREUR" in resultat_b9:
             st.error(resultat_b9)
         else:
             st.success("### Résultat Calculé")
-            # Zone de texte sélectionnable pour copier facilement le résultat géant
             st.code(resultat_b9, language="text")
-            st.markdown(f"**Longueur en Base 9 :** {len(resultat_b9)} chiffres (Alphabet de 1 à 9)")
+            st.markdown(f"**Longueur en Base 9 :** {len(resultat_b9)} caractères")
 
 # --- ONGLET 2 : DE LA BASE 9 À LA BASE 10 ---
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
     
     saisie_b9 = st.text_input(
-        "Saisissez le nombre à traiter (Chiffres de 1 à 9 uniquement) :",
+        "Saisissez le nombre à traiter (Ex: 4857 ou 0,123456789) :",
         key="input_b9",
-        placeholder="Ex: 47749584422891351794458265288476893719"
+        placeholder="Chiffres de 1 à 9 uniquement après la virgule..."
     )
     
     if saisie_b9:
-        resultat_b10 = base9_bijective_vers_base10(saisie_b9)
+        resultat_b10 = executer_etape_2(saisie_b9)
         
         st.info(f"**Longueur saisie :** {len(saisie_b9.strip().replace(' ', ''))} caractères")
         
@@ -122,7 +153,7 @@ with onglet2:
         else:
             st.success("### Anatomie Restaurée")
             st.code(resultat_b10, language="text")
-            st.markdown(f"**Longueur Restaurée :** {len(resultat_b10)} chiffres")
+            st.markdown(f"**Longueur Restaurée :** {len(resultat_b10)} caractères")
 
 # Pied de page de l'application
 st.markdown("---")
