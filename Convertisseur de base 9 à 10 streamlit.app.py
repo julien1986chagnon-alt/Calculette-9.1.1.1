@@ -1,12 +1,13 @@
 # =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE (LOGIQUE BIJECTIVE PURE)
-# CALCULATEUR DISJOINT SANS DICHOTOMIE - LECTURE INTEGRALE DE LA TRAJECTOIRE
+# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE (PROJET SÉCURISÉ)
+# CALCULATEUR DISJOINT COMPTABLE — ALPHABET PUR DE 1 À 9 (SANS 0)
+# LIMITE STRICTE SÉCURISÉE : MAX 18 CARACTÈRES À LA SAISIE
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
 import streamlit as st
 
-# Configuration de la page internet
+# Configuration de l'interface graphique
 st.set_page_config(
     page_title="Architecture Mathématique",
     page_icon="🧮",
@@ -38,10 +39,9 @@ TABLEUR_PASSAGES_ZERO = {
     1000000000000000000000: 1655772711549571852431 # Ligne 21
 }
 
-# --- FONCTIONS DE CALCUL BIJECTIVES COMPTABLES ---
+# --- FONCTIONS COMPTABLES PURES SANS TRONCATURE ---
 
 def int_vers_b9_bijective_pure(nombre_int):
-    """ Convertit un entier pur en base 9 bijective sans aucun 0 """
     if nombre_int <= 0:
         return ""
     digits = []
@@ -56,7 +56,6 @@ def int_vers_b9_bijective_pure(nombre_int):
     return "".join(reversed(digits))
 
 def addition_comptable_verticale_b9(str_n1, str_n2):
-    """ Calcule la somme de deux blocs selon votre logique bijective """
     val1 = 0
     for c in str_n1: 
         if c != '0': val1 = val1 * 9 + int(c)
@@ -67,14 +66,12 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     return int_vers_b9_bijective_pure(somme)
 
 def b9_bijective_vers_quantite(chaine_b9):
-    """ Évalue la quantité d'une chaîne composée de 1 à 9 """
     total = 0
     for c in chaine_b9: 
         if c != '0': total = total * 9 + int(c)
     return total
 
 def simuler_etape_1_pure(saisie_b10):
-    """ Simulation interne muette pour l'Étape 2 """
     longueur = len(saisie_b10)
     somme_zeros_brute = 0
     for i, chiffre_str in enumerate(saisie_b10):
@@ -88,7 +85,7 @@ def simuler_etape_1_pure(saisie_b10):
     return addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
 
 
-# --- LOGIQUE PRINCIPALE DU CALCULATEUR ---
+# --- LOGIQUE PRINCIPALE ---
 
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "").replace(".", "").replace(",", "")
@@ -101,7 +98,6 @@ def executer_etape_1(montant_b10_str):
     
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
-        # Traitement purifié : on ignore les 0 visuels de la base 10
         if chiffre > 0:
             puissance_dix = 10 ** (longueur - 1 - i)
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
@@ -126,7 +122,6 @@ def executer_etape_2(chaine_b9_str):
         
     cible_val = b9_bijective_vers_quantite(saisie)
     
-    # Détermination séquentielle de la longueur en Base 10
     longueur_b10 = 1
     while True:
         max_test = "9" * longueur_b10
@@ -135,7 +130,6 @@ def executer_etape_2(chaine_b9_str):
             break
         longueur_b10 += 1
         
-    # Parcours pas à pas pour continuer le calcul sans sauter de blocs
     candidat_b10 = ["0"] * longueur_b10
     for position in range(longueur_b10):
         for test_chiffre in "123456789":
@@ -174,14 +168,15 @@ onglet1, onglet2 = st.tabs([
     "2️⃣ ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
 ])
 
-# --- ONGLET 1 : DE LA BASE 10 À LA BASE 9 ---
+# --- ÉTAPE 1 (SÉCURISÉE À MAUX 18 CHIFFRES MAXIMUM) ---
 with onglet1:
     st.header("Comptabilité en Base 9")
     
     saisie_b10 = st.text_input(
-        "Saisissez le montant initial (Base 10) :",
+        "Saisissez le montant initial (Base 10 - Max 18 chiffres) :",
+        max_chars=18,
         key="input_b10",
-        placeholder="Entrez votre grand nombre ici..."
+        placeholder="Entrez votre nombre de 1 à 18 chiffres..."
     )
     
     if saisie_b10:
@@ -199,14 +194,15 @@ with onglet1:
             st.success("### 👉 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :")
             st.code(res_final, language="text")
 
-# --- ONGLET 2 : DE LA BASE 9 À LA BASE 10 ---
+# --- ÉTAPE 2 (SÉCURISÉE À MAUX 18 CHIFFRES MAXIMUM POUR LE RETOUR COHÉRENT) ---
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
     
     saisie_b9 = st.text_input(
-        "Saisissez le nombre à traiter (Base 9 - Chiffres de 1 à 9) :",
+        "Saisissez le nombre à traiter (Base 9 - Max 18 chiffres) :",
+        max_chars=18,
         key="input_b9",
-        placeholder="Entrez la suite de chiffres bijectifs..."
+        placeholder="Colle la suite de chiffres bijectifs ici..."
     )
     
     if saisie_b9:
@@ -218,7 +214,5 @@ with onglet2:
             st.success("### 👉 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
             st.code(resultat_b10, language="text")
 
-# Pied de page
 st.markdown("---")
 st.caption("© Architecture Mathématique Appliquée — Tous droits réservés.")
-
