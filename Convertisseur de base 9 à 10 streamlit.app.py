@@ -178,7 +178,7 @@ with onglet1:
         "Saisissez le montant initial (Base 10 - Max 20 chiffres) :",
         max_chars=20,
         key="input_b10",
-        placeholder="Entrez votre nombre de 1 à 18 chiffres..."
+        placeholder="Entrez votre nombre de 1 à 20 chiffres..."
     )
     
     if saisie_b10:
