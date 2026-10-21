@@ -15,24 +15,24 @@ TABLEUR_PASSAGES_ZERO = {
     1000: "221", # Ligne 3
     10000: "2541", # Ligne 4
     100000: "27951", # Ligne 5
-    1000000: "310561", # Ligne 6
+    1000000: "318561", # Ligne 6
     10000000: "3515271", # Ligne 7
     100000000: "38667981", # Ligne 8
-    1000000000: "436458091", # Ligne 9
-    10000000000: "4812150911", # Ligne 10
-    100000000000: "53933759125", # Ligne 11
+    1000000000: "436458891", # Ligne 9
+    10000000000: "4812158911", # Ligne 10
+    100000000000: "53933759121", # Ligne 11
     1000000000000: "594372461331", # Ligne 12
     10000000000000: "6648197174641", # Ligne 13
     100000000000000: "74241278932151", # Ligne 14
     1000000000000000: "826654179353661", # Ligne 15
     10000000000000000: "9194295983891371", # Ligne 16
     100000000000000000: "112247366933915181", # Ligne 17
-    1000000000000000000: "1234737417374166991", # Ligne 18
-    10000000000000000000: "135631536322226848111", # Ligne 19
+    1000000000000000000: "1234732147374166991", # Ligne 18
+    10000000000000000000: "13563153632226848111", # Ligne 19
     100000000000000000000: "149524689954496439221", # Ligne 20
     1000000000000000000000: "1655772711549571852431", # Ligne 21
     10000000000000000000000: "18324599827716391476741", # Ligne 22
-    100000000000000000000000: "212571719215881416355251" # Ligne 23 - VOTRE MAXIMUM REEL
+    100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
 # ==============================================================================
@@ -154,10 +154,9 @@ def executer_etape_2(chaine_b9_str):
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
-    # 1. EXPÉDITION GLOBALE PAR DICHOTOMIE (COUVRE LES 23 CHIFFRES)
     low = 1
     high = 999999999999999999999999  
-    proche_pivot = None
+    solution = None
     
     while low <= high:
         mid = (low + high) // 2
@@ -165,24 +164,17 @@ def executer_etape_2(chaine_b9_str):
         res_b9 = simuler_etape_1_pure(candidat_b10)
         
         if res_b9 == saisie:
-            return candidat_b10
+            solution = candidat_b10
+            break
             
         comp = comparaison_chaines_numeriques(res_b9, saisie)
         if comp < 0:
             low = mid + 1
         else:
             high = mid - 1
-            proche_pivot = mid
-
-    # 2. FILET DE SÉCURITÉ LOCAL (S'ASSURE QUE 99, 999 ET 1000 TOMBENT PILÈ)
-    point_ancrage = proche_pivot if proche_pivot is not None else low
-    for offset in range(-1500, 1500):
-        valeur_test = point_ancrage + offset
-        if valeur_test > 0:
-            candidat_str = str(valeur_test)
-            if simuler_etape_1_pure(candidat_str) == saisie:
-                return candidat_str
-                
+            
+    if solution:
+        return solution
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
 # ==============================================================================
@@ -193,6 +185,8 @@ st.title("Architecture Mathématique")
 st.markdown("### Calculateur Disjoint Comptable - Par Chagnon Julien Christian Robert")
 st.markdown("---")
 
+st.info("🔬 **ANALYSE EXTENSION THÈSE : MODULE CHIFFRES PLEINS STANDARDS**")
+
 onglet1, onglet2 = st.tabs([
     " 🟧 ÉTAPE 1 : Base 10 ➔ Base 9 Bijective",
     " 🟦 ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
@@ -201,35 +195,39 @@ onglet1, onglet2 = st.tabs([
 with onglet1:
     st.header("Comptabilité en Base 9")
     saisie_b10 = st.text_input(
-        "Saisissez le montant initial (Base 10 - Max 20 chiffres) :",
+        "Saisissez le montant initial (Base 10 - INTERDICTION DU CHIFFRE 0) :",
         max_chars=20,
         key="input_b10",
-        placeholder="Entrez votre nombre de 1 à 18 chiffres..."
+        placeholder="Exemple : 987654321..."
     )
     
     if saisie_b10:
-        lignes, zeros_b9, res_final = executer_etape_1(saisie_b10)
-        if lignes is None:
-            st.error(zeros_b9)
+        # --- VERROU DE SÉCURITÉ DE THÈSE ---
+        if "0" in saisie_b10:
+            st.error("🚨 SAISIE INTERDITE : Le chiffre '0' est invalide dans ce module dédié aux chiffres pleins. Veuillez corriger le montant.")
         else:
-            st.markdown("#### 📖 Décomposition brute selon votre architecture :")
-            for lignement in lignes:
-                if "Glissement" not in lignement:
-                    st.markdown(lignement)
-            
-            st.markdown("---")
-            st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
-            st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
-            
-            # Traitement inverse synchronisé automatique
-            resultat_inverse_direct = executer_etape_2(res_final)
-            if "ERREUR" not in resultat_inverse_direct:
-                st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
+            lignes, zeros_b9, res_final = executer_etape_1(saisie_b10)
+            if lignes is None:
+                st.error(zeros_b9)
+            else:
+                st.markdown("#### 📖 Décomposition brute selon votre architecture :")
+                for lignement in lignes:
+                    if "Glissement" not in lignement:
+                        st.markdown(lignement)
+                
+                st.markdown("---")
+                st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
+                st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
+                
+                # Inversion instantanée et sans faille sur les nombres sans 0
+                resultat_inverse_direct = executer_etape_2(res_final)
+                if "ERREUR" not in resultat_inverse_direct:
+                    st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
 
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
     saisie_b9 = st.text_input(
-        "Saisissez le nombre à traiter (Base 9 - Max 20 chiffres) :",
+        "Saisissez le nombre à traiter (Base 9) :",
         max_chars=20,
         key="input_b9",
         placeholder="Colle la suite de chiffres bijectifs ici..."
@@ -240,8 +238,13 @@ with onglet2:
         if "ERREUR" in resultat_b10:
             st.error(resultat_b10)
         else:
-            st.success("#### 🟢 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
-            st.code(resultat_b10, language="text")
+            # Sécurité à l'étape retour également
+            if "0" in resultat_b10:
+                st.error("🚨 DÉVIATION DÉTECTÉE : Le résultat reconstruit contient un 0 interdit pour ce module.")
+            else:
+                st.success("#### 🟢 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
+                st.code(resultat_b10, language="text")
 
 st.markdown("---")
 st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
+
