@@ -143,35 +143,37 @@ def executer_etape_2(chaine_b9_str):
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
     
-    # ALGORITHME DE BALAYAGE NUMÉRIQUE ROBUSTE ET UNIVERSEL
-    # Permet de trouver instantanément les chiffres ronds (1000) et les chiffres pleins (987654321)
-    target_len = 1
-    if len(saisie) > 4:
-        target_len = len(saisie) // 2
-    else:
-        target_len = len(saisie) - 1
-        if target_len <= 0: target_len = 1
-
-    # On balaie les plages de longueurs potentielles de manière séquentielle par dichotomie hybride brute
-    for length in range(max(1, target_len - 2), target_len + 3):
-        low = 10**(length - 1) if length > 1 else 1
-        high = (10**length) - 1
+    # 1. RECHERCHE GLOBALE : Approximation rapide de la zone numérique
+    low = 1
+    high = 99999999999999999999
+    base_proche = None
+    
+    while low <= high:
+        mid = (low + high) // 2
+        candidat_str = str(mid)
+        res_simule = simuler_etape_1_pure(candidat_str)
         
-        while low <= high:
-            mid = (low + high) // 2
-            candidat_str = str(mid)
-            res_simule = simuler_etape_1_pure(candidat_str)
+        if res_simule == saisie:
+            return candidat_str
             
-            if res_simule == saisie:
+        # Comparaison de chaînes
+        s1 = res_simule.lstrip('0')
+        s2 = saisie.lstrip('0')
+        if len(s1) < len(s2) or (len(s1) == len(s2) and s1 < s2):
+            low = mid + 1
+        else:
+            high = mid - 1
+            base_proche = mid
+
+    # 2. FILE DE SÉCURITÉ LOCAL (Balayage de précision)
+    # Inspecte minutieusement la zone pour corriger les anomalies dues aux zéros (comme pour 991 -> 1000)
+    point_depart = base_proche if base_proche is not None else low
+    for offset in range(-150, 150):
+        valeur_test = point_depart + offset
+        if valeur_test > 0:
+            candidat_str = str(valeur_test)
+            if simuler_etape_1_pure(candidat_str) == saisie:
                 return candidat_str
-                
-            # Comparaison numérique robuste de chaînes b9
-            s1 = res_simule.lstrip('0')
-            s2 = saisie.lstrip('0')
-            if len(s1) < len(s2) or (len(s1) == len(s2) and s1 < s2):
-                low = mid + 1
-            else:
-                high = mid - 1
                 
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
@@ -211,7 +213,7 @@ with onglet1:
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # Réintégration de la bande bleue de vérification automatique demandée
+            # Bande bleue de vérification synchronisée et corrigée
             resultat_inverse_direct = executer_etape_2(res_final)
             if "ERREUR" not in resultat_inverse_direct:
                 st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
