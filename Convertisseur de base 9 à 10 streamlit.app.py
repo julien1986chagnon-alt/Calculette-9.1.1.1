@@ -2,7 +2,7 @@ import streamlit as st
 
 # =============================================================================
 # APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
-# CODE D'ORIGINE MODIFIÉ SELON VOS INSTRUCTIONS
+# SYSTEME DE RESTAURATION UNIFIÉ ET SÉCURISÉ
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
@@ -98,14 +98,21 @@ def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
-def b9_bijective_vers_quantite(chaine_b9):
-    total = 0
-    for c in chaine_b9:
-        if c != '0':
-            total = total * 9 + int(c)
-    return total
+# SÉCURITÉ DE COMPARAISON SANS AUCUNE CONVERSION NI TRICHE
+def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
+    s1 = str_b9_1.lstrip('0')
+    s2 = str_b9_2.lstrip('0')
+    if s1 == "": s1 = "0"
+    if s2 == "": s2 = "0"
+    
+    if len(s1) > len(s2): return 1
+    if len(s1) < len(s2): return -1
+    
+    if s1 > s2: return 1
+    if s1 < s2: return -1
+    return 0
 
-# Simulation interne Étape 1 réalignée
+# La simulation utilise la structure exacte de l'Étape 1
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     somme_zeros_brute = "0"
@@ -117,10 +124,8 @@ def simuler_etape_1_pure(saisie_b10):
                 partiel = multiplication_comptable_unitaire_b9(TABLEUR_PASSAGES_ZERO[puissance_dix], chiffre)
                 somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel)
                 
-    # Utilisation directe du texte d'origine pour l'addition positionnelle finale
     return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
 
-# CORRECTION EFFECTUÉE ICI : Utilisation de la chaîne brute saisie
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) == 0:
@@ -140,27 +145,28 @@ def executer_etape_1(montant_b10_str):
                 somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel_b9)
                 lignes_details.append(f"Rang 10^{longueur-1-i} -> {chiffre} x {ref_tableur} = {partiel_b9}")
                 
-    # On conserve directement le texte d'origine de la saisie (ex: "1000")
     str_montant_b9 = saisie
     resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, somme_zeros_brute)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
+# NETTOYAGE ABSOLU DE L'ÉTAPE 2 : Plus aucune fonction quantite décimale
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
-    cible_val = b9_bijective_vers_quantite(saisie)
     longueur_b10 = 1
     
+    # Étape A : Recherche de la longueur idéale par comparaison de chaînes pures
     while True:
         max_test = "9" * longueur_b10
         val_max_b9 = simuler_etape_1_pure(max_test)
-        if b9_bijective_vers_quantite(val_max_b9) >= cible_val:
+        if comparaison_chaines_numeriques(val_max_b9, saisie) >= 0:
             break
         longueur_b10 += 1
         
+    # Étape B : Reconstruction positionnelle chiffre par chiffre
     candidat_b10 = ["0"] * longueur_b10
     for position in range(longueur_b10):
         for test_chiffre in "123456789":
@@ -168,7 +174,7 @@ def executer_etape_2(chaine_b9_str):
             chaine_test = "".join(candidat_b10)
             resultat_b9_simule = simuler_etape_1_pure(chaine_test)
             
-            if b9_bijective_vers_quantite(resultat_b9_simule) > cible_val:
+            if comparaison_chaines_numeriques(resultat_b9_simule, saisie) > 0:
                 candidat_b10[position] = str(max(0, int(test_chiffre) - 1))
                 break
         else:
@@ -179,7 +185,7 @@ def executer_etape_2(chaine_b9_str):
     
     if simuler_etape_1_pure(solution_finale) == saisie:
         return solution_finale
-    return "ERREUR : Déviation détectée."
+    return "ERREUR : Déviation détectée dans la pyramide des constantes."
 
 # =============================================================================
 # INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
