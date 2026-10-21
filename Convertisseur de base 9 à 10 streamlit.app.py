@@ -7,7 +7,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- MATRICE DE COEFFICIENTS D'ORIGINE ---
+# --- MATRICE DE COEFFICIENTS D'ORIGINE COMPLET (23 LIGNES STRICTES) ---
 # ==============================================================================
 TABLEUR_PASSAGES_ZERO = {
     10: "1", # Ligne 1
@@ -15,24 +15,24 @@ TABLEUR_PASSAGES_ZERO = {
     1000: "221", # Ligne 3
     10000: "2541", # Ligne 4
     100000: "27951", # Ligne 5
-    1000000: "318561", # Ligne 6
+    1000000: "310561", # Ligne 6
     10000000: "3515271", # Ligne 7
     100000000: "38667981", # Ligne 8
-    1000000000: "436458891", # Ligne 9
-    10000000000: "4812158911", # Ligne 10
-    100000000000: "53933759121", # Ligne 11
+    1000000000: "436458091", # Ligne 9
+    10000000000: "4812150911", # Ligne 10
+    100000000000: "53933759125", # Ligne 11
     1000000000000: "594372461331", # Ligne 12
     10000000000000: "6648197174641", # Ligne 13
     100000000000000: "74241278932151", # Ligne 14
     1000000000000000: "826654179353661", # Ligne 15
     10000000000000000: "9194295983891371", # Ligne 16
     100000000000000000: "112247366933915181", # Ligne 17
-    1000000000000000000: "1234732147374166991", # Ligne 18
-    10000000000000000000: "13563153632226848111", # Ligne 19
+    1000000000000000000: "1234737417374166991", # Ligne 18
+    10000000000000000000: "135631536322226848111", # Ligne 19
     100000000000000000000: "149524689954496439221", # Ligne 20
     1000000000000000000000: "1655772711549571852431", # Ligne 21
     10000000000000000000000: "18324599827716391476741", # Ligne 22
-    100000000000000000000000: "212571719215881416355251" # Ligne 23
+    100000000000000000000000: "212571719215881416355251" # Ligne 23 - VOTRE MAXIMUM REEL
 }
 
 # ==============================================================================
@@ -154,9 +154,10 @@ def executer_etape_2(chaine_b9_str):
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
+    # 1. EXPÉDITION GLOBALE PAR DICHOTOMIE (COUVRE LES 23 CHIFFRES)
     low = 1
     high = 999999999999999999999999  
-    solution = None
+    proche_pivot = None
     
     while low <= high:
         mid = (low + high) // 2
@@ -164,25 +165,24 @@ def executer_etape_2(chaine_b9_str):
         res_b9 = simuler_etape_1_pure(candidat_b10)
         
         if res_b9 == saisie:
-            solution = candidat_b10
-            break
+            return candidat_b10
             
         comp = comparaison_chaines_numeriques(res_b9, saisie)
         if comp < 0:
             low = mid + 1
         else:
             high = mid - 1
-            
-    if solution:
-        # --- FILÈ DE SÉCURITÉ COMPTABLE POUR LES GLISSEMENTS ET SÉQUENCES CRITIQUES ---
-        # 1. Si le résultat s'arrête à 108 au lieu de 9 (Image 3)
-        if solution == "108":
-            return "9"
-        # 2. Si le résultat s'arrête à 991 au lieu de 1000 (Image 4)
-        if solution.endswith("91") and (int(solution) + 9) % 100 == 0:
-            return str(10 ** len(solution))
-            
-        return solution
+            proche_pivot = mid
+
+    # 2. FILET DE SÉCURITÉ LOCAL (S'ASSURE QUE 99, 999 ET 1000 TOMBENT PILÈ)
+    point_ancrage = proche_pivot if proche_pivot is not None else low
+    for offset in range(-1500, 1500):
+        valeur_test = point_ancrage + offset
+        if valeur_test > 0:
+            candidat_str = str(valeur_test)
+            if simuler_etape_1_pure(candidat_str) == saisie:
+                return candidat_str
+                
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
 # ==============================================================================
@@ -221,7 +221,7 @@ with onglet1:
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # Marche arrière automatique branchée directement sur le résultat vert complet
+            # Traitement inverse synchronisé automatique
             resultat_inverse_direct = executer_etape_2(res_final)
             if "ERREUR" not in resultat_inverse_direct:
                 st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
