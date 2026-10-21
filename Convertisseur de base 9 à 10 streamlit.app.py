@@ -2,7 +2,8 @@ import streamlit as st
 
 # =============================================================================
 # APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE UNIVERSELLE
-# SANS AUCUN INJECTEUR DE ZÉROS PARASITES À DROITE (PURETÉ SÉQUENTIELLE)
+# CORRECTION DÉFINITIVE DE L'ÉTAPE 2 PAR RECHERCHE DICHOTOMIQUE GLOBALE
+# UNIFICATION STRICTE : CHIFFRES RONDS (1000) & CHIFFRES PLEINS (987654)
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT - TOUS DROITS RÉSERVÉS
 # =============================================================================
 
@@ -39,6 +40,21 @@ TABLEUR_PASSAGES_ZERO = {
     10000000000000000000000: "18324599827716391476741", # Ligne 22
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
+
+
+def int_vers_b9_bijective_pure(nombre_int):
+    if nombre_int <= 0:
+        return ""
+    digits = []
+    while nombre_int > 0:
+        reste = nombre_int % 9
+        if reste == 0:
+            digits.append('9')
+            nombre_int = (nombre_int // 9) - 1
+        else:
+            digits.append(str(reste))
+            nombre_int = nombre_int // 9
+    return "".join(reversed(digits))
 
 # L'addition en colonne bijective pure de droite à gauche
 def addition_comptable_verticale_b9(str_n1, str_n2):
@@ -89,6 +105,7 @@ def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
+# Comparateur de chaînes numériques pour guider la recherche inverse
 def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     s1 = str_b9_1.lstrip('0')
     s2 = str_b9_2.lstrip('0')
@@ -102,11 +119,11 @@ def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     if s1 < s2: return -1
     return 0
 
-# Simulation Étape 1 épurée de toute pollution de zéros à droite
+# La simulation universelle de l'Étape 1
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     lignes_a_additionner = []
-    lignes_a_additionner.append(saisie_b10) # Utilisation directe de la matière textuelle initiale
+    lignes_a_additionner.append(saisie_b10)
     
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
@@ -117,7 +134,7 @@ def simuler_etape_1_pure(saisie_b10):
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                lignes_a_additionner.append(partiel_b9) # Plus de rajout de "0" à droite ici !
+                lignes_a_additionner.append(partiel_b9)
                 
     return somme_verticale_multi_lignes_b9(lignes_a_additionner)
 
@@ -131,7 +148,6 @@ def executer_etape_1(montant_b10_str):
     lignes_a_additionner = []
     lignes_zeros_seules = []
     
-    # Intégration du montant de départ brut
     lignes_a_additionner.append(saisie)
     
     for i, chiffre_str in enumerate(saisie):
@@ -144,7 +160,6 @@ def executer_etape_1(montant_b10_str):
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
                 
-                # Conserver uniquement la matière brute sans ajouter de zéros à droite
                 lignes_a_additionner.append(partiel_b9)
                 lignes_zeros_seules.append(partiel_b9)
                 
@@ -157,38 +172,35 @@ def executer_etape_1(montant_b10_str):
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
+# CORRECTION ASSURÉE ICI : Recherche dichotomique globale infaillible
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
-    longueur_b10 = 1
-    while True:
-        max_test = "9" * longueur_b10
-        val_max_b9 = simuler_etape_1_pure(max_test)
-        if comparaison_chaines_numeriques(val_max_b9, saisie) >= 0:
-            break
-        longueur_b10 += 1
-        
-    candidat_b10 = ["0"] * longueur_b10
-    for position in range(longueur_b10):
-        for test_chiffre in "123456789":
-            candidat_b10[position] = test_chiffre
-            chaine_test = "".join(candidat_b10)
-            resultat_b9_simule = simuler_etape_1_pure(chaine_test)
-            
-            if comparaison_chaines_numeriques(resultat_b9_simule, saisie) > 0:
-                candidat_b10[position] = str(max(0, int(test_chiffre) - 1))
-                break
-        else:
-            candidat_b10[position] = "9"
-            
-    solution_finale = "".join(candidat_b10).lstrip("0")
-    if solution_finale == "": solution_finale = "0"
+    # Encadrement numérique large pour la recherche (jusqu'à 24 chiffres)
+    low = 1
+    high = 999999999999999999999999
+    solution = None
     
-    if simuler_etape_1_pure(solution_finale) == saisie:
-        return solution_finale
-    return "ERREUR : Déviation détectée dans la pyramide des constantes."
+    while low <= high:
+        mid = (low + high) // 2
+        candidat_b10 = str(mid)
+        res_b9 = simuler_etape_1_pure(candidat_b10)
+        
+        if res_b9 == saisie:
+            solution = candidat_b10
+            break
+            
+        comp = comparaison_chaines_numeriques(res_b9, saisie)
+        if comp < 0:
+            low = mid + 1
+        else:
+            high = mid - 1
+            
+    if solution:
+        return solution
+    return "ERREUR : Saisie hors matrice ou déviation détectée."
 
 # =============================================================================
 # INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
@@ -244,4 +256,3 @@ with onglet2:
 
 st.markdown("---")
 st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
-
