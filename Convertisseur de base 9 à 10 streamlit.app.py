@@ -35,6 +35,7 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
+
 # ==============================================================================
 # --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
 # ==============================================================================
@@ -153,28 +154,36 @@ def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
-        
-    low = 1
-    high = 999999999999999999999999  
-    solution = None
     
-    while low <= high:
-        mid = (low + high) // 2
-        candidat_b10 = str(mid)
-        res_b9 = simuler_etape_1_pure(candidat_b10)
+    # CALCUL PUR DE RECONSTRUCTION CHIFFRE PAR CHIFFRE (Évite les sauts de retenues)
+    # L'algorithme cherche la bonne longueur et remonte le nombre sans tricher
+    for length in range(1, len(saisie) + 1):
+        solution_trouvee = []
         
-        if res_b9 == saisie:
-            solution = candidat_b10
-            break
+        def explore_arbre(prefixe_actuel):
+            if len(prefixe_actuel) == length:
+                if simuler_etape_1_pure(prefixe_actuel) == saisie:
+                    solution_trouvee.append(prefixe_actuel)
+                    return True
+                return False
             
-        comp = comparaison_chaines_numeriques(res_b9, saisie)
-        if comp < 0:
-            low = mid + 1
-        else:
-            high = mid - 1
+            # Élagage : On vérifie si la cible reste cohérente avec les limites théoriques de ce préfixe
+            taille_restante = length - len(prefixe_actuel)
+            limite_basse = simuler_etape_1_pure(prefixe_actuel + "1" * taille_restante)
+            limite_haute = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
             
-    if solution:
-        return solution
+            # Si la cible est dans l'intervalle structurel de cette branche, on continue à chercher
+            if comparaison_chaines_numeriques(saisie, limite_basse) >= 0 or len(saisie) >= len(limite_basse):
+                # Interdiction stricte du chiffre 0 dans l'arbre d'exploration
+                for chiffre_choisi in range(1, 10):
+                    if explore_arbre(prefixe_actuel + str(chiffre_choisi)):
+                        return True
+            return False
+
+        explore_arbre("")
+        if solution_trouvee:
+            return solution_trouvee[0]
+            
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
 # ==============================================================================
@@ -194,19 +203,19 @@ onglet1, onglet2 = st.tabs([
 
 with onglet1:
     st.header("Comptabilité en Base 9")
-    saisie_b10 = st.text_input(
+    saisie_brute = st.text_input(
         "Saisissez le montant initial (Base 10 - INTERDICTION DU CHIFFRE 0) :",
         max_chars=20,
         key="input_b10",
         placeholder="Exemple : 987654321..."
     )
     
-    if saisie_b10:
-        # --- VERROU DE SÉCURITÉ DE THÈSE ---
-        if "0" in saisie_b10:
+    if saisie_brute:
+        # --- BLOCAGE PHYSIQUE ET NETTOYAGE DU CHIFFRE 0 ---
+        if "0" in saisie_brute:
             st.error("🚨 SAISIE INTERDITE : Le chiffre '0' est invalide dans ce module dédié aux chiffres pleins. Veuillez corriger le montant.")
         else:
-            lignes, zeros_b9, res_final = executer_etape_1(saisie_b10)
+            lignes, zeros_b9, res_final = executer_etape_1(saisie_brute)
             if lignes is None:
                 st.error(zeros_b9)
             else:
@@ -219,7 +228,7 @@ with onglet1:
                 st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
                 st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
                 
-                # Inversion instantanée et sans faille sur les nombres sans 0
+                # Le moteur calcule désormais la marche arrière de façon purement constructive
                 resultat_inverse_direct = executer_etape_2(res_final)
                 if "ERREUR" not in resultat_inverse_direct:
                     st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
@@ -238,13 +247,10 @@ with onglet2:
         if "ERREUR" in resultat_b10:
             st.error(resultat_b10)
         else:
-            # Sécurité à l'étape retour également
             if "0" in resultat_b10:
-                st.error("🚨 DÉVIATION DÉTECTÉE : Le résultat reconstruit contient un 0 interdit pour ce module.")
+                st.error("🚨 DÉVIATION DÉTECTÉE : Le résultat reconstruit contient un 0 interdit.")
             else:
                 st.success("#### 🟢 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
                 st.code(resultat_b10, language="text")
 
 st.markdown("---")
-st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
-
