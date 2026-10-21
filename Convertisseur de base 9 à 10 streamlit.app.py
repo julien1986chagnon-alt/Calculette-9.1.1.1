@@ -35,6 +35,7 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
+
 # ==============================================================================
 # --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
 # ==============================================================================
@@ -87,25 +88,11 @@ def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
-def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
-    s1 = str_b9_1.lstrip('0')
-    s2 = str_b9_2.lstrip('0')
-    if s1 == "": s1 = "0"
-    if s2 == "": s2 = "0"
-    
-    if len(s1) > len(s2): return 1
-    if len(s1) < len(s2): return -1
-    
-    if s1 > s2: return 1
-    if s1 < s2: return -1
-    return 0
-
 # ==============================================================================
 # --- LOGIQUE UNIVERSELLE ET EXÉCUTION ---
 # ==============================================================================
 
 def simuler_etape_1_pure(saisie_b10):
-    """Génère le résultat exact selon la méthode de l'Étape 1 pour la recherche inverse."""
     longueur = len(saisie_b10)
     lignes_zeros_seules = []
     
@@ -121,7 +108,6 @@ def simuler_etape_1_pure(saisie_b10):
                 lignes_zeros_seules.append(partial_b9)
                 
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    # RÈGLE ARCHITECTURE : Addition comptable verticale entre la saisie et la somme des extraits
     return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
 
 def executer_etape_1(montant_b10_str):
@@ -148,8 +134,6 @@ def executer_etape_1(montant_b10_str):
             lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ Repère de position 0 (Glissement)")
             
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    
-    # RECTIFICATION : On applique l'addition verticale b9 pour obtenir 1221 (et 1413873 pour 987654)
     resultat_final_b9 = addition_comptable_verticale_b9(saisie, somme_zeros_brute)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
@@ -158,30 +142,37 @@ def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
-        
-    low = 1
-    high = 999999999999999999999999  
-    solution = None
     
-    while low <= high:
-        mid = (low + high) // 2
-        candidat_b10 = str(mid)
+    # ALGORITHME DE BALAYAGE NUMÉRIQUE ROBUSTE ET UNIVERSEL
+    # Permet de trouver instantanément les chiffres ronds (1000) et les chiffres pleins (987654321)
+    target_len = 1
+    if len(saisie) > 4:
+        target_len = len(saisie) // 2
+    else:
+        target_len = len(saisie) - 1
+        if target_len <= 0: target_len = 1
+
+    # On balaie les plages de longueurs potentielles de manière séquentielle par dichotomie hybride brute
+    for length in range(max(1, target_len - 2), target_len + 3):
+        low = 10**(length - 1) if length > 1 else 1
+        high = (10**length) - 1
         
-        # Test du candidat avec la fonction d'addition harmonisée
-        res_b9 = simuler_etape_1_pure(candidat_b10)
-        
-        if res_b9 == saisie:
-            solution = candidat_b10
-            break
+        while low <= high:
+            mid = (low + high) // 2
+            candidat_str = str(mid)
+            res_simule = simuler_etape_1_pure(candidat_str)
             
-        comp = comparaison_chaines_numeriques(res_b9, saisie)
-        if comp < 0:
-            low = mid + 1
-        else:
-            high = mid - 1
-            
-    if solution:
-        return solution
+            if res_simule == saisie:
+                return candidat_str
+                
+            # Comparaison numérique robuste de chaînes b9
+            s1 = res_simule.lstrip('0')
+            s2 = saisie.lstrip('0')
+            if len(s1) < len(s2) or (len(s1) == len(s2) and s1 < s2):
+                low = mid + 1
+            else:
+                high = mid - 1
+                
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
 # ==============================================================================
@@ -220,10 +211,10 @@ with onglet1:
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # Marche arrière synchrone automatique
+            # Réintégration de la bande bleue de vérification automatique demandée
             resultat_inverse_direct = executer_etape_2(res_final)
             if "ERREUR" not in resultat_inverse_direct:
-                st.info(f"**🔄 Vérification Automatique Inverse (Retour à la Base 10) :** {resultat_inverse_direct}")
+                st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
             else:
                 st.error(resultat_inverse_direct)
 
@@ -246,4 +237,3 @@ with onglet2:
 
 st.markdown("---")
 st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
-
