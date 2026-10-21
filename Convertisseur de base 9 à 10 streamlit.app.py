@@ -4,30 +4,31 @@ import streamlit as st
 # 1. CONSTANTES GLOBALES ET INITIALISATION DE LA SÉGMENTATION
 # =====================================================================
 
-TABLEUR_PASSAGES_ZERO = {10: "1",
-                         100: "11",
-                         1000: "221",
-                         10000: "2541",
-                         100000: "27951",
-                         1000000: "318561",
-                         10000000: "3515271",
-                         100000000: "38667981",
-                         1000000000: "436456891",
-                         10000000000: "4812158911",
-                         100000000000: "53933759121",
-                         1000000000000: "594372461331",
-                         10000000000000: "66481971724641",
-                         100000000000000: "74241278932151",
-                         1000000000000000: "826654179353661",
-                         10000000000000000: "9194295983891371",
-                         100000000000000000: "112247366933915181",
-                         1000000000000000000: "1234732147374166951",
-                         10000000000000000000: "1356315363226848111",
-                         100000000000000000000: "14952469554496435221",
-                         1000000000000000000000: "165572711549571852431",
-                         10000000000000000000000: "18324598827716391476741",
-                         100000000000000000000000: "212571719215881416355251"}
-MEMOIRE_SESSION = {}
+TABLEUR_PASSAGES_ZERO = {
+    10: "1", 
+    100: "11", 
+    1000: "221", 
+    10000: "2541", 
+    100000: "27951",
+    1000000: "318561", 
+    10000000: "3515271", 
+    100000000: "38667981",
+    1000000000: "436456891", 
+    10000000000: "4812158911", 
+    100000000000: "53933759121",
+    1000000000000: "594372461331", 
+    10000000000000: "66481971724641",
+    100000000000000: "74241278932151", 
+    1000000000000000: "826654179353661",
+    10000000000000000: "9194295983891371", 
+    100000000000000000: "112247366933915181",
+    1000000000000000000: "1234732147374166951", 
+    10000000000000000000: "1356315363226848111",
+    100000000000000000000: "14952469554496435221", 
+    1000000000000000000000: "165572711549571852431",
+    10000000000000000000000: "18324598827716391476741",
+    100000000000000000000000: "212571719215881416355251"
+}
 
 if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
@@ -182,7 +183,7 @@ def etape_2_logique_zero(saisie_b9):
 st.set_page_config(page_title="Calculateur Disjoint", page_icon="🔢", layout="centered")
 
 st.title("🔢 Architecture Mathématique — Calculateur Disjoint")
-st.write("Interface graphique pour l'exécution en temps réel des deux étapes.")
+st.write("Interface graphique pour l'exécution en temps réel des deux étapes (Limite : 20 chiffres maximum).")
 
 onglet1, onglet2, onglet3 = st.tabs([
     "📥 Étape 1 : Base 10 -> Base 9", 
@@ -190,10 +191,14 @@ onglet1, onglet2, onglet3 = st.tabs([
     "💾 Historique Session"
 ])
 
-# --- REPRODUCTION DE L'OPTION 1 ---
+# --- ONGLER 1 (AVEC LIMITATION MAX_CHARS=20) ---
 with onglet1:
     st.header("Conversion Base 10 vers Base 9 Bijective")
-    saisie_brute = st.text_input("Saisissez le montant initial (Base 10) :", key="b10_input").strip()
+    saisie_brute = st.text_input(
+        "Saisissez le montant initial (Base 10) :", 
+        max_chars=20, 
+        key="b10_input"
+    ).strip()
     
     if saisie_brute:
         if '0' in saisie_brute:
@@ -207,10 +212,14 @@ with onglet1:
             with st.expander("Afficher le détail comptable"):
                 for l in lignes: st.text(l)
 
-# --- REPRODUCTION DE L'OPTION 2 (AVEC SÉCURITÉ DE CALCUL FORCÉ) ---
+# --- ONGLER 2 (AVEC LIMITATION MAX_CHARS=20 ET SÉCURITÉ) ---
 with onglet2:
     st.header("Reconstruction Base 9 Bijective vers Base 10")
-    saisie_b9 = st.text_input("Saisissez le nombre à traiter (Base 9) :", key="b9_input").strip()
+    saisie_b9 = st.text_input(
+        "Saisissez le nombre à traiter (Base 9) :", 
+        max_chars=20, 
+        key="b9_input"
+    ).strip()
     
     if saisie_b9:
         if saisie_b9 in st.session_state.memoire_session:
@@ -224,7 +233,3 @@ with onglet2:
             if isinstance(res_strict, list): toutes_solutions.extend(res_strict)
             if isinstance(res_zero, list): toutes_solutions.extend(res_zero)
             
-            solutions_uniques = []
-            for s in toutes_solutions:
-                if s not in solutions_uniques: solutions_uniques.append(s)
-
