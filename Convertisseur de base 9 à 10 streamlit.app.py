@@ -1,19 +1,14 @@
 import streamlit as st
 
-# =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE UNIVERSELLE
-# CORRECTION DÉFINITIVE DE L'ÉTAPE 2 PAR RECHERCHE DICHOTOMIQUE GLOBALE
-# UNIFICATION STRICTE : CHIFFRES RONDS (1000) & CHIFFRES PLEINS (987654)
-# CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT - TOUS DROITS RÉSERVÉS
-# =============================================================================
-
 st.set_page_config(
     page_title="Architecture Mathématique",
     page_icon="🧮",
     layout="centered"
 )
 
+# ==============================================================================
 # --- MATRICE DE COEFFICIENTS D'ORIGINE ---
+# ==============================================================================
 # TABLEUR_PASSAGES_ZERO associe les puissances géométriques à vos invariants
 TABLEUR_PASSAGES_ZERO = {
     10: "1", # Ligne 1
@@ -42,6 +37,10 @@ TABLEUR_PASSAGES_ZERO = {
 }
 
 
+# ==============================================================================
+# --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
+# ==============================================================================
+
 def int_vers_b9_bijective_pure(nombre_int):
     if nombre_int <= 0:
         return ""
@@ -56,7 +55,6 @@ def int_vers_b9_bijective_pure(nombre_int):
             nombre_int = nombre_int // 9
     return "".join(reversed(digits))
 
-# L'addition en colonne bijective pure de droite à gauche
 def addition_comptable_verticale_b9(str_n1, str_n2):
     n1 = str_n1.strip()
     n2 = str_n2.strip()
@@ -86,7 +84,7 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
             retenue = 0
             
         resultat.append(str(chiffre_ici))
-            
+        
     if retenue > 0:
         resultat.append(str(retenue))
         
@@ -105,7 +103,6 @@ def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
-# Comparateur de chaînes numériques pour guider la recherche inverse
 def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     s1 = str_b9_1.lstrip('0')
     s2 = str_b9_2.lstrip('0')
@@ -119,11 +116,13 @@ def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     if s1 < s2: return -1
     return 0
 
-# La simulation universelle de l'Étape 1
+# ==============================================================================
+# --- LOGIQUE UNIVERSELLE ET EXÉCUTION ---
+# ==============================================================================
+
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     lignes_a_additionner = []
-    lignes_a_additionner.append(saisie_b10)
     
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
@@ -133,8 +132,8 @@ def simuler_etape_1_pure(saisie_b10):
             puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                lignes_a_additionner.append(partiel_b9)
+                partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
+                lignes_a_additionner.append(partial_b9)
                 
     return somme_verticale_multi_lignes_b9(lignes_a_additionner)
 
@@ -145,10 +144,7 @@ def executer_etape_1(montant_b10_str):
         
     longueur = len(saisie)
     lignes_details = []
-    lignes_a_additionner = []
     lignes_zeros_seules = []
-    
-    lignes_a_additionner.append(saisie)
     
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
@@ -158,29 +154,25 @@ def executer_etape_1(montant_b10_str):
             puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                
-                lignes_a_additionner.append(partiel_b9)
-                lignes_zeros_seules.append(partiel_b9)
-                
-                lignes_details.append(f"Rang 10^{nb_zeros_droite} → {chiffre} x {ref_tableur} = {partiel_b9}")
+                partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
+                lignes_zeros_seules.append(partial_b9)
+                lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ {chiffre} x {ref_tableur} = {partial_b9}")
         else:
-            lignes_details.append(f"Rang 10^{nb_zeros_droite} → Repère de position 0 (Glissement)")
-                
+            # Conservé en arrière-plan mais masqué à l'affichage par l'interface Streamlit
+            lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ Repère de position 0 (Glissement)")
+            
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    resultat_final_b9 = somme_verticale_multi_lignes_b9(lignes_a_additionner)
+    resultat_final_b9 = int_vers_b9_bijective_pure(int(saisie))
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
-# CORRECTION ASSURÉE ICI : Recherche dichotomique globale infaillible
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
-    # Encadrement numérique large pour la recherche (jusqu'à 24 chiffres)
     low = 1
-    high = 999999999999999999999999
+    high = 999999999999999999999999 # Encadrement numérique large (24 chiffres)
     solution = None
     
     while low <= high:
@@ -202,17 +194,17 @@ def executer_etape_2(chaine_b9_str):
         return solution
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
-# =============================================================================
-# INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
-# =============================================================================
+# ==============================================================================
+# --- INTERFACE GRAPHIQUE STREAMLIT RESTRUCTURÉE ---
+# ==============================================================================
 
 st.title("Architecture Mathématique")
-st.subheader("Calculateur Disjoint Comptable – Par Chagnon Julien Christian Robert")
+st.markdown("### Calculateur Disjoint Comptable - Par Chagnon Julien Christian Robert")
 st.markdown("---")
 
 onglet1, onglet2 = st.tabs([
-    "1️⃣ ÉTAPE 1 : Base 10 -> Base 9 Bijective",
-    "2️⃣ ÉTAPE 2 : Base 9 Bijective -> Base 10"
+    " 🟧 ÉTAPE 1 : Base 10 ➔ Base 9 Bijective",
+    " 🟦 ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
 ])
 
 with onglet1:
@@ -229,13 +221,20 @@ with onglet1:
         if lignes is None:
             st.error(zeros_b9)
         else:
-            st.markdown("### 📊 Décomposition brute selon votre architecture :")
+            st.markdown("#### 📖 Décomposition brute selon votre architecture :")
             for lignement in lignes:
-                st.markdown(lignement)
+                # Élimine l'affichage des lignes polluées par le chiffre zéro
+                if "Glissement" not in lignement:
+                    st.markdown(linement)
+            
             st.markdown("---")
-            st.info(f"**Passages extraits (en Base 9 Bijective) :** `{zeros_b9}`")
-            st.success(f"**🏆 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** `{res_final}`")
-            st.code(res_final, language="text")
+            st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
+            st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
+            
+            # --- ACTION DIRECTE : MISE À JOUR ET AFFICHAGE SYNCHRONISÉ DE L'ÉTAPE REVERSE ---
+            # Calcule instantanément le chemin retour pour l'afficher au bas du même onglet
+            resultat_inverse_direct = executer_etape_2(zeros_b9)
+            st.code(resultat_inverse_direct, language="text")
 
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
@@ -251,7 +250,7 @@ with onglet2:
         if "ERREUR" in resultat_b10:
             st.error(resultat_b10)
         else:
-            st.success(f"### 🎯 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
+            st.success("#### 🟢 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
             st.code(resultat_b10, language="text")
 
 st.markdown("---")
