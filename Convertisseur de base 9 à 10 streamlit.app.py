@@ -1,8 +1,8 @@
 import streamlit as st
 
 # =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
-# CODE CORRIGÉ POUR L'ALTERNANCE DES ZÉROS DE POSITION ET CHIFFRES MÉLANGÉS
+# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE UNIVERSELLE
+# HARMONISATION TOTALE : CHIFFRES RONDS & CHIFFRES PLEINS SANS COLLISION
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT - TOUS DROITS RÉSERVÉS
 # =============================================================================
 
@@ -54,7 +54,7 @@ def int_vers_b9_bijective_pure(nombre_int):
             nombre_int = nombre_int // 9
     return "".join(reversed(digits))
 
-# Votre addition verticale pure de droite à gauche
+# L'unique et véritable addition en colonne bijective
 def addition_comptable_verticale_b9(str_n1, str_n2):
     n1 = str_n1.strip()
     n2 = str_n2.strip()
@@ -91,53 +91,56 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
-def soustraction_comptable_verticale_b9(str_n1, str_n2):
-    n1 = str_n1.strip()
-    n2 = str_n2.strip()
-    max_len = max(len(n1), len(n2))
-    n1 = n1.zfill(max_len)
-    n2 = n2.zfill(max_len)
-    
-    resultat = []
-    emprunt = 0
-    
-    for i in range(max_len - 1, -1, -1):
-        d1 = int(n1[i])
-        d2 = int(n2[i]) + emprunt
-        
-        if d1 < d2:
-            d1 += 9
-            emprunt = 1
-        else:
-            emprunt = 0
-            
-        diff = d1 - d2
-        resultat.append(str(diff))
-        
-    res_final = "".join(reversed(resultat)).lstrip('0')
-    return res_final if res_final != "" else "0"
+# Somme multiple pour gérer de grandes listes de rangs alignés
+def somme_verticale_multi_lignes_b9(liste_chaines):
+    total = "0"
+    for chaine in liste_chaines:
+        total = addition_comptable_verticale_b9(total, chaine)
+    return total
 
-# Multiplications unitaires par additions successives natives en base 9
 def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
     resultat = "0"
     for _ in range(chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
-# Simulation stable de l'étape 1 prenant en compte l'alternance des zéros
+def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
+    s1 = str_b9_1.lstrip('0')
+    s2 = str_b9_2.lstrip('0')
+    if s1 == "": s1 = "0"
+    if s2 == "": s2 = "0"
+    
+    if len(s1) > len(s2): return 1
+    if len(s1) < len(s2): return -1
+    
+    if s1 > s2: return 1
+    if s1 < s2: return -1
+    return 0
+
+# La simulation universelle par injection positionnelle stricte
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
-    somme_zeros_brute = "0"
+    lignes_a_additionner = []
+    
+    # Étape 1 : Traitement du montant de départ comme brique de base
+    lignes_a_additionner.append(int_vers_b9_bijective_pure(int(saisie_b10)))
+    
+    # Étape 2 : Projection des puissances de votre tableur
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
-        # Gestion de l'alternance : si c'est un zéro, on saute le calcul mais on conserve le rang positionnel
+        nb_zeros_droite = longueur - 1 - i
+        
         if chiffre > 0:
-            puissance_dix = 10 ** (longueur - 1 - i)
+            puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                partiel = multiplication_comptable_unitaire_b9(TABLEUR_PASSAGES_ZERO[puissance_dix], chiffre)
-                somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel)
+                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
                 
-    return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
+                # Alignement comptable pur par décalage de rang (votre structure)
+                partiel_decale = partiel_b9 + ("0" * nb_zeros_droite)
+                lignes_a_additionner.append(partiel_decale)
+                
+    return somme_verticale_multi_lignes_b9(lignes_a_additionner)
 
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
@@ -145,52 +148,72 @@ def executer_etape_1(montant_b10_str):
         return None, "ERREUR : Saisie invalide.", "0"
         
     longueur = len(saisie)
-    somme_zeros_brute = "0"
     lignes_details = []
+    lignes_a_additionner = []
+    lignes_zeros_seules = []
+    
+    # Enregistrement de la valeur initiale
+    montant_initial_b9 = int_vers_b9_bijective_pure(int(saisie))
+    lignes_a_additionner.append(montant_initial_b9)
     
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
-        # Gestion explicite de la signalisation du zéro positionnel
+        nb_zeros_droite = longueur - 1 - i
+        
         if chiffre > 0:
-            puissance_dix = 10 ** (longueur - 1 - i)
+            puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel_b9)
-                lignes_details.append(f"Rang 10^{longueur-1-i} -> {chiffre} x {ref_tableur} = {partiel_b9}")
-        else:
-            lignes_details.append(f"Rang 10^{longueur-1-i} -> Repère de position 0 (Glissement)")
+                partiel_decale = partiel_b9 + ("0" * nb_zeros_droite)
                 
-    str_montant_b9 = saisie
-    resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, somme_zeros_brute)
+                lignes_a_additionner.append(partiel_decale)
+                lignes_zeros_seules.append(partiel_decale)
+                
+                lignes_details.append(f"Rang 10^{nb_zeros_droite} -> {chiffre} x {ref_tableur} = {partiel_b9} (Alignement : {partiel_decale})")
+        else:
+            lignes_details.append(f"Rang 10^{nb_zeros_droite} -> Repère de position 0 (Glissement)")
+                
+    somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
+    resultat_final_b9 = somme_verticale_multi_lignes_b9(lignes_a_additionner)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
-# ÉTAPE 2 RÉALIGNEÉ : Elle extrait la constante de manière dynamique selon l'anatomie du flux reçu
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
-    longueur_saisie = len(saisie)
-    constante_a_soustraire = "0"
+    longueur_b10 = 1
     
-    # Parcourir les lignes du tableur pour trouver la structure qui correspond parfaitement
-    for puissance, constante in TABLEUR_PASSAGES_ZERO.items():
-        if len(constante) == longueur_saisie or len(addition_comptable_verticale_b9(str(puissance), constante)) == longueur_saisie:
-            constante_a_soustraire = constante
+    # Recherche précise de l'échelle par encadrement de chaînes pures
+    while True:
+        max_test = "9" * longueur_b10
+        val_max_b9 = simuler_etape_1_pure(max_test)
+        if comparaison_chaines_numeriques(val_max_b9, saisie) >= 0:
             break
+        longueur_b10 += 1
+        
+    # Reconstruction anatomique positionnelle chiffre par chiffre
+    candidat_b10 = ["0"] * longueur_b10
+    for position in range(longueur_b10):
+        for test_chiffre in "123456789":
+            candidat_b10[position] = test_chiffre
+            chaine_test = "".join(candidat_b10)
+            resultat_b9_simule = simuler_etape_1_pure(chaine_test)
             
-    if constante_a_soustraire == "0":
-        # Recherche par longueur d'engrenage résiduelle
-        for k, c in TABLEUR_PASSAGES_ZERO.items():
-            if len(c) == longueur_saisie:
-                constante_a_soustraire = c
+            if comparaison_chaines_numeriques(resultat_b9_simule, saisie) > 0:
+                candidat_b10[position] = str(max(0, int(test_chiffre) - 1))
                 break
-                
-    # Soustraction comptable directe de la structure
-    solution_initiale_b10 = soustraction_comptable_verticale_b9(saisie, constante_a_soustraire)
-    return solution_initiale_b10
+        else:
+            candidat_b10[position] = "9"
+            
+    solution_finale = "".join(candidat_b10).lstrip("0")
+    if solution_finale == "": solution_finale = "0"
+    
+    if simuler_etape_1_pure(solution_finale) == saisie:
+        return solution_finale
+    return "ERREUR : Déviation détectée dans la pyramide des constantes."
 
 # =============================================================================
 # INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
@@ -245,4 +268,3 @@ with onglet2:
             st.code(resultat_b10, language="text")
 
 st.markdown("---")
-st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
