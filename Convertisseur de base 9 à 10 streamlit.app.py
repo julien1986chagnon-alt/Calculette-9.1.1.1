@@ -119,7 +119,9 @@ def simuler_etape_1_pure(saisie_b10):
                 lignes_zeros_seules.append(partial_b9)
                 
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    return lines_zeros_seules, somme_zeros_brute
+    
+    # --- CORRECTION ICI : Remplacement de lines_zeros_seules par lignes_zeros_seules ---
+    return lignes_zeros_seules, somme_zeros_brute
 
 
 def executer_etape_1(montant_b10_str):
@@ -160,14 +162,20 @@ def executer_etape_2(chaine_b9_str):
     
     def explore_arbre(prefixe_actuel):
         if len(prefixe_actuel) == length:
-            if simuler_etape_1_pure(prefixe_actuel) == saisie:
+            _, somme_brute = simuler_etape_1_pure(prefixe_actuel)
+            # Reconstitution de l'étape 1 finale : saisie_b10 + somme_zeros_brute
+            res_simule = addition_comptable_verticale_b9(prefixe_actuel, somme_brute)
+            if res_simule == saisie:
                 solution_trouvee.append(prefixe_actuel)
                 return True
             return False
             
         taille_restante = length - len(prefixe_actuel)
-        limite_haute = simuler_etape_1_pure(prefixe_actuel + "1" * taille_restante)
-        limite_basse = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
+        _, lim_haute_somme = simuler_etape_1_pure(prefixe_actuel + "1" * taille_restante)
+        limite_haute = addition_comptable_verticale_b9(prefixe_actuel + "1" * taille_restante, lim_haute_somme)
+        
+        _, lim_basse_somme = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
+        limite_basse = addition_comptable_verticale_b9(prefixe_actuel + "9" * taille_restante, lim_basse_somme)
         
         if comparaison_chaines_numeriques(saisie, limite_basse) >= 0 or len(saisie) >= len(limite_haute):
             for chiffre_choisi in range(1, 10):
@@ -175,12 +183,11 @@ def executer_etape_2(chaine_b9_str):
                     return True
         return False
 
-    length = 1
-    # ALGORITHME DE RECONSTRUCTION CHIFFRE PAR CHIFFRE
+    # ALGORITHME DE RECONSTRUCTION CHIFFRE PAR CHIFFRE SÉCURISÉ
     for length in range(1, len(saisie) + 1):
         solution_trouvee = []
         if explore_arbre(""):
-            return solution_trouvee
+            return solution_trouvee[0]
             
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
@@ -225,12 +232,6 @@ with onglet1:
                 st.markdown("---")
                 st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
                 st.success(f"🏆 **RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
-                
-                # --- BLOC DE RECHERCHE INVERSE DESACTIVED POUR EVITER LA LENTEUR EN ETAPE 1 ---
-                # Le moteur ne calcule plus automatiquement la marche arrière en Étape 1.
-                # resultat_inverse_direct = executer_etape_2(res_final)
-                # if "ERREUR" not in resultat_inverse_direct:
-                # st.info(f"🔍 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}")
 
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
@@ -243,14 +244,13 @@ with onglet2:
     
     if saisie_b9:
         resultat_b10 = executer_etape_2(saisie_b9)
-        if "ERREUR" in resultat_b10:
+        if "ERREUR" in str(resultat_b10):
             st.error(resultat_b10)
         else:
-            if "0" in resultat_b10:
+            if "0" in str(resultat_b10):
                 st.error("❌ DÉVIATION DÉTECTÉE : Le résultat reconstruit contient un 0 interdit.")
             else:
                 st.success("🎯 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
                 st.code(resultat_b10, language="text")
 
 st.markdown("---")
-
