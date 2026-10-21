@@ -2,8 +2,8 @@ import streamlit as st
 
 # =============================================================================
 # APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
-# CODE CORRIGÉ - SOUSTRACTION INVERSE DIRECTE SANS BOUCLE PARASITE
-# CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
+# CODE CORRIGÉ POUR L'ALTERNANCE DES ZÉROS DE POSITION ET CHIFFRES MÉLANGÉS
+# CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT - TOUS DROITS RÉSERVÉS
 # =============================================================================
 
 st.set_page_config(
@@ -39,6 +39,20 @@ TABLEUR_PASSAGES_ZERO = {
     10000000000000000000000: "18324599827716391476741", # Ligne 22
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
+
+def int_vers_b9_bijective_pure(nombre_int):
+    if nombre_int <= 0:
+        return ""
+    digits = []
+    while nombre_int > 0:
+        reste = nombre_int % 9
+        if reste == 0:
+            digits.append('9')
+            nombre_int = (nombre_int // 9) - 1
+        else:
+            digits.append(str(reste))
+            nombre_int = nombre_int // 9
+    return "".join(reversed(digits))
 
 # Votre addition verticale pure de droite à gauche
 def addition_comptable_verticale_b9(str_n1, str_n2):
@@ -77,9 +91,7 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
-# SOUSTRATION COMPTABLE VERTICALE DIRECTE (Pour l'Étape 2)
 def soustraction_comptable_verticale_b9(str_n1, str_n2):
-    """ Calcule str_n1 - str_n2 colonne par colonne de droite à gauche """
     n1 = str_n1.strip()
     n2 = str_n2.strip()
     max_len = max(len(n1), len(n2))
@@ -112,6 +124,21 @@ def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
+# Simulation stable de l'étape 1 prenant en compte l'alternance des zéros
+def simuler_etape_1_pure(saisie_b10):
+    longueur = len(saisie_b10)
+    somme_zeros_brute = "0"
+    for i, chiffre_str in enumerate(saisie_b10):
+        chiffre = int(chiffre_str)
+        # Gestion de l'alternance : si c'est un zéro, on saute le calcul mais on conserve le rang positionnel
+        if chiffre > 0:
+            puissance_dix = 10 ** (longueur - 1 - i)
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                partiel = multiplication_comptable_unitaire_b9(TABLEUR_PASSAGES_ZERO[puissance_dix], chiffre)
+                somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel)
+                
+    return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
+
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) == 0:
@@ -123,6 +150,7 @@ def executer_etape_1(montant_b10_str):
     
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
+        # Gestion explicite de la signalisation du zéro positionnel
         if chiffre > 0:
             puissance_dix = 10 ** (longueur - 1 - i)
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
@@ -130,42 +158,37 @@ def executer_etape_1(montant_b10_str):
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
                 somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel_b9)
                 lignes_details.append(f"Rang 10^{longueur-1-i} -> {chiffre} x {ref_tableur} = {partiel_b9}")
+        else:
+            lignes_details.append(f"Rang 10^{longueur-1-i} -> Repère de position 0 (Glissement)")
                 
     str_montant_b9 = saisie
     resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, somme_zeros_brute)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
-# ÉTAPE 2 NETTOYÉE : Retour direct par soustraction de la constante
+# ÉTAPE 2 RÉALIGNEÉ : Elle extrait la constante de manière dynamique selon l'anatomie du flux reçu
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
-    # On identifie la constante à soustraire en fonction de la taille du nombre traité
     longueur_saisie = len(saisie)
-    
-    # Recherche de la puissance correspondante dans votre tableur
     constante_a_soustraire = "0"
+    
+    # Parcourir les lignes du tableur pour trouver la structure qui correspond parfaitement
     for puissance, constante in TABLEUR_PASSAGES_ZERO.items():
-        # Si la constante correspond à la taille de la structure
         if len(constante) == longueur_saisie or len(addition_comptable_verticale_b9(str(puissance), constante)) == longueur_saisie:
             constante_a_soustraire = constante
             break
             
     if constante_a_soustraire == "0":
-        # Par défaut, si hors limite, on cherche la constante la plus proche de même taille
-        longueurs = [len(c) for c in TABLEUR_PASSAGES_ZERO.values()]
-        if longueur_saisie in longueurs:
-            for k, c in TABLEUR_PASSAGES_ZERO.items():
-                if len(c) == longueur_saisie:
-                    constante_a_soustraire = c
-                    break
-        else:
-            # Fallback sur la dernière ligne connue (Ligne 19 pour les grands nombres à 20 chiffres)
-            constante_a_soustraire = TABLEUR_PASSAGES_ZERO[10000000000000000000]
-
-    # Application de la règle inverse exacte : Résultat final - Constante = Nombre Initial
+        # Recherche par longueur d'engrenage résiduelle
+        for k, c in TABLEUR_PASSAGES_ZERO.items():
+            if len(c) == longueur_saisie:
+                constante_a_soustraire = c
+                break
+                
+    # Soustraction comptable directe de la structure
     solution_initiale_b10 = soustraction_comptable_verticale_b9(saisie, constante_a_soustraire)
     return solution_initiale_b10
 
