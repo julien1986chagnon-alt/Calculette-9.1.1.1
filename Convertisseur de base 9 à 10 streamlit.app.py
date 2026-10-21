@@ -35,7 +35,6 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
-
 # ==============================================================================
 # --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
 # ==============================================================================
@@ -106,9 +105,9 @@ def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
 # ==============================================================================
 
 def simuler_etape_1_pure(saisie_b10):
-    """Calcule la somme brute des invariants pour n'importe quel candidat."""
+    """Génère le résultat exact selon la méthode de l'Étape 1 pour la recherche inverse."""
     longueur = len(saisie_b10)
-    lignes_a_additionner = []
+    lignes_zeros_seules = []
     
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
@@ -119,13 +118,11 @@ def simuler_etape_1_pure(saisie_b10):
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                lignes_a_additionner.append(partial_b9)
+                lignes_zeros_seules.append(partial_b9)
                 
-    res_brut = somme_verticale_multi_lignes_b9(lignes_a_additionner)
-    
-    # Pour correspondre à votre attente (ex: obtenir 1221 pour l'entrée 1000)
-    # On préfixe par le premier chiffre de la saisie si nécessaire
-    return f"{saisie_b10[0]}{res_brut}"
+    somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
+    # RÈGLE ARCHITECTURE : Addition comptable verticale entre la saisie et la somme des extraits
+    return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
 
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
@@ -152,8 +149,8 @@ def executer_etape_1(montant_b10_str):
             
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
     
-    # HARMONISATION : Le résultat final est maintenant construit pour afficher "1221" au lieu de "1331"
-    resultat_final_b9 = f"{saisie[0]}{somme_zeros_brute}"
+    # RECTIFICATION : On applique l'addition verticale b9 pour obtenir 1221 (et 1413873 pour 987654)
+    resultat_final_b9 = addition_comptable_verticale_b9(saisie, somme_zeros_brute)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
@@ -170,7 +167,7 @@ def executer_etape_2(chaine_b9_str):
         mid = (low + high) // 2
         candidat_b10 = str(mid)
         
-        # Utilise la fonction harmonisée avec préfixe
+        # Test du candidat avec la fonction d'addition harmonisée
         res_b9 = simuler_etape_1_pure(candidat_b10)
         
         if res_b9 == saisie:
@@ -188,7 +185,7 @@ def executer_etape_2(chaine_b9_str):
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
 # ==============================================================================
-# --- INTERFACE GRAPHIQUE STREAMLIT RESTRUCTURÉE ---
+# --- INTERFACE GRAPHIQUE STREAMLIT ---
 # ==============================================================================
 
 st.title("Architecture Mathématique")
@@ -223,9 +220,12 @@ with onglet1:
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # Affiche directement la vérification inverse
+            # Marche arrière synchrone automatique
             resultat_inverse_direct = executer_etape_2(res_final)
-            st.code(resultat_inverse_direct, language="text")
+            if "ERREUR" not in resultat_inverse_direct:
+                st.info(f"**🔄 Vérification Automatique Inverse (Retour à la Base 10) :** {resultat_inverse_direct}")
+            else:
+                st.error(resultat_inverse_direct)
 
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
@@ -246,3 +246,4 @@ with onglet2:
 
 st.markdown("---")
 st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
+
