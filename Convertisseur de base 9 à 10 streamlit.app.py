@@ -35,7 +35,6 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
-
 # ==============================================================================
 # --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
 # ==============================================================================
@@ -88,11 +87,25 @@ def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
+def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
+    s1 = str_b9_1.lstrip('0')
+    s2 = str_b9_2.lstrip('0')
+    if s1 == "": s1 = "0"
+    if s2 == "": s2 = "0"
+    
+    if len(s1) > len(s2): return 1
+    if len(s1) < len(s2): return -1
+    
+    if s1 > s2: return 1
+    if s1 < s2: return -1
+    return 0
+
 # ==============================================================================
 # --- LOGIQUE UNIVERSELLE ET EXÉCUTION ---
 # ==============================================================================
 
 def simuler_etape_1_pure(saisie_b10):
+    """Génère le résultat exact selon la méthode de l'Étape 1 pour la recherche inverse."""
     longueur = len(saisie_b10)
     lignes_zeros_seules = []
     
@@ -108,6 +121,7 @@ def simuler_etape_1_pure(saisie_b10):
                 lignes_zeros_seules.append(partial_b9)
                 
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
+    # RÈGLE ARCHITECTURE : Addition comptable verticale entre la saisie et la somme des extraits
     return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
 
 def executer_etape_1(montant_b10_str):
@@ -134,6 +148,8 @@ def executer_etape_1(montant_b10_str):
             lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ Repère de position 0 (Glissement)")
             
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
+    
+    # RECTIFICATION : On applique l'addition verticale b9 pour obtenir 1221 (et 1413873 pour 987654)
     resultat_final_b9 = addition_comptable_verticale_b9(saisie, somme_zeros_brute)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
@@ -142,39 +158,30 @@ def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
-    
-    # 1. RECHERCHE GLOBALE : Approximation rapide de la zone numérique
+        
     low = 1
-    high = 99999999999999999999
-    base_proche = None
+    high = 999999999999999999999999  
+    solution = None
     
     while low <= high:
         mid = (low + high) // 2
-        candidat_str = str(mid)
-        res_simule = simuler_etape_1_pure(candidat_str)
+        candidat_b10 = str(mid)
         
-        if res_simule == saisie:
-            return candidat_str
+        # Test du candidat avec la fonction d'addition harmonisée
+        res_b9 = simuler_etape_1_pure(candidat_b10)
+        
+        if res_b9 == saisie:
+            solution = candidat_b10
+            break
             
-        # Comparaison de chaînes
-        s1 = res_simule.lstrip('0')
-        s2 = saisie.lstrip('0')
-        if len(s1) < len(s2) or (len(s1) == len(s2) and s1 < s2):
+        comp = comparaison_chaines_numeriques(res_b9, saisie)
+        if comp < 0:
             low = mid + 1
         else:
             high = mid - 1
-            base_proche = mid
-
-    # 2. FILE DE SÉCURITÉ LOCAL (Balayage de précision)
-    # Inspecte minutieusement la zone pour corriger les anomalies dues aux zéros (comme pour 991 -> 1000)
-    point_depart = base_proche if base_proche is not None else low
-    for offset in range(-150, 150):
-        valeur_test = point_depart + offset
-        if valeur_test > 0:
-            candidat_str = str(valeur_test)
-            if simuler_etape_1_pure(candidat_str) == saisie:
-                return candidat_str
-                
+            
+    if solution:
+        return solution
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
 # ==============================================================================
@@ -213,10 +220,10 @@ with onglet1:
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # Bande bleue de vérification synchronisée et corrigée
+            # Marche arrière synchrone automatique
             resultat_inverse_direct = executer_etape_2(res_final)
             if "ERREUR" not in resultat_inverse_direct:
-                st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
+                st.info(f"**🔄 Vérification Automatique Inverse (Retour à la Base 10) :** {resultat_inverse_direct}")
             else:
                 st.error(resultat_inverse_direct)
 
