@@ -1,8 +1,8 @@
-import streamlit as st
+import streamlit as str
 
 st.set_page_config(
     page_title="Architecture Mathématique",
-    page_icon="🧮",
+    page_icon="🔢",
     layout="centered"
 )
 
@@ -15,7 +15,7 @@ TABLEUR_PASSAGES_ZERO = {
     1000: "221", # Ligne 3
     10000: "2541", # Ligne 4
     100000: "27951", # Ligne 5
-    1000000: "318561", # Ligne 6
+    1000000: "318561",# Ligne 6
     10000000: "3515271", # Ligne 7
     100000000: "38667981", # Ligne 8
     1000000000: "436458891", # Ligne 9
@@ -28,13 +28,12 @@ TABLEUR_PASSAGES_ZERO = {
     10000000000000000: "9194295983891371", # Ligne 16
     100000000000000000: "112247366933915181", # Ligne 17
     1000000000000000000: "1234732147374166991", # Ligne 18
-    10000000000000000000: "13563153632226848111", # Ligne 19
+    10000000000000000000: "1356315363226848111", # Ligne 19
     100000000000000000000: "149524689954496439221", # Ligne 20
-    1000000000000000000000: "1655772711549571852431", # Ligne 21
+    1000000000000000000000: "165572711549571852431", # Ligne 21
     10000000000000000000000: "18324599827716391476741", # Ligne 22
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
-
 
 # ==============================================================================
 # --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
@@ -76,17 +75,20 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
+
 def somme_verticale_multi_lignes_b9(liste_chaines):
     total = "0"
     for chaine in liste_chaines:
         total = addition_comptable_verticale_b9(total, chaine)
     return total
 
-def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
+
+def multiplication_comptable_unitaire_b9(str_b0, chiffre_int):
     resultat = "0"
     for _ in range(chiffre_int):
-        resultat = addition_comptable_verticale_b9(resultat, str_b9)
+        resultat = addition_comptable_verticale_b9(resultat, str_b0)
     return resultat
+
 
 def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     s1 = str_b9_1.lstrip('0')
@@ -100,9 +102,6 @@ def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     if s1 < s2: return -1
     return 0
 
-# ==============================================================================
-# --- LOGIQUE UNIVERSELLE ET EXÉCUTION ---
-# ==============================================================================
 
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
@@ -120,7 +119,8 @@ def simuler_etape_1_pure(saisie_b10):
                 lignes_zeros_seules.append(partial_b9)
                 
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
+    return lines_zeros_seules, somme_zeros_brute
+
 
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
@@ -141,7 +141,7 @@ def executer_etape_1(montant_b10_str):
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
                 lignes_zeros_seules.append(partial_b9)
-                lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ {chiffre} x {ref_tableur} = {partial_b9}")
+                lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ ({chiffre}) x ({ref_tableur}) = {partial_b9}")
         else:
             lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ Repère de position 0 (Glissement)")
             
@@ -150,41 +150,40 @@ def executer_etape_1(montant_b10_str):
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
+
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
+        
+    solution_trouvee = []
     
-    # CALCUL PUR DE RECONSTRUCTION CHIFFRE PAR CHIFFRE (Évite les sauts de retenues)
-    # L'algorithme cherche la bonne longueur et remonte le nombre sans tricher
+    def explore_arbre(prefixe_actuel):
+        if len(prefixe_actuel) == length:
+            if simuler_etape_1_pure(prefixe_actuel) == saisie:
+                solution_trouvee.append(prefixe_actuel)
+                return True
+            return False
+            
+        taille_restante = length - len(prefixe_actuel)
+        limite_haute = simuler_etape_1_pure(prefixe_actuel + "1" * taille_restante)
+        limite_basse = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
+        
+        if comparaison_chaines_numeriques(saisie, limite_basse) >= 0 or len(saisie) >= len(limite_haute):
+            for chiffre_choisi in range(1, 10):
+                if explore_arbre(prefixe_actuel + str(chiffre_choisi)):
+                    return True
+        return False
+
+    length = 1
+    # ALGORITHME DE RECONSTRUCTION CHIFFRE PAR CHIFFRE
     for length in range(1, len(saisie) + 1):
         solution_trouvee = []
-        
-        def explore_arbre(prefixe_actuel):
-            if len(prefixe_actuel) == length:
-                if simuler_etape_1_pure(prefixe_actuel) == saisie:
-                    solution_trouvee.append(prefixe_actuel)
-                    return True
-                return False
-            
-            # Élagage : On vérifie si la cible reste cohérente avec les limites théoriques de ce préfixe
-            taille_restante = length - len(prefixe_actuel)
-            limite_basse = simuler_etape_1_pure(prefixe_actuel + "1" * taille_restante)
-            limite_haute = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
-            
-            # Si la cible est dans l'intervalle structurel de cette branche, on continue à chercher
-            if comparaison_chaines_numeriques(saisie, limite_basse) >= 0 or len(saisie) >= len(limite_basse):
-                # Interdiction stricte du chiffre 0 dans l'arbre d'exploration
-                for chiffre_choisi in range(1, 10):
-                    if explore_arbre(prefixe_actuel + str(chiffre_choisi)):
-                        return True
-            return False
-
-        explore_arbre("")
-        if solution_trouvee:
+        if explore_arbre(""):
             return solution_trouvee[0]
             
     return "ERREUR : Saisie hors matrice ou déviation détectée."
+
 
 # ==============================================================================
 # --- INTERFACE GRAPHIQUE STREAMLIT ---
@@ -194,11 +193,11 @@ st.title("Architecture Mathématique")
 st.markdown("### Calculateur Disjoint Comptable - Par Chagnon Julien Christian Robert")
 st.markdown("---")
 
-st.info("🔬 **ANALYSE EXTENSION THÈSE : MODULE CHIFFRES PLEINS STANDARDS**")
+st.info("**ANALYSE EXTENSION THÈSE : MODULE CHIFFRES PLEINS STANDARDS**")
 
 onglet1, onglet2 = st.tabs([
-    " 🟧 ÉTAPE 1 : Base 10 ➔ Base 9 Bijective",
-    " 🟦 ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
+    "🔹 ÉTAPE 1 : Base 10 ➔ Base 9 Bijective",
+    "🔹 ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
 ])
 
 with onglet1:
@@ -211,27 +210,27 @@ with onglet1:
     )
     
     if saisie_brute:
-        # --- BLOCAGE PHYSIQUE ET NETTOYAGE DU CHIFFRE 0 ---
         if "0" in saisie_brute:
-            st.error("🚨 SAISIE INTERDITE : Le chiffre '0' est invalide dans ce module dédié aux chiffres pleins. Veuillez corriger le montant.")
+            st.error("❌ SAISIE INTERDITE : Le chiffre '0' est invalide dans ce module dédié aux chiffres pleins.")
         else:
             lignes, zeros_b9, res_final = executer_etape_1(saisie_brute)
             if lignes is None:
                 st.error(zeros_b9)
             else:
-                st.markdown("#### 📖 Décomposition brute selon votre architecture :")
+                st.markdown("#### 🧩 Décomposition brute selon votre architecture :")
                 for lignement in lignes:
                     if "Glissement" not in lignement:
                         st.markdown(lignement)
-                
+                        
                 st.markdown("---")
                 st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
-                st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
+                st.success(f"🏆 **RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
                 
-                # Le moteur calcule désormais la marche arrière de façon purement constructive
-                resultat_inverse_direct = executer_etape_2(res_final)
-                if "ERREUR" not in resultat_inverse_direct:
-                    st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
+                # --- BLOC DE RECHERCHE INVERSE DESACTIVED POUR EVITER LA LENTEUR EN ETAPE 1 ---
+                # Le moteur ne calcule plus automatiquement la marche arrière en Étape 1.
+                # resultat_inverse_direct = executer_etape_2(res_final)
+                # if "ERREUR" not in resultat_inverse_direct:
+                # st.info(f"🔍 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}")
 
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
@@ -239,7 +238,7 @@ with onglet2:
         "Saisissez le nombre à traiter (Base 9) :",
         max_chars=20,
         key="input_b9",
-        placeholder="Colle la suite de chiffres bijectifs ici..."
+        placeholder="Coller la suite de chiffres bijectifs ici..."
     )
     
     if saisie_b9:
@@ -248,9 +247,9 @@ with onglet2:
             st.error(resultat_b10)
         else:
             if "0" in resultat_b10:
-                st.error("🚨 DÉVIATION DÉTECTÉE : Le résultat reconstruit contient un 0 interdit.")
+                st.error("❌ DÉVIATION DÉTECTÉE : Le résultat reconstruit contient un 0 interdit.")
             else:
-                st.success("#### 🟢 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
+                st.success("🎯 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
                 st.code(resultat_b10, language="text")
 
 st.markdown("---")
