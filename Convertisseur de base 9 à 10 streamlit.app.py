@@ -1,8 +1,8 @@
 import streamlit as st
 
 # =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE UNIVERSELLE
-# HARMONISATION TOTALE : CHIFFRES RONDS & CHIFFRES PLEINS SANS COLLISION
+# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
+# NETTOYAGE TOTAL DES ZÉROS PARASITES À L'AFFICHAGE
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT - TOUS DROITS RÉSERVÉS
 # =============================================================================
 
@@ -54,7 +54,7 @@ def int_vers_b9_bijective_pure(nombre_int):
             nombre_int = nombre_int // 9
     return "".join(reversed(digits))
 
-# L'unique et véritable addition en colonne bijective
+# L'addition en colonne bijective pure
 def addition_comptable_verticale_b9(str_n1, str_n2):
     n1 = str_n1.strip()
     n2 = str_n2.strip()
@@ -91,7 +91,6 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
-# Somme multiple pour gérer de grandes listes de rangs alignés
 def somme_verticale_multi_lignes_b9(liste_chaines):
     total = "0"
     for chaine in liste_chaines:
@@ -117,15 +116,11 @@ def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     if s1 < s2: return -1
     return 0
 
-# La simulation universelle par injection positionnelle stricte
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     lignes_a_additionner = []
-    
-    # Étape 1 : Traitement du montant de départ comme brique de base
     lignes_a_additionner.append(int_vers_b9_bijective_pure(int(saisie_b10)))
     
-    # Étape 2 : Projection des puissances de votre tableur
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
         nb_zeros_droite = longueur - 1 - i
@@ -135,8 +130,6 @@ def simuler_etape_1_pure(saisie_b10):
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                
-                # Alignement comptable pur par décalage de rang (votre structure)
                 partiel_decale = partiel_b9 + ("0" * nb_zeros_droite)
                 lignes_a_additionner.append(partiel_decale)
                 
@@ -152,7 +145,6 @@ def executer_etape_1(montant_b10_str):
     lignes_a_additionner = []
     lignes_zeros_seules = []
     
-    # Enregistrement de la valeur initiale
     montant_initial_b9 = int_vers_b9_bijective_pure(int(saisie))
     lignes_a_additionner.append(montant_initial_b9)
     
@@ -170,9 +162,10 @@ def executer_etape_1(montant_b10_str):
                 lignes_a_additionner.append(partiel_decale)
                 lignes_zeros_seules.append(partiel_decale)
                 
-                lignes_details.append(f"Rang 10^{nb_zeros_droite} -> {chiffre} x {ref_tableur} = {partiel_b9} (Alignement : {partiel_decale})")
+                # NETTOYAGE VISUEL ICI : On n'affiche plus du tout la mention "Alignement : XXX000"
+                lignes_details.append(f"Rang 10^{nb_zeros_droite} → {chiffre} x {ref_tableur} = {partiel_b9}")
         else:
-            lignes_details.append(f"Rang 10^{nb_zeros_droite} -> Repère de position 0 (Glissement)")
+            lignes_details.append(f"Rang 10^{nb_zeros_droite} → Repère de position 0 (Glissement)")
                 
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
     resultat_final_b9 = somme_verticale_multi_lignes_b9(lignes_a_additionner)
@@ -185,8 +178,6 @@ def executer_etape_2(chaine_b9_str):
         return "ERREUR : Saisie invalide."
         
     longueur_b10 = 1
-    
-    # Recherche précise de l'échelle par encadrement de chaînes pures
     while True:
         max_test = "9" * longueur_b10
         val_max_b9 = simuler_etape_1_pure(max_test)
@@ -194,7 +185,6 @@ def executer_etape_2(chaine_b9_str):
             break
         longueur_b10 += 1
         
-    # Reconstruction anatomique positionnelle chiffre par chiffre
     candidat_b10 = ["0"] * longueur_b10
     for position in range(longueur_b10):
         for test_chiffre in "123456789":
@@ -216,7 +206,7 @@ def executer_etape_2(chaine_b9_str):
     return "ERREUR : Déviation détectée dans la pyramide des constantes."
 
 # =============================================================================
-# INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
+# INTERFACE GRAPHIQUE STREAMLIT PURE SANS PARASITES
 # =============================================================================
 
 st.title("Architecture Mathématique")
@@ -268,3 +258,5 @@ with onglet2:
             st.code(resultat_b10, language="text")
 
 st.markdown("---")
+st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
+
