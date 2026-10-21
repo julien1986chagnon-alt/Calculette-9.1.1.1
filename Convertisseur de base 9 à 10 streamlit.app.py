@@ -9,7 +9,6 @@ st.set_page_config(
 # ==============================================================================
 # --- MATRICE DE COEFFICIENTS D'ORIGINE ---
 # ==============================================================================
-# TABLEUR_PASSAGES_ZERO associe les puissances géométriques à vos invariants
 TABLEUR_PASSAGES_ZERO = {
     10: "1", # Ligne 1
     100: "11", # Ligne 2
@@ -158,7 +157,6 @@ def executer_etape_1(montant_b10_str):
                 lignes_zeros_seules.append(partial_b9)
                 lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ {chiffre} x {ref_tableur} = {partial_b9}")
         else:
-            # Conservé en arrière-plan mais masqué à l'affichage par l'interface Streamlit
             lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ Repère de position 0 (Glissement)")
             
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
@@ -172,7 +170,7 @@ def executer_etape_2(chaine_b9_str):
         return "ERREUR : Saisie invalide."
         
     low = 1
-    high = 999999999999999999999999 # Encadrement numérique large (24 chiffres)
+    high = 999999999999999999999999  
     solution = None
     
     while low <= high:
@@ -223,16 +221,15 @@ with onglet1:
         else:
             st.markdown("#### 📖 Décomposition brute selon votre architecture :")
             for lignement in lignes:
-                # Élimine l'affichage des lignes polluées par le chiffre zéro
+                # La variable est correctement orthographiée ici (lignement)
                 if "Glissement" not in lignement:
-                    st.markdown(linement)
+                    st.markdown(lignement)
             
             st.markdown("---")
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # --- ACTION DIRECTE : MISE À JOUR ET AFFICHAGE SYNCHRONISÉ DE L'ÉTAPE REVERSE ---
-            # Calcule instantanément le chemin retour pour l'afficher au bas du même onglet
+            # Calcul et affichage immédiat de l'étape retour synchrone
             resultat_inverse_direct = executer_etape_2(zeros_b9)
             st.code(resultat_inverse_direct, language="text")
 
@@ -255,3 +252,4 @@ with onglet2:
 
 st.markdown("---")
 st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
+
