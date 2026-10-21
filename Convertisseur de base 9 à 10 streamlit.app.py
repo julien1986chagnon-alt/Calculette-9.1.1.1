@@ -1,4 +1,4 @@
-import streamlit as str
+import streamlit as st
 
 st.set_page_config(
     page_title="Architecture Mathématique",
@@ -180,7 +180,7 @@ def executer_etape_2(chaine_b9_str):
     for length in range(1, len(saisie) + 1):
         solution_trouvee = []
         if explore_arbre(""):
-            return solution_trouvee[0]
+            return solution_trouvee
             
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
@@ -253,3 +253,4 @@ with onglet2:
                 st.code(resultat_b10, language="text")
 
 st.markdown("---")
+
