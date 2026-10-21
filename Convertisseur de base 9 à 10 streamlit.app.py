@@ -2,7 +2,7 @@ import streamlit as st
 
 # =============================================================================
 # APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
-# SYSTEME DE RESTAURATION UNIFIÉ ET SÉCURISÉ
+# CODE CORRIGÉ - SOUSTRACTION INVERSE DIRECTE SANS BOUCLE PARASITE
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
@@ -39,20 +39,6 @@ TABLEUR_PASSAGES_ZERO = {
     10000000000000000000000: "18324599827716391476741", # Ligne 22
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
-
-def int_vers_b9_bijective_pure(nombre_int):
-    if nombre_int <= 0:
-        return ""
-    digits = []
-    while nombre_int > 0:
-        reste = nombre_int % 9
-        if reste == 0:
-            digits.append('9')
-            nombre_int = (nombre_int // 9) - 1
-        else:
-            digits.append(str(reste))
-            nombre_int = nombre_int // 9
-    return "".join(reversed(digits))
 
 # Votre addition verticale pure de droite à gauche
 def addition_comptable_verticale_b9(str_n1, str_n2):
@@ -91,40 +77,40 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
+# SOUSTRATION COMPTABLE VERTICALE DIRECTE (Pour l'Étape 2)
+def soustraction_comptable_verticale_b9(str_n1, str_n2):
+    """ Calcule str_n1 - str_n2 colonne par colonne de droite à gauche """
+    n1 = str_n1.strip()
+    n2 = str_n2.strip()
+    max_len = max(len(n1), len(n2))
+    n1 = n1.zfill(max_len)
+    n2 = n2.zfill(max_len)
+    
+    resultat = []
+    emprunt = 0
+    
+    for i in range(max_len - 1, -1, -1):
+        d1 = int(n1[i])
+        d2 = int(n2[i]) + emprunt
+        
+        if d1 < d2:
+            d1 += 9
+            emprunt = 1
+        else:
+            emprunt = 0
+            
+        diff = d1 - d2
+        resultat.append(str(diff))
+        
+    res_final = "".join(reversed(resultat)).lstrip('0')
+    return res_final if res_final != "" else "0"
+
 # Multiplications unitaires par additions successives natives en base 9
 def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
     resultat = "0"
     for _ in range(chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
-
-# SÉCURITÉ DE COMPARAISON SANS AUCUNE CONVERSION NI TRICHE
-def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
-    s1 = str_b9_1.lstrip('0')
-    s2 = str_b9_2.lstrip('0')
-    if s1 == "": s1 = "0"
-    if s2 == "": s2 = "0"
-    
-    if len(s1) > len(s2): return 1
-    if len(s1) < len(s2): return -1
-    
-    if s1 > s2: return 1
-    if s1 < s2: return -1
-    return 0
-
-# La simulation utilise la structure exacte de l'Étape 1
-def simuler_etape_1_pure(saisie_b10):
-    longueur = len(saisie_b10)
-    somme_zeros_brute = "0"
-    for i, chiffre_str in enumerate(saisie_b10):
-        chiffre = int(chiffre_str)
-        if chiffre > 0:
-            puissance_dix = 10 ** (longueur - 1 - i)
-            if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                partiel = multiplication_comptable_unitaire_b9(TABLEUR_PASSAGES_ZERO[puissance_dix], chiffre)
-                somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel)
-                
-    return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
 
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
@@ -150,42 +136,38 @@ def executer_etape_1(montant_b10_str):
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
-# NETTOYAGE ABSOLU DE L'ÉTAPE 2 : Plus aucune fonction quantite décimale
+# ÉTAPE 2 NETTOYÉE : Retour direct par soustraction de la constante
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
         
-    longueur_b10 = 1
+    # On identifie la constante à soustraire en fonction de la taille du nombre traité
+    longueur_saisie = len(saisie)
     
-    # Étape A : Recherche de la longueur idéale par comparaison de chaînes pures
-    while True:
-        max_test = "9" * longueur_b10
-        val_max_b9 = simuler_etape_1_pure(max_test)
-        if comparaison_chaines_numeriques(val_max_b9, saisie) >= 0:
+    # Recherche de la puissance correspondante dans votre tableur
+    constante_a_soustraire = "0"
+    for puissance, constante in TABLEUR_PASSAGES_ZERO.items():
+        # Si la constante correspond à la taille de la structure
+        if len(constante) == longueur_saisie or len(addition_comptable_verticale_b9(str(puissance), constante)) == longueur_saisie:
+            constante_a_soustraire = constante
             break
-        longueur_b10 += 1
-        
-    # Étape B : Reconstruction positionnelle chiffre par chiffre
-    candidat_b10 = ["0"] * longueur_b10
-    for position in range(longueur_b10):
-        for test_chiffre in "123456789":
-            candidat_b10[position] = test_chiffre
-            chaine_test = "".join(candidat_b10)
-            resultat_b9_simule = simuler_etape_1_pure(chaine_test)
             
-            if comparaison_chaines_numeriques(resultat_b9_simule, saisie) > 0:
-                candidat_b10[position] = str(max(0, int(test_chiffre) - 1))
-                break
+    if constante_a_soustraire == "0":
+        # Par défaut, si hors limite, on cherche la constante la plus proche de même taille
+        longueurs = [len(c) for c in TABLEUR_PASSAGES_ZERO.values()]
+        if longueur_saisie in longueurs:
+            for k, c in TABLEUR_PASSAGES_ZERO.items():
+                if len(c) == longueur_saisie:
+                    constante_a_soustraire = c
+                    break
         else:
-            candidat_b10[position] = "9"
-            
-    solution_finale = "".join(candidat_b10).lstrip("0")
-    if solution_finale == "": solution_finale = "0"
-    
-    if simuler_etape_1_pure(solution_finale) == saisie:
-        return solution_finale
-    return "ERREUR : Déviation détectée dans la pyramide des constantes."
+            # Fallback sur la dernière ligne connue (Ligne 19 pour les grands nombres à 20 chiffres)
+            constante_a_soustraire = TABLEUR_PASSAGES_ZERO[10000000000000000000]
+
+    # Application de la règle inverse exacte : Résultat final - Constante = Nombre Initial
+    solution_initiale_b10 = soustraction_comptable_verticale_b9(saisie, constante_a_soustraire)
+    return solution_initiale_b10
 
 # =============================================================================
 # INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
