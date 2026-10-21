@@ -119,8 +119,6 @@ def simuler_etape_1_pure(saisie_b10):
                 lignes_zeros_seules.append(partial_b9)
                 
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    
-    # --- CORRECTION ICI : Remplacement de lines_zeros_seules par lignes_zeros_seules ---
     return lignes_zeros_seules, somme_zeros_brute
 
 
@@ -153,6 +151,8 @@ def executer_etape_1(montant_b10_str):
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
 
+# --- AJOUT DU CACHE STREAMLIT POUR ACCÉLÉRER LA RECHERCHE INTENSIVE DE L'ÉTAPE 2 ---
+@st.cache_data(show_spinner="Reconstruction anatomique en cours...")
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
@@ -163,7 +163,6 @@ def executer_etape_2(chaine_b9_str):
     def explore_arbre(prefixe_actuel):
         if len(prefixe_actuel) == length:
             _, somme_brute = simuler_etape_1_pure(prefixe_actuel)
-            # Reconstitution de l'étape 1 finale : saisie_b10 + somme_zeros_brute
             res_simule = addition_comptable_verticale_b9(prefixe_actuel, somme_brute)
             if res_simule == saisie:
                 solution_trouvee.append(prefixe_actuel)
@@ -183,11 +182,10 @@ def executer_etape_2(chaine_b9_str):
                     return True
         return False
 
-    # ALGORITHME DE RECONSTRUCTION CHIFFRE PAR CHIFFRE SÉCURISÉ
     for length in range(1, len(saisie) + 1):
         solution_trouvee = []
         if explore_arbre(""):
-            return solution_trouvee[0]
+            return solution_trouvee[0] if solution_trouvee else "ERREUR"
             
     return "ERREUR : Saisie hors matrice ou déviation détectée."
 
