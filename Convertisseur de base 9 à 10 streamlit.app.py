@@ -7,37 +7,36 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# --- MATRICE DE COEFFICIENTS D'ORIGINE ---
+# --- MATRICE DE COEFFICIENTS D'ORIGINE (STRICTEMENT FIDÈLE À VOTRE PHOTO) ---
 # ==============================================================================
 TABLEUR_PASSAGES_ZERO = {
-    10: "1", # Ligne 1
+    10: "1", # Ligne 1 (Corrigé selon votre écran !)
     100: "11", # Ligne 2
     1000: "221", # Ligne 3
     10000: "2541", # Ligne 4
     100000: "27951", # Ligne 5
-    1000000: "318561", # Ligne 6
+    1000000: "310561", # Ligne 6
     10000000: "3515271", # Ligne 7
     100000000: "38667981", # Ligne 8
-    1000000000: "436458891", # Ligne 9
-    10000000000: "4812158911", # Ligne 10
-    100000000000: "53933759121", # Ligne 11
+    1000000000: "436458091", # Ligne 9
+    10000000000: "4812150911", # Ligne 10
+    100000000000: "53933759125", # Ligne 11
     1000000000000: "594372461331", # Ligne 12
     10000000000000: "6648197174641", # Ligne 13
     100000000000000: "74241278932151", # Ligne 14
     1000000000000000: "826654179353661", # Ligne 15
     10000000000000000: "9194295983891371", # Ligne 16
     100000000000000000: "112247366933915181", # Ligne 17
-    1000000000000000000: "1234732147374166991", # Ligne 18
-    10000000000000000000: "13563153632226848111", # Ligne 19
+    1000000000000000000: "1234737417374166991", # Ligne 18
+    10000000000000000000: "135631536322226848111", # Ligne 19
     100000000000000000000: "149524689954496439221", # Ligne 20
     1000000000000000000000: "1655772711549571852431", # Ligne 21
     10000000000000000000000: "18324599827716391476741", # Ligne 22
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
-
-# Indexation inverse stricte pour verrouiller le chemin retour des chiffres ronds
-DICTIONNAIRE_INVERSE_RONDS = {valeur: str(cle) for cle, valeur in TABLEUR_PASSAGES_ZERO.items()}
+# Inversion parfaite pour la correspondance bilatérale
+DICTIONNAIRE_SUITE_VERS_ROND = {valeur: str(cle) for cle, valeur in TABLEUR_PASSAGES_ZERO.items()}
 
 # ==============================================================================
 # --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
@@ -108,7 +107,6 @@ def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
 # ==============================================================================
 
 def simuler_etape_1_pure(saisie_b10):
-    """Calcule le résultat final en utilisant uniquement votre addition comptable."""
     longueur = len(saisie_b10)
     lignes_zeros_seules = []
     
@@ -124,7 +122,6 @@ def simuler_etape_1_pure(saisie_b10):
                 lignes_zeros_seules.append(partial_b9)
                 
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    # RÈGLE COMPTABLE DE REGROUPEMENT : Saisie initiale + Somme des extraits
     return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
 
 def executer_etape_1(montant_b10_str):
@@ -151,8 +148,6 @@ def executer_etape_1(montant_b10_str):
             lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ Repère de position 0 (Glissement)")
             
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    
-    # CORRECTION ICI : On utilise votre addition comptable pour obtenir 1221 (au lieu de 1331)
     resultat_final_b9 = addition_comptable_verticale_b9(saisie, somme_zeros_brute)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
@@ -162,11 +157,11 @@ def executer_etape_2(chaine_b9_str):
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
     
-    # SÉCURITÉ A : Si la chaîne saisie correspond directement à un extrait pur de zéro (ex: 221)
-    if saisie in DICTIONNAIRE_INVERSE_RONDS:
-        return DICTIONNAIRE_INVERSE_RONDS[saisie]
+    # Interception immédiate si c'est un invariant pur de votre tableau
+    if saisie in DICTIONNAIRE_SUITE_VERS_ROND:
+        return DICTIONNAIRE_SUITE_VERS_ROND[saisie]
         
-    # SÉCURITÉ B : Recherche par dichotomie exacte basée sur votre addition comptable
+    # Recherche dichotomique synchronisée sur votre addition comptable
     low = 1
     high = 999999999999999999999999  
     solution = None
@@ -226,7 +221,7 @@ with onglet1:
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # Marche arrière synchrone automatique
+            # Marche arrière instantanée branchée sur le résultat final comptabilisé
             resultat_inverse_direct = executer_etape_2(res_final)
             if "ERREUR" not in resultat_inverse_direct:
                 st.info(f"**🔷 Vérification Automatique Inverse (Retour à la Base 10) : {resultat_inverse_direct}**")
