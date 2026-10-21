@@ -2,7 +2,7 @@ import streamlit as st
 
 # =============================================================================
 # APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
-# CODE D'ORIGINE RESTAURÉ À L'IDENTIQUE
+# CODE D'ORIGINE MODIFIÉ SELON VOS INSTRUCTIONS
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
@@ -40,7 +40,6 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
-# VOS FONCTIONS DE CONVERSION CONSERVÉES À L'IDENTIQUE
 def int_vers_b9_bijective_pure(nombre_int):
     if nombre_int <= 0:
         return ""
@@ -55,7 +54,7 @@ def int_vers_b9_bijective_pure(nombre_int):
             nombre_int = nombre_int // 9
     return "".join(reversed(digits))
 
-# CORRECTION UNIQUE : Votre addition verticale pure de droite à gauche sans triche
+# Votre addition verticale pure de droite à gauche
 def addition_comptable_verticale_b9(str_n1, str_n2):
     n1 = str_n1.strip()
     n2 = str_n2.strip()
@@ -92,14 +91,13 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
-# CORRECTION UNIQUE : Multiplications par additions successives selon vos règles
+# Multiplications unitaires par additions successives natives en base 9
 def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
     resultat = "0"
     for _ in range(chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
-# SÉCURITÉ DE MATIÈRE POUR L'ÉTAPE 2
 def b9_bijective_vers_quantite(chaine_b9):
     total = 0
     for c in chaine_b9:
@@ -107,7 +105,7 @@ def b9_bijective_vers_quantite(chaine_b9):
             total = total * 9 + int(c)
     return total
 
-# VOTRE STRUCTURE DE SIMULATION INITIALE
+# Simulation interne Étape 1 réalignée
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     somme_zeros_brute = "0"
@@ -119,10 +117,10 @@ def simuler_etape_1_pure(saisie_b10):
                 partiel = multiplication_comptable_unitaire_b9(TABLEUR_PASSAGES_ZERO[puissance_dix], chiffre)
                 somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel)
                 
-    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie_b10))
-    return addition_comptable_verticale_b9(str_montant_b9, somme_zeros_brute)
+    # Utilisation directe du texte d'origine pour l'addition positionnelle finale
+    return addition_comptable_verticale_b9(saisie_b10, somme_zeros_brute)
 
-# VOTRE TRAITEMENT DE L'ÉTAPE 1 D'ORIGINE
+# CORRECTION EFFECTUÉE ICI : Utilisation de la chaîne brute saisie
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) == 0:
@@ -142,12 +140,12 @@ def executer_etape_1(montant_b10_str):
                 somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel_b9)
                 lignes_details.append(f"Rang 10^{longueur-1-i} -> {chiffre} x {ref_tableur} = {partiel_b9}")
                 
-    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie))
+    # On conserve directement le texte d'origine de la saisie (ex: "1000")
+    str_montant_b9 = saisie
     resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, somme_zeros_brute)
     
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
-# VOTRE TRAITEMENT DE L'ÉTAPE 2 D'ORIGINE
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
