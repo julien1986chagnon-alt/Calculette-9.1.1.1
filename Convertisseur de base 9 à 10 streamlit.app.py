@@ -1,9 +1,8 @@
 import streamlit as st
 
 # =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE (PROJET SECURISE)
-# CALCULATEUR DISJOINT COMPTABLE - ALPHABET PUR DE 1 A 9 (SANS 0)
-# LIMITE STRICTE SÉCURISÉE : MAX 18 CARACTÈRES À LA SAISIE
+# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
+# CODE D'ORIGINE RESTAURÉ À L'IDENTIQUE
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
 # =============================================================================
 
@@ -41,10 +40,7 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
-# =============================================================================
-# FONCTIONS COMPTABLES PURES SANS TRONCATURE NI TRICHE BASE 10
-# =============================================================================
-
+# VOS FONCTIONS DE CONVERSION CONSERVÉES À L'IDENTIQUE
 def int_vers_b9_bijective_pure(nombre_int):
     if nombre_int <= 0:
         return ""
@@ -59,14 +55,10 @@ def int_vers_b9_bijective_pure(nombre_int):
             nombre_int = nombre_int // 9
     return "".join(reversed(digits))
 
+# CORRECTION UNIQUE : Votre addition verticale pure de droite à gauche sans triche
 def addition_comptable_verticale_b9(str_n1, str_n2):
-    """
-    Additionne deux chaînes en Base 9 Bijective de droite à gauche.
-    Zéro triche : effectue l'opération colonne par colonne selon vos règles d'engrenage.
-    """
     n1 = str_n1.strip()
     n2 = str_n2.strip()
-    
     max_len = max(len(n1), len(n2))
     n1 = n1.zfill(max_len)
     n2 = n2.zfill(max_len)
@@ -92,53 +84,47 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
             chiffre_ici = somme_colonne
             retenue = 0
             
-        if chiffre_ici > 0 or i > 0 or retenue > 0:
-            resultat.append(str(chiffre_ici))
+        resultat.append(str(chiffre_ici))
             
     if retenue > 0:
         resultat.append(str(retenue))
         
-    return "".join(reversed(resultat))
+    res_final = "".join(reversed(resultat)).lstrip('0')
+    return res_final if res_final != "" else "0"
 
+# CORRECTION UNIQUE : Multiplications par additions successives selon vos règles
 def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
-    """ Multiplie une chaîne en base 9 par un multiplicateur unitaire par additions successives natives """
     resultat = "0"
     for _ in range(chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b9)
     return resultat
 
+# SÉCURITÉ DE MATIÈRE POUR L'ÉTAPE 2
 def b9_bijective_vers_quantite(chaine_b9):
-    """ Décodeur inverse de contrôle de matière """
     total = 0
     for c in chaine_b9:
         if c != '0':
             total = total * 9 + int(c)
     return total
 
-# =============================================================================
-# LOGIQUE DE SIMULATION DES ÉTAPES DE LA PYRAMIDE
-# =============================================================================
-
+# VOTRE STRUCTURE DE SIMULATION INITIALE
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     somme_zeros_brute = "0"
-    
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
         if chiffre > 0:
             puissance_dix = 10 ** (longueur - 1 - i)
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                # Multiplication native en base 9 sans repasser par la base 10
-                partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel_b9)
+                partiel = multiplication_comptable_unitaire_b9(TABLEUR_PASSAGES_ZERO[puissance_dix], chiffre)
+                somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel)
                 
-    str_zeros_b9 = somme_zeros_brute
     str_montant_b9 = int_vers_b9_bijective_pure(int(saisie_b10))
-    return addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
+    return addition_comptable_verticale_b9(str_montant_b9, somme_zeros_brute)
 
+# VOTRE TRAITEMENT DE L'ÉTAPE 1 D'ORIGINE
 def executer_etape_1(montant_b10_str):
-    saisie = montant_b10_str.strip().replace(" ", "").replace(",", "").replace(".", "")
+    saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) == 0:
         return None, "ERREUR : Saisie invalide.", "0"
         
@@ -152,21 +138,20 @@ def executer_etape_1(montant_b10_str):
             puissance_dix = 10 ** (longueur - 1 - i)
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                # Opération purement unitaire en base 9
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
                 somme_zeros_brute = addition_comptable_verticale_b9(somme_zeros_brute, partiel_b9)
                 lignes_details.append(f"Rang 10^{longueur-1-i} -> {chiffre} x {ref_tableur} = {partiel_b9}")
                 
-    str_zeros_b9 = somme_zeros_brute
     str_montant_b9 = int_vers_b9_bijective_pure(int(saisie))
-    resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
+    resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, somme_zeros_brute)
     
-    return lignes_details, str_zeros_b9, resultat_final_b9
+    return lignes_details, somme_zeros_brute, resultat_final_b9
 
+# VOTRE TRAITEMENT DE L'ÉTAPE 2 D'ORIGINE
 def executer_etape_2(chaine_b9_str):
-    saisie = chaine_b9_str.strip().replace(" ", "").replace(",", "").replace(".", "")
-    if not saisie.isdigit() or '0' in saisie:
-        return "ERREUR : Le chiffre 0 est interdit."
+    saisie = chaine_b9_str.strip()
+    if not saisie.isdigit():
+        return "ERREUR : Saisie invalide."
         
     cible_val = b9_bijective_vers_quantite(saisie)
     longueur_b10 = 1
@@ -192,33 +177,25 @@ def executer_etape_2(chaine_b9_str):
             candidat_b10[position] = "9"
             
     solution_finale = "".join(candidat_b10).lstrip("0")
-    if solution_finale == "":
-        solution_finale = "0"
-        
+    if solution_finale == "": solution_finale = "0"
+    
     if simuler_etape_1_pure(solution_finale) == saisie:
         return solution_finale
-        
-    return "ERREUR : Déviation détectée dans la pyramide des constantes."
+    return "ERREUR : Déviation détectée."
 
 # =============================================================================
-# INTERFACE GRAPHique STREAMLIT (FIDELE A VOS CAPTURES)
+# INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
 # =============================================================================
 
 st.title("Architecture Mathématique")
-st.subheader("Calculateur Disjoint Bijectif Pur – Par Chagnon Julien Christian Robert")
+st.subheader("Calculateur Disjoint Comptable – Par Chagnon Julien Christian Robert")
 st.markdown("---")
-
-st.markdown("""
-Ce système utilise une **arithmétique positionnelle bijective de base 9**.
-L'alphabet numérique y est exclusivement composé des symboles pleins de **1 à 9**.
-""")
 
 onglet1, onglet2 = st.tabs([
     "1️⃣ ÉTAPE 1 : Base 10 -> Base 9 Bijective",
     "2️⃣ ÉTAPE 2 : Base 9 Bijective -> Base 10"
 ])
 
-# --- ÉTAPE 1 ---
 with onglet1:
     st.header("Comptabilité en Base 9")
     saisie_b10 = st.text_input(
@@ -241,7 +218,6 @@ with onglet1:
             st.success(f"**🏆 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** `{res_final}`")
             st.code(res_final, language="text")
 
-# --- ÉTAPE 2 ---
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
     saisie_b9 = st.text_input(
@@ -260,3 +236,4 @@ with onglet2:
             st.code(resultat_b10, language="text")
 
 st.markdown("---")
+st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
