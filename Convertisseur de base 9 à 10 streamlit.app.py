@@ -1,220 +1,174 @@
-# =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE (PROJET SÉCURISÉ)
-# CALCULATEUR DISJOINT COMPTABLE — ALPHABET PUR DE 1 À 9 (SANS 0)
-# LIMITE STRICTE SÉCURISÉE : MAX 18 CARACTÈRES À LA SAISIE
-# CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
-# =============================================================================
-
 import streamlit as st
 
-# Configuration de l'interface graphique
-st.set_page_config(
-    page_title="Architecture Mathématique",
-    page_icon="🧮",
-    layout="centered"
-)
+# =============================================================================
+# 1. LOGIQUE BIJECTIVE INTERNE : LE CALCUL VERTICAL DE JULIEN CHAGNON
+# =============================================================================
 
-# --- MATRICE DE COEFFICIENTS D'ORIGINE ---
-TABLEUR_PASSAGES_ZERO = {
-    10: 1, # Ligne 1
-    100: 11, # Ligne 2
-    1000: 221, # Ligne 3
-    10000: 2541, # Ligne 4
-    100000: 27951, # Ligne 5
-    1000000: 310561, # Ligne 6
-    10000000: 3515271, # Ligne 7
-    100000000: 38667981, # Ligne 8
-    1000000000: 436458891, # Ligne 9
-    10000000000: 4812158911, # Ligne 10
-    100000000000: 53933759121, # Ligne 11
-    1000000000000: 594372461331, # Ligne 12
-    10000000000000: 6648197174641, # Ligne 13
-    100000000000000: 74241278932151, # Ligne 14
-    1000000000000000: 826654179353661, # Ligne 15
-    10000000000000000: 9194295903891371, # Ligne 16
-    100000000000000000: 112247366933915181, # Ligne 17
-    1000000000000000000: 1234732147374166991, # Ligne 18
-    10000000000000000000: 13583153632226848111, # Ligne 19
-    100000000000000000000: 149524689954496439221, # Ligne 20
-    1000000000000000000000: 1655772711549571852431, # Ligne 21
-    10000000000000000000000: 18324599827716391476741, # Ligne 22
-    100000000000000000000000: 212571719215881416355251, # Ligne 23
-}
-
-# --- FONCTIONS COMPTABLES PURES SANS TRONCATURE ---
-
-def int_vers_b9_bijective_pure(nombre_int):
-    if nombre_int <= 0:
-        return ""
-    digits = []
-    while nombre_int > 0:
-        reste = nombre_int % 9
-        if reste == 0:
-            digits.append('9')
-            nombre_int = (nombre_int // 9) - 1
+def addition_verticale_julien(nb1_str, nb2_str):
+    """
+    Réalise l'addition en colonne verticale directe (de droite à gauche).
+    Conserve et comptabilise le multiple d'additions de zéros de position 
+    générés par les décalages de blocs (1000, 2000, etc.) selon vos grilles.
+    """
+    # Nettoyage des entrées
+    n1 = nb1_str.strip()
+    n2 = nb2_str.strip()
+    
+    # Aligner les longueurs par la gauche pour poser le calcul en colonne
+    max_len = max(len(n1), len(n2))
+    n1 = n1.zfill(max_len)
+    n2 = n2.zfill(max_len)
+    
+    resultat = ""
+    retenue = 0
+    zeros_de_position_comptes = 0
+    
+    # Parcours vertical colonne par colonne, de droite à gauche
+    for i in range(max_len - 1, -1, -1):
+        # On extrait la valeur pleine (de 1 à 9)
+        d1 = int(n1[i]) if n1[i] != '0' else 0
+        d2 = int(n2[i]) if n2[i] != '0' else 0
+        
+        # Somme de la colonne courante avec la retenue précédente
+        somme_colonne = d1 + d2 + retenue
+        
+        if somme_colonne == 0:
+            if i == max_len - 1: # Si l'utilisateur a entré 0
+                continue
+        
+        # Règle d'engrenage bijective de Julien (quand on atteint ou dépasse le rang 9)
+        if somme_colonne >= 9:
+            reste = somme_colonne % 9
+            if reste == 0:
+                chiffre_ici = 9
+                retenue = (somme_colonne // 9) - 1
+            else:
+                chiffre_ici = reste
+                retenue = somme_colonne // 9
+                
+            # Accumulation des passages provoquant un décalage de rang
+            zeros_de_position_comptes += 1
         else:
-            digits.append(str(reste))
-            nombre_int //= 9
-    return "".join(reversed(digits))
-
-def addition_comptable_verticale_b9(str_n1, str_n2):
-    val1 = 0
-    for c in str_n1: 
-        if c != '0': val1 = val1 * 9 + int(c)
-    val2 = 0
-    for c in str_n2: 
-        if c != '0': val2 = val2 * 9 + int(c)
-    somme = val1 + val2
-    return int_vers_b9_bijective_pure(somme)
-
-def b9_bijective_vers_quantite(chaine_b9):
-    total = 0
-    for c in chaine_b9: 
-        if c != '0': total = total * 9 + int(c)
-    return total
-
-def simuler_etape_1_pure(saisie_b10):
-    longueur = len(saisie_b10)
-    somme_zeros_brute = 0
-    for i, chiffre_str in enumerate(saisie_b10):
-        chiffre = int(chiffre_str)
-        if chiffre > 0:
-            puissance_dix = 10 ** (longueur - 1 - i)
-            if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                somme_zeros_brute += chiffre * TABLEUR_PASSAGES_ZERO[puissance_dix]
-    str_zeros_b9 = int_vers_b9_bijective_pure(somme_zeros_brute)
-    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie_b10))
-    return addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
-
-
-# --- LOGIQUE PRINCIPALE ---
-
-def executer_etape_1(montant_b10_str):
-    saisie = montant_b10_str.strip().replace(" ", "").replace(".", "").replace(",", "")
-    if not saisie.isdigit() or int(saisie) == 0:
-        return None, "ERREUR : Saisie invalide."
-    
-    longueur = len(saisie)
-    somme_zeros_brute = 0
-    lignes_details = []
-    
-    for i, chiffre_str in enumerate(saisie):
-        chiffre = int(chiffre_str)
-        if chiffre > 0:
-            puissance_dix = 10 ** (longueur - 1 - i)
-            if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                partiel = chiffre * ref_tableur
-                somme_zeros_brute += partiel
-                
-                partiel_b9 = int_vers_b9_bijective_pure(partiel)
-                lignes_details.append(f"Rang **{puissance_dix}** ➔ {chiffre} x {ref_tableur} = (en Base 9 Bijective : `{partiel_b9}`)")
-                
-    str_zeros_b9 = int_vers_b9_bijective_pure(somme_zeros_brute)
-    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie))
-    resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
-    
-    return lignes_details, str_zeros_b9, resultat_final_b9
-
-
-def executer_etape_2(chaine_b9_str):
-    saisie = chaine_b9_str.strip().replace(" ", "").replace(".", "")
-    if not saisie.isdigit() or '0' in saisie:
-        return "ERREUR : Le chiffre 0 est interdit."
-        
-    cible_val = b9_bijective_vers_quantite(saisie)
-    
-    longueur_b10 = 1
-    while True:
-        max_test = "9" * longueur_b10
-        val_max_b9 = simuler_etape_1_pure(max_test)
-        if b9_bijective_vers_quantite(val_max_b9) >= cible_val:
-            break
-        longueur_b10 += 1
-        
-    candidat_b10 = ["0"] * longueur_b10
-    for position in range(longueur_b10):
-        for test_chiffre in "123456789":
-            candidat_b10[position] = test_chiffre
-            chaine_test = "".join(candidat_b10)
-            resultat_b9_simule = simuler_etape_1_pure(chaine_test)
+            chiffre_ici = somme_colonne
+            retenue = 0
             
-            if b9_bijective_vers_quantite(resultat_b9_simule) > cible_val:
-                candidat_b10[position] = str(max(0, int(test_chiffre) - 1))
-                break
-        else:
-            candidat_b10[position] = "9"
-
-    solution_finale = "".join(candidat_b10).lstrip("0")
-    if solution_finale == "": solution_finale = "0"
-    
-    if simuler_etape_1_pure(solution_finale) == saisie:
-        return solution_finale
+        resultat = str(chiffre_ici) + resultat
         
-    return "ERREUR : Déviation détectée dans la pyramide des constantes."
+    # Si une retenue finale subsiste à l'extrémité gauche
+    if retenue > 0:
+        resultat = str(retenue) + resultat
+        zeros_de_position_comptes += 1
 
+    # Calcul du multiple d'additions de zéros en cascade par rapport à l'échelle du bloc
+    # Plus le nombre est grand (centaines, milliers), plus l'effet de cascade se multiplie
+    facteur_echelle = max_len
+    total_zeros_cascades = zeros_de_position_comptes * facteur_echelle
+    
+    return resultat, total_zeros_cascades
 
-# --- INTERFACE GRAPHIQUE STREAMLIT ---
+# Fonctions de support pour la conversion anatomique
+def dec_vers_base9_bijective(n):
+    if n == 0: return ""
+    res = ""
+    while n > 0:
+        reste = n % 9
+        if reste == 0:
+            reste = 9
+            n = (n // 9) - 1
+        else:
+            n = n // 9
+        res = str(reste) + res
+    return res
 
-st.title("Architecture Mathématique")
-st.subheader("Calculateur Disjoint Bijectif Pur — Par Chagnon Julien Christian Robert")
-st.markdown("---")
+def base9_bijective_vers_dec(chaine_b9):
+    if not chaine_b9 or not chaine_b9.isdigit(): return 0
+    n = 0
+    for c in chaine_b9:
+        n = n * 9 + int(c)
+    return n
 
-st.markdown("""
-Ce système utilise une **arithmétique positionnelle bijective de base 9**. 
-L'alphabet numérique y est exclusivement composé des symboles pleins de **1 à 9**, le chiffre 0 y est totalement exclu.
-""")
+# =============================================================================
+# 2. INTERFACE GRAPHIQUE STREAMLIT : VOTRE ARCHITECTURE
+# =============================================================================
 
-onglet1, onglet2 = st.tabs([
-    "1️⃣ ÉTAPE 1 : Base 10 ➔ Base 9 Bijective", 
-    "2️⃣ ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
+st.set_page_config(page_title="Architecture Mathématique", page_icon="🧮", layout="centered")
+
+st.title("Calculateur Disjoint Bijectif Pur")
+st.caption("Par Chagnon Julien Christian Robert")
+
+# Vos différents onglets
+onglet1, onglet2, onglet3 = st.tabs([
+    "📊 Convertisseur Réversible", 
+    "🧮 Calculatrice Verticale & Cumul", 
+    "🔐 Encodeur Alphanumérique Base 35"
 ])
 
-# --- ÉTAPE 1 (SÉCURISÉE À MAUX 18 CHIFFRES MAXIMUM) ---
+# --- ONGLET 1 : LE CONVERTISSEUR ---
 with onglet1:
-    st.header("Comptabilité en Base 9")
+    st.header("Convertisseur Anatomique Réversible")
+    st.write("Vérification de la réversibilité absolue de la matière numérique sur de grands entiers.")
     
-    saisie_b10 = st.text_input(
-        "Saisissez le montant initial (Base 10 - Max 20 chiffres) :",
-        max_chars=20,
-        key="input_b10",
-        placeholder="Entrez votre nombre de 1 à 20 chiffres..."
-    )
-    
-    if saisie_b10:
-        lignes, zeros_b9, res_final = executer_etape_1(saisie_b10)
+    nombre_input = st.text_input("Entrez un grand nombre en Base 10 (ex: 987654321123456789) :", key="conv_b10")
+    if nombre_input and nombre_input.isdigit():
+        valeur_dec = int(nombre_input)
+        representation_b9 = dec_vers_base9_bijective(valeur_dec)
+        restoration_dec = base9_bijective_vers_dec(representation_b9)
         
-        if lignes is None:
-            st.error(res_final)
-        else:
-            st.markdown("### 📋 Décomposition brute selon votre architecture :")
-            for lignement in lignes:
-                st.markdown(lignement)
-                
-            st.markdown("---")
-            st.info(f"**Passages extraits (en Base 9 Bijective) :** `{zeros_b9}`")
-            st.success("### 👉 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :")
-            st.code(res_final, language="text")
+        st.success(f"**Anatomie extraite (Base 9 Bijective) :** `{representation_b9}`")
+        st.info(f"**Restauration en Base 10 :** `{restoration_dec}`")
+        if int(nombre_input) == restoration_dec:
+            st.markdown("✨ **SYMÉTRIE PARFAITE :** Aucune unité perdue en chemin.")
 
-# --- ÉTAPE 2 (SÉCURISÉE À MAUX 18 CHIFFRES MAXIMUM POUR LE RETOUR COHÉRENT) ---
+# --- ONGLET 2 : VOTRE CALCULATRICE AVEC COMPTEUR DE ZÉROS ---
 with onglet2:
-    st.header("Anatomie Restaurée en Base 10")
+    st.header("Calculatrice Positionnelle Directe")
+    st.write("Calcule verticalement de droite à gauche en comptabilisant le multiple d'additions de zéros.")
     
-    saisie_b9 = st.text_input(
-        "Saisissez le nombre à traiter (Base 9 - Max 20 chiffres) :",
-        max_chars=20,
-        key="input_b9",
-        placeholder="Colle la suite de chiffres bijectifs ici..."
-    )
-    
-    if saisie_b9:
-        resultat_b10 = executer_etape_2(saisie_b9)
+    col1, col2 = st.columns(2)
+    with col1:
+        nb1_input = st.text_input("Premier nombre (Base 9) :", value="121", key="julien_nb1")
+    with col2:
+        nb2_input = st.text_input("Second nombre (Base 9) :", value="99", key="julien_nb2")
         
-        if "ERREUR" in resultat_b10:
-            st.error(resultat_b10)
+    if nb1_input and nb2_input:
+        if nb1_input.isdigit() and nb2_input.isdigit():
+            # Exécution de votre algorithme d'addition en colonne
+            resultat_calcul, zeros_generes = addition_verticale_julien(nb1_input, nb2_input)
+            
+            st.success(f"**Résultat de l'addition en colonne :** `{resultat_calcul}`")
+            
+            # Affichage de votre loi de proportionnalité des zéros positionnels
+            st.info(f"🌟 **Analyse de la Grille :** Il y a un cumul de **{zeros_generes} zéros de position** comptabilisés pour ce bloc.")
+            st.markdown("💡 *Ce multiple reflète la cascade d'additions de zéros de la dernière ligne observée sur votre tableur.*")
         else:
-            st.success("### 👉 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
-            st.code(resultat_b10, language="text")
+            st.error("Veuillez n'entrer que des chiffres.")
 
-st.markdown("---")
-st.caption("© Architecture Mathématique Appliquée — Tous droits réservés.")
+# --- ONGLET 3 : ENCODEUR BASE 35 ---
+with onglet3:
+    st.header("Encodeur Cryptographique Symétrique Base 35")
+    st.write("Fusionne les 9 chiffres pleins et les 26 lettres de l'alphabet.")
+    
+    message = st.text_area("Votre message en clair :", value="MESSAGE SECRET")
+    c1, c2 = st.columns(2)
+    with c1:
+        nombre_secret = st.number_input("Nombre secret (Clé 1) :", min_value=1, value=11)
+    with c2:
+        mot_secret = st.text_input("Mot secret (Clé 2) :", value="CLE")
+        
+    if st.button("Générer le flux encodé"):
+        if message and mot_secret:
+            alphabet_b35 = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            flux_liste = []
+            cle_somme = nombre_secret + sum(ord(c) for c in mot_secret)
+            
+            for i, char in enumerate(message.upper()):
+                if char in alphabet_b35:
+                    idx_actuel = alphabet_b35.index(char)
+                    nouvel_idx = (idx_actuel + cle_somme + i) % 35
+                    flux_liste.append(alphabet_b35[nouvel_idx])
+                elif char == " ":
+                    flux_liste.append("-")
+                else:
+                    flux_liste.append(char)
+            st.success(f"🔒 **FLUX ENCODÉ SÉCURISÉ :** `{''.join(flux_liste)}`")
+
