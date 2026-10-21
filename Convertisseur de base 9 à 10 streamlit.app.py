@@ -1,80 +1,55 @@
 import streamlit as st
 
-st.set_page_config(
-    page_title="Architecture Mathématique",
-    page_icon="🔢",
-    layout="centered"
-)
-
-# ==============================================================================
-# --- MATRICE DE COEFFICIENTS D'ORIGINE COMPLET (23 LIGNES STRICTES) ---
-# ==============================================================================
 TABLEUR_PASSAGES_ZERO = {
-    10: "1", # Ligne 1
-    100: "11", # Ligne 2
-    1000: "221", # Ligne 3
-    10000: "2541", # Ligne 4
-    100000: "27951", # Ligne 5
-    1000000: "318561",# Ligne 6
-    10000000: "3515271", # Ligne 7
-    100000000: "38667981", # Ligne 8
-    1000000000: "436458891", # Ligne 9
-    10000000000: "4812158911", # Ligne 10
-    100000000000: "53933759121", # Ligne 11
-    1000000000000: "594372461331", # Ligne 12
-    10000000000000: "6648197174641", # Ligne 13
-    100000000000000: "74241278932151", # Ligne 14
-    1000000000000000: "826654179353661", # Ligne 15
-    10000000000000000: "9194295983891371", # Ligne 16
-    100000000000000000: "112247366933915181", # Ligne 17
-    1000000000000000000: "1234732147374166991", # Ligne 18
-    10000000000000000000: "1356315363226848111", # Ligne 19
-    100000000000000000000: "149524689954496439221", # Ligne 20
-    1000000000000000000000: "165572711549571852431", # Ligne 21
-    10000000000000000000000: "18324599827716391476741", # Ligne 22
-    100000000000000000000000: "212571719215881416355251" # Ligne 23
+    10: "1",
+    100: "11",
+    1000: "221",
+    10000: "2541",
+    100000: "27951",
+    1000000: "318561",
+    10000000: "3515271",
+    100000000: "38667981",
+    1000000000: "436458891",
+    10000000000: "4812158911",
+    100000000000: "53933759121",
+    1000000000000: "594372461331",
+    10000000000000: "66481971724641",
+    100000000000000: "74241278932151",
+    1000000000000000: "826654179353661",
+    10000000000000000: "9194295983891371",
+    100000000000000000: "112247366933915181",
+    1000000000000000000: "1234732147374166951",
+    10000000000000000000: "1356315363226848111",
+    100000000000000000000: "149524689554496435221",
+    1000000000000000000000: "165572711549571852431",
+    10000000000000000000000: "18324598827716391476741",
+    100000000000000000000000: "212571719215881416355251"
 }
 
-# ==============================================================================
-# --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
-# ==============================================================================
+if "memoire_session" not in st.session_state:
+    st.session_state.memoire_session = {}
 
 def addition_comptable_verticale_b9(str_n1, str_n2):
-    n1 = str_n1.strip()
-    n2 = str_n2.strip()
+    n1, n2 = str_n1.strip(), str_n2.strip()
     max_len = max(len(n1), len(n2))
-    n1 = n1.zfill(max_len)
-    n2 = n2.zfill(max_len)
-    
-    resultat = []
-    retenue = 0
-    
+    n1, n2 = n1.zfill(max_len), n2.zfill(max_len)
+    resultat, retenue = [], 0
     for i in range(max_len - 1, -1, -1):
         d1 = int(n1[i]) if n1[i] != '0' else 0
         d2 = int(n2[i]) if n2[i] != '0' else 0
-        
         somme_colonne = d1 + d2 + retenue
-        
         if somme_colonne >= 9:
             reste = somme_colonne % 9
-            if reste == 0:
-                chiffre_ici = 9
-                retenue = (somme_colonne // 9) - 1
-            else:
-                chiffre_ici = reste
-                retenue = somme_colonne // 9
+            chiffre_ici = 9 if reste == 0 else reste
+            retenue = (somme_colonne // 9) - 1 if reste == 0 else somme_colonne // 9
         else:
             chiffre_ici = somme_colonne
             retenue = 0
-            
         resultat.append(str(chiffre_ici))
-        
     if retenue > 0:
         resultat.append(str(retenue))
-        
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
-
 
 def somme_verticale_multi_lignes_b9(liste_chaines):
     total = "0"
@@ -82,173 +57,162 @@ def somme_verticale_multi_lignes_b9(liste_chaines):
         total = addition_comptable_verticale_b9(total, chaine)
     return total
 
-
 def multiplication_comptable_unitaire_b9(str_b0, chiffre_int):
     resultat = "0"
     for _ in range(chiffre_int):
         resultat = addition_comptable_verticale_b9(resultat, str_b0)
     return resultat
 
-
 def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
-    s1 = str_b9_1.lstrip('0')
-    s2 = str_b9_2.lstrip('0')
+    s1, s2 = str_b9_1.lstrip('0'), str_b9_2.lstrip('0')
     if s1 == "": s1 = "0"
     if s2 == "": s2 = "0"
-    
     if len(s1) > len(s2): return 1
     if len(s1) < len(s2): return -1
     if s1 > s2: return 1
     if s1 < s2: return -1
     return 0
 
-
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     lignes_zeros_seules = []
-    
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
         nb_zeros_droite = longueur - 1 - i
-        
         if chiffre > 0:
             puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
                 lignes_zeros_seules.append(partial_b9)
-                
-    somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    return lignes_zeros_seules, somme_zeros_brute
-
+    return lignes_zeros_seules, somme_verticale_multi_lignes_b9(lignes_zeros_seules)
 
 def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) == 0:
-        return None, "ERREUR : Saisie invalide.", "0"
-        
+        return None, "ERREUR", "0"
     longueur = len(saisie)
-    lignes_details = []
-    lignes_zeros_seules = []
-    
+    lignes_details, lignes_zeros_seules = [], []
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
         nb_zeros_droite = longueur - 1 - i
-        
         if chiffre > 0:
             puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
                 lignes_zeros_seules.append(partial_b9)
-                lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ ({chiffre}) x ({ref_tableur}) = {partial_b9}")
-        else:
-            lignes_details.append(f"Rang 10^{nb_zeros_droite} ➔ Repère de position 0 (Glissement)")
-            
+                lignes_details.append(f"Rang 10^{nb_zeros_droite} -> ({chiffre}) x ({ref_tableur}) = {partial_b9}")
     somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
     resultat_final_b9 = addition_comptable_verticale_b9(saisie, somme_zeros_brute)
-    
     return lignes_details, somme_zeros_brute, resultat_final_b9
 
-
-# --- AJOUT DU CACHE STREAMLIT POUR ACCÉLÉRER LA RECHERCHE INTENSIVE DE L'ÉTAPE 2 ---
-@st.cache_data(show_spinner="Reconstruction anatomique en cours...")
 def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
-    if not saisie.isdigit():
-        return "ERREUR : Saisie invalide."
-        
     solution_trouvee = []
-    
     def explore_arbre(prefixe_actuel):
         if len(prefixe_actuel) == length:
             _, somme_brute = simuler_etape_1_pure(prefixe_actuel)
-            res_simule = addition_comptable_verticale_b9(prefixe_actuel, somme_brute)
-            if res_simule == saisie:
+            if addition_comptable_verticale_b9(prefixe_actuel, somme_brute) == saisie:
                 solution_trouvee.append(prefixe_actuel)
-                return True
             return False
-            
         taille_restante = length - len(prefixe_actuel)
-        _, lim_haute_somme = simuler_etape_1_pure(prefixe_actuel + "1" * taille_restante)
-        limite_haute = addition_comptable_verticale_b9(prefixe_actuel + "1" * taille_restante, lim_haute_somme)
-        
-        _, lim_basse_somme = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
-        limite_basse = addition_comptable_verticale_b9(prefixe_actuel + "9" * taille_restante, lim_basse_somme)
-        
-        if comparaison_chaines_numeriques(saisie, limite_basse) >= 0 or len(saisie) >= len(limite_haute):
+        _, lim_basse_somme = simuler_etape_1_pure(prefixe_actuel + "1" * taille_restante)
+        limite_basse = addition_comptable_verticale_b9(prefixe_actuel + "1" * taille_restante, lim_basse_somme)
+        _, lim_haute_somme = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
+        limite_haute = addition_comptable_verticale_b9(prefixe_actuel + "9" * taille_restante, lim_haute_somme)
+        if comparaison_chaines_numeriques(saisie, limite_basse) >= 0 and comparaison_chaines_numeriques(saisie, limite_haute) <= 0:
             for chiffre_choisi in range(1, 10):
-                if explore_arbre(prefixe_actuel + str(chiffre_choisi)):
-                    return True
+                explore_arbre(prefixe_actuel + str(chiffre_choisi))
         return False
-
     for length in range(1, len(saisie) + 1):
-        solution_trouvee = []
-        if explore_arbre(""):
-            return solution_trouvee[0] if solution_trouvee else "ERREUR"
-            
-    return "ERREUR : Saisie hors matrice ou déviation détectée."
+        explore_arbre("")
+    return solution_trouvee if solution_trouvee else "ERREUR"
 
+def etape_1_logique_zero(saisie_b10):
+    saisie = saisie_b10.strip().replace(" ", "")
+    longueur = len(saisie)
+    blocs_b9, lignes_details = [], []
+    for i, chiffre_str in enumerate(saisie):
+        if chiffre_str != '0':
+            montant_positionnel = chiffre_str + '0' * (longueur - 1 - i)
+            lignes, _, res_b9 = executer_etape_1(montant_positionnel)
+            if lignes:
+                blocs_b9.append(res_b9)
+                lignes_details.extend(lignes)
+    if not blocs_b9: return None, "ERREUR", "0"
+    return lignes_details, "Calcul combiné", somme_verticale_multi_lignes_b9(blocs_b9)
 
-# ==============================================================================
-# --- INTERFACE GRAPHIQUE STREAMLIT ---
-# ==============================================================================
+def simuler_etape_1_logique_zero(saisie_b10):
+    longueur = len(saisie_b10)
+    blocs_b9 = []
+    for i, chiffre_str in enumerate(saisie_b10):
+        if chiffre_str != '0':
+            chiffre = int(chiffre_str)
+            puissance_dix = 10 ** (longueur - 1 - i)
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
+                blocs_b9.append(addition_comptable_verticale_b9(chiffre_str + '0' * (longueur - 1 - i), partial_b9))
+    return somme_verticale_multi_lignes_b9(blocs_b9) if blocs_b9 else "0"
 
-st.title("Architecture Mathématique")
-st.markdown("### Calculateur Disjoint Comptable - Par Chagnon Julien Christian Robert")
-st.markdown("---")
+def etape_2_logique_zero(saisie_b9):
+    solution_trouvee = []
+    def explore_arbre_zero(prefixe_actuel, length):
+        if len(prefixe_actuel) == length:
+            if simuler_etape_1_logique_zero(prefixe_actuel) == saisie_b9:
+                solution_trouvee.append(prefixe_actuel)
+            return False
+        taille_restante = length - len(prefixe_actuel)
+        limite_basse = simuler_etape_1_logique_zero(prefixe_actuel + "0" * taille_restante)
+        limite_haute = simuler_etape_1_logique_zero(prefixe_actuel + "9" * taille_restante)
+        if comparaison_chaines_numeriques(saisie_b9, limite_basse) >= 0 and comparaison_chaines_numeriques(saisie_b9, limite_haute) <= 0:
+            debut_range = 1 if prefixe_actuel == "" else 0
+            for chiffre_choisi in range(debut_range, 10):
+                explore_arbre_zero(prefixe_actuel + str(chiffre_choisi), length)
+        return False
+    for length in range(1, len(saisie_b9) + 1):
+        explore_arbre_zero("", length)
+    return solution_trouvee if solution_trouvee else "ERREUR"
 
-st.info("**ANALYSE EXTENSION THÈSE : MODULE CHIFFRES PLEINS STANDARDS**")
+st.title("ARCHITECTURE MATHÉMATIQUE - CALCULATEUR DISJOINT")
+st.write("ANALYSE EXTENSION THÈSE")
 
-onglet1, onglet2 = st.tabs([
-    "🔹 ÉTAPE 1 : Base 10 ➔ Base 9 Bijective",
-    "🔹 ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
-])
+onglet1, onglet2 = st.tabs(["ÉTAPE 1 : Base 10 -> Base 9", "ÉTAPE 2 : Base 9 -> Base 10"])
 
 with onglet1:
     st.header("Comptabilité en Base 9")
-    saisie_brute = st.text_input(
-        "Saisissez le montant initial (Base 10 - INTERDICTION DU CHIFFRE 0) :",
-        max_chars=20,
-        key="input_b10",
-        placeholder="Exemple : 987654321..."
-    )
-    
-    if saisie_brute:
-        if "0" in saisie_brute:
-            st.error("❌ SAISIE INTERDITE : Le chiffre '0' est invalide dans ce module dédié aux chiffres pleins.")
-        else:
-            lignes, zeros_b9, res_final = executer_etape_1(saisie_brute)
-            if lignes is None:
-                st.error(zeros_b9)
+    # max_chars=20 bloque la saisie à 20 chiffres maximum
+    saisie_brute = st.text_input("Saisissez le montant initial (Base 10) :", key="input_e1", max_chars=20)
+    if st.button("Calculer l'Étape 1"):
+        if saisie_brute:
+            if len(saisie_brute) > 20:
+                st.error("❌ La saisie dépasse la limite de 20 chiffres autorisée.")
             else:
-                st.markdown("#### 🧩 Décomposition brute selon votre architecture :")
-                for lignement in lignes:
-                    if "Glissement" not in lignement:
-                        st.markdown(lignement)
-                        
-                st.markdown("---")
-                st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
-                st.success(f"🏆 **RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
+                if '0' in saisie_brute:
+                    st.info("💡 Détection de zéro mémoire. Traitement par décomposition.")
+                    lignes, _, res_final = etape_1_logique_zero(saisie_brute)
+                else:
+                    lignes, _, res_final = executer_etape_1(saisie_brute)
+                
+                st.session_state.memoire_session[res_final] = saisie_brute
+                st.success(f"🏆 RÉSULTAT BASE 9 PURE : {res_final}")
 
 with onglet2:
     st.header("Anatomie Restaurée en Base 10")
-    saisie_b9 = st.text_input(
-        "Saisissez le nombre à traiter (Base 9) :",
-        max_chars=20,
-        key="input_b9",
-        placeholder="Coller la suite de chiffres bijectifs ici..."
-    )
-    
-    if saisie_b9:
-        resultat_b10 = executer_etape_2(saisie_b9)
-        if "ERREUR" in str(resultat_b10):
-            st.error(resultat_b10)
-        else:
-            if "0" in str(resultat_b10):
-                st.error("❌ DÉVIATION DÉTECTÉE : Le résultat reconstruit contient un 0 interdit.")
+    # max_chars=20 bloque la saisie à 20 chiffres maximum
+    saisie_b9 = st.text_input("Saisissez le nombre à traiter (Base 9) :", key="input_e2", max_chars=20)
+    if st.button("Calculer l'Étape 2"):
+        if saisie_b9:
+            if len(saisie_b9) > 20:
+                st.error("❌ La saisie dépasse la limite de 20 chiffres autorisée.")
             else:
-                st.success("🎯 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
-                st.code(resultat_b10, language="text")
-
-st.markdown("---")
+                if saisie_b9 in st.session_state.memoire_session:
+                    resultat = st.session_state.memoire_session[saisie_b9]
+                    st.success(f"👉 ANATOMIE RESTAURÉE (EXCEPTION MÉMOIRE) : {resultat}")
+                else:
+                    st.warning("⚠️ Valeur absente de l'exception mémoire. Lancement des arbres combinatoires...")
+                    res_strict = executer_etape_2(saisie_b9)
+                    res_zero = etape_2_logique_zero(saisie_b9)
+                    toutes_solutions = []
+                    if isinstance(res_strict, list): toutes_solutions.extend(res_strict)
