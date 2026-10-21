@@ -1,8 +1,8 @@
 import streamlit as st
 
 # =============================================================================
-# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE 
-# NETTOYAGE TOTAL DES ZÉROS PARASITES À L'AFFICHAGE
+# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE UNIVERSELLE
+# SANS AUCUN INJECTEUR DE ZÉROS PARASITES À DROITE (PURETÉ SÉQUENTIELLE)
 # CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT - TOUS DROITS RÉSERVÉS
 # =============================================================================
 
@@ -40,21 +40,7 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
-def int_vers_b9_bijective_pure(nombre_int):
-    if nombre_int <= 0:
-        return ""
-    digits = []
-    while nombre_int > 0:
-        reste = nombre_int % 9
-        if reste == 0:
-            digits.append('9')
-            nombre_int = (nombre_int // 9) - 1
-        else:
-            digits.append(str(reste))
-            nombre_int = nombre_int // 9
-    return "".join(reversed(digits))
-
-# L'addition en colonne bijective pure
+# L'addition en colonne bijective pure de droite à gauche
 def addition_comptable_verticale_b9(str_n1, str_n2):
     n1 = str_n1.strip()
     n2 = str_n2.strip()
@@ -116,10 +102,11 @@ def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
     if s1 < s2: return -1
     return 0
 
+# Simulation Étape 1 épurée de toute pollution de zéros à droite
 def simuler_etape_1_pure(saisie_b10):
     longueur = len(saisie_b10)
     lignes_a_additionner = []
-    lignes_a_additionner.append(int_vers_b9_bijective_pure(int(saisie_b10)))
+    lignes_a_additionner.append(saisie_b10) # Utilisation directe de la matière textuelle initiale
     
     for i, chiffre_str in enumerate(saisie_b10):
         chiffre = int(chiffre_str)
@@ -130,8 +117,7 @@ def simuler_etape_1_pure(saisie_b10):
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                partiel_decale = partiel_b9 + ("0" * nb_zeros_droite)
-                lignes_a_additionner.append(partiel_decale)
+                lignes_a_additionner.append(partiel_b9) # Plus de rajout de "0" à droite ici !
                 
     return somme_verticale_multi_lignes_b9(lignes_a_additionner)
 
@@ -145,8 +131,8 @@ def executer_etape_1(montant_b10_str):
     lignes_a_additionner = []
     lignes_zeros_seules = []
     
-    montant_initial_b9 = int_vers_b9_bijective_pure(int(saisie))
-    lignes_a_additionner.append(montant_initial_b9)
+    # Intégration du montant de départ brut
+    lignes_a_additionner.append(saisie)
     
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
@@ -157,12 +143,11 @@ def executer_etape_1(montant_b10_str):
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
                 ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
                 partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                partiel_decale = partiel_b9 + ("0" * nb_zeros_droite)
                 
-                lignes_a_additionner.append(partiel_decale)
-                lignes_zeros_seules.append(partiel_decale)
+                # Conserver uniquement la matière brute sans ajouter de zéros à droite
+                lignes_a_additionner.append(partiel_b9)
+                lignes_zeros_seules.append(partiel_b9)
                 
-                # NETTOYAGE VISUEL ICI : On n'affiche plus du tout la mention "Alignement : XXX000"
                 lignes_details.append(f"Rang 10^{nb_zeros_droite} → {chiffre} x {ref_tableur} = {partiel_b9}")
         else:
             lignes_details.append(f"Rang 10^{nb_zeros_droite} → Repère de position 0 (Glissement)")
@@ -206,7 +191,7 @@ def executer_etape_2(chaine_b9_str):
     return "ERREUR : Déviation détectée dans la pyramide des constantes."
 
 # =============================================================================
-# INTERFACE GRAPHIQUE STREAMLIT PURE SANS PARASITES
+# INTERFACE GRAPHIQUE STREAMLIT D'ORIGINE RESTAURÉE
 # =============================================================================
 
 st.title("Architecture Mathématique")
