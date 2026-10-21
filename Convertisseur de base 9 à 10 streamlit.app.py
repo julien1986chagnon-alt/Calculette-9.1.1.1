@@ -1,123 +1,220 @@
+# =============================================================================
+# APPLICATION STREAMLIT : ARCHITECTURE MATHEMATIQUE (PROJET SÉCURISÉ)
+# CALCULATEUR DISJOINT COMPTABLE — ALPHABET PUR DE 1 À 9 (SANS 0)
+# LIMITE STRICTE SÉCURISÉE : MAX 18 CARACTÈRES À LA SAISIE
+# CONCEPTEUR : CHAGNON JULIEN CHRISTIAN ROBERT
+# =============================================================================
+
 import streamlit as st
 
-# =============================================================================
-# MOTEUR DE CALCUL BIJECTIF ET CUMUL DES SÉQUENCES DE JULIEN CHAGNON
-# =============================================================================
+# Configuration de l'interface graphique
+st.set_page_config(
+    page_title="Architecture Mathématique",
+    page_icon="🧮",
+    layout="centered"
+)
 
-def addition_verticale_bijective(nb1_str, nb2_str):
-    """
-    Réalise l'addition en colonne directe selon vos tables.
-    Calcule dynamiquement le multiple d'additions de zéros positionnels
-    générés pour chaque bloc ou séquence de l'intervalle.
-    """
-    n1 = nb1_str.strip()
-    n2 = nb2_str.strip()
-    
-    max_len = max(len(n1), len(n2))
-    n1 = n1.zfill(max_len)
-    n2 = n2.zfill(max_len)
-    
-    resultat = ""
-    retenue = 0
-    zeros_de_position_comptes = 0
-    
-    # Traitement vertical de droite à gauche (votre règle de calcul)
-    for i in range(max_len - 1, -1, -1):
-        d1 = int(n1[i]) if n1[i] != '0' else 0
-        d2 = int(n2[i]) if n2[i] != '0' else 0
-        
-        somme_colonne = d1 + d2 + retenue
-        
-        if somme_colonne == 0:
-            continue
-            
-        # Votre engrenage bijective : le passage au rang supérieur évacue le 0
-        if somme_colonne >= 9:
-            reste = somme_colonne % 9
-            if reste == 0:
-                chiffre_ici = 9
-                retenue = (somme_colonne // 9) - 1
-            else:
-                chiffre_ici = reste
-                retenue = somme_colonne // 9
-            zeros_de_position_comptes += 1
-        else:
-            chiffre_ici = somme_colonne
-            retenue = 0
-            
-        resultat = str(chiffre_ici) + resultat
-        
-    if retenue > 0:
-        resultat = str(retenue) + resultat
-        zeros_de_position_comptes += 1
+# --- MATRICE DE COEFFICIENTS D'ORIGINE ---
+TABLEUR_PASSAGES_ZERO = {
+    10: 1, # Ligne 1
+    100: 11, # Ligne 2
+    1000: 221, # Ligne 3
+    10000: 2541, # Ligne 4
+    100000: 27951, # Ligne 5
+    1000000: 310561, # Ligne 6
+    10000000: 3515271, # Ligne 7
+    100000000: 38667981, # Ligne 8
+    1000000000: 436458891, # Ligne 9
+    10000000000: 4812158911, # Ligne 10
+    100000000000: 53933759121, # Ligne 11
+    1000000000000: 594372461331, # Ligne 12
+    10000000000000: 6648197174641, # Ligne 13
+    100000000000000: 74241278932151, # Ligne 14
+    1000000000000000: 826654179353661, # Ligne 15
+    10000000000000000: 9194295903891371, # Ligne 16
+    100000000000000000: 112247366933915181, # Ligne 17
+    1000000000000000000: 1234732147374166991, # Ligne 18
+    10000000000000000000: 13583153632226848111, # Ligne 19
+    100000000000000000000: 149524689954496439221, # Ligne 20
+    1000000000000000000000: 1655772711549571852431, # Ligne 21
+    10000000000000000000000: 18324599827716391476741, # Ligne 22
+    100000000000000000000000: 212571719215881416355251, # Ligne 23
+}
 
-    # Application de votre règle de cascade sur la longueur de la séquence
-    total_zeros_cascades = zeros_de_position_comptes * max_len
-    
-    return resultat, total_zeros_cascades
+# --- FONCTIONS COMPTABLES PURES SANS TRONCATURE ---
 
-def dec_vers_base9_bijective(n):
-    """ Conversion anatomique respectant votre condition de reste 0 -> 9 """
-    if n == 0:
+def int_vers_b9_bijective_pure(nombre_int):
+    if nombre_int <= 0:
         return ""
-    resultat = ""
-    while n > 0:
-        reste = n % 9
+    digits = []
+    while nombre_int > 0:
+        reste = nombre_int % 9
         if reste == 0:
-            reste = 9
-            n = (n // 9) - 1
+            digits.append('9')
+            nombre_int = (nombre_int // 9) - 1
         else:
-            n = n // 9
-        resultat = str(reste) + resultat
-    return resultat
+            digits.append(str(reste))
+            nombre_int //= 9
+    return "".join(reversed(digits))
 
-def base9_bijective_vers_dec(chaine_b9):
-    """ Décodage inverse pour la restauration de la matière numérique """
-    if not chaine_b9 or not chaine_b9.isdigit():
-        return 0
-    n = 0
-    for caractere in chaine_b9:
-        n = n * 9 + int(caractere)
-    return n
+def addition_comptable_verticale_b9(str_n1, str_n2):
+    val1 = 0
+    for c in str_n1: 
+        if c != '0': val1 = val1 * 9 + int(c)
+    val2 = 0
+    for c in str_n2: 
+        if c != '0': val2 = val2 * 9 + int(c)
+    somme = val1 + val2
+    return int_vers_b9_bijective_pure(somme)
 
-# =============================================================================
-# INTERFACE EXCLUSIVE DE VOTRE CONVERTISSEUR STREAMLIT
-# =============================================================================
+def b9_bijective_vers_quantite(chaine_b9):
+    total = 0
+    for c in chaine_b9: 
+        if c != '0': total = total * 9 + int(c)
+    return total
 
-st.set_page_config(page_title="Architecture Mathématique", page_icon="📊", layout="centered")
+def simuler_etape_1_pure(saisie_b10):
+    longueur = len(saisie_b10)
+    somme_zeros_brute = 0
+    for i, chiffre_str in enumerate(saisie_b10):
+        chiffre = int(chiffre_str)
+        if chiffre > 0:
+            puissance_dix = 10 ** (longueur - 1 - i)
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                somme_zeros_brute += chiffre * TABLEUR_PASSAGES_ZERO[puissance_dix]
+    str_zeros_b9 = int_vers_b9_bijective_pure(somme_zeros_brute)
+    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie_b10))
+    return addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
 
-st.title("Calculateur Disjoint Bijectif Pur")
-st.caption("Par Chagnon Julien Christian Robert")
 
-st.header("Convertisseur Anatomique Réversible")
-st.write("Analyse et décomposition des séquences numériques sans perte d'unité.")
+# --- LOGIQUE PRINCIPALE ---
 
-# Zone d'entrée pour le grand nombre initial de départ
-nombre_input = st.text_input("Entrez une valeur ou une séquence numérique (ex: 987654321123456789) :", key="conv_unitaire")
+def executer_etape_1(montant_b10_str):
+    saisie = montant_b10_str.strip().replace(" ", "").replace(".", "").replace(",", "")
+    if not saisie.isdigit() or int(saisie) == 0:
+        return None, "ERREUR : Saisie invalide."
+    
+    longueur = len(saisie)
+    somme_zeros_brute = 0
+    lignes_details = []
+    
+    for i, chiffre_str in enumerate(saisie):
+        chiffre = int(chiffre_str)
+        if chiffre > 0:
+            puissance_dix = 10 ** (longueur - 1 - i)
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                partiel = chiffre * ref_tableur
+                somme_zeros_brute += partiel
+                
+                partiel_b9 = int_vers_b9_bijective_pure(partiel)
+                lignes_details.append(f"Rang **{puissance_dix}** ➔ {chiffre} x {ref_tableur} = (en Base 9 Bijective : `{partiel_b9}`)")
+                
+    str_zeros_b9 = int_vers_b9_bijective_pure(somme_zeros_brute)
+    str_montant_b9 = int_vers_b9_bijective_pure(int(saisie))
+    resultat_final_b9 = addition_comptable_verticale_b9(str_montant_b9, str_zeros_b9)
+    
+    return lignes_details, str_zeros_b9, resultat_final_b9
 
-if nombre_input:
-    if nombre_input.isdigit():
-        valeur_dec = int(nombre_input)
+
+def executer_etape_2(chaine_b9_str):
+    saisie = chaine_b9_str.strip().replace(" ", "").replace(".", "")
+    if not saisie.isdigit() or '0' in saisie:
+        return "ERREUR : Le chiffre 0 est interdit."
         
-        # 1. Extraction en Base 9 Bijective selon vos lois
-        representation_b9 = dec_vers_base9_bijective(valeur_dec)
+    cible_val = b9_bijective_vers_quantite(saisie)
+    
+    longueur_b10 = 1
+    while True:
+        max_test = "9" * longueur_b10
+        val_max_b9 = simuler_etape_1_pure(max_test)
+        if b9_bijective_vers_quantite(val_max_b9) >= cible_val:
+            break
+        longueur_b10 += 1
         
-        # 2. Restauration pour prouver la symétrie parfaite
-        restoration_dec = base9_bijective_vers_dec(representation_b9)
+    candidat_b10 = ["0"] * longueur_b10
+    for position in range(longueur_b10):
+        for test_chiffre in "123456789":
+            candidat_b10[position] = test_chiffre
+            chaine_test = "".join(candidat_b10)
+            resultat_b9_simule = simuler_etape_1_pure(chaine_test)
+            
+            if b9_bijective_vers_quantite(resultat_b9_simule) > cible_val:
+                candidat_b10[position] = str(max(0, int(test_chiffre) - 1))
+                break
+        else:
+            candidat_b10[position] = "9"
+
+    solution_finale = "".join(candidat_b10).lstrip("0")
+    if solution_finale == "": solution_finale = "0"
+    
+    if simuler_etape_1_pure(solution_finale) == saisie:
+        return solution_finale
         
-        # 3. Calcul automatique du cumul des zéros de position de votre pyramide
-        # Le programme applique votre logique séquentielle sur la valeur
-        _, total_zeros_grille = addition_verticale_bijective(representation_b9, "0")
+    return "ERREUR : Déviation détectée dans la pyramide des constantes."
+
+
+# --- INTERFACE GRAPHIQUE STREAMLIT ---
+
+st.title("Architecture Mathématique")
+st.subheader("Calculateur Disjoint Bijectif Pur — Par Chagnon Julien Christian Robert")
+st.markdown("---")
+
+st.markdown("""
+Ce système utilise une **arithmétique positionnelle bijective de base 9**. 
+L'alphabet numérique y est exclusivement composé des symboles pleins de **1 à 9**, le chiffre 0 y est totalement exclu.
+""")
+
+onglet1, onglet2 = st.tabs([
+    "1️⃣ ÉTAPE 1 : Base 10 ➔ Base 9 Bijective", 
+    "2️⃣ ÉTAPE 2 : Base 9 Bijective ➔ Base 10"
+])
+
+# --- ÉTAPE 1 (SÉCURISÉE À MAUX 18 CHIFFRES MAXIMUM) ---
+with onglet1:
+    st.header("Comptabilité en Base 9")
+    
+    saisie_b10 = st.text_input(
+        "Saisissez le montant initial (Base 10 - Max 20 chiffres) :",
+        max_chars=20,
+        key="input_b10",
+        placeholder="Entrez votre nombre de 1 à 18 chiffres..."
+    )
+    
+    if saisie_b10:
+        lignes, zeros_b9, res_final = executer_etape_1(saisie_b10)
         
-        # Affichage des résultats
-        st.success(f"**Anatomie extraite (Base 9 Bijective) :** `{representation_b9}`")
-        st.info(f"**Anatomie Restaurée en Base 10 :** `{restoration_dec}`")
+        if lignes is None:
+            st.error(res_final)
+        else:
+            st.markdown("### 📋 Décomposition brute selon votre architecture :")
+            for lignement in lignes:
+                st.markdown(lignement)
+                
+            st.markdown("---")
+            st.info(f"**Passages extraits (en Base 9 Bijective) :** `{zeros_b9}`")
+            st.success("### 👉 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :")
+            st.code(res_final, language="text")
+
+# --- ÉTAPE 2 (SÉCURISÉE À MAUX 18 CHIFFRES MAXIMUM POUR LE RETOUR COHÉRENT) ---
+with onglet2:
+    st.header("Anatomie Restaurée en Base 10")
+    
+    saisie_b9 = st.text_input(
+        "Saisissez le nombre à traiter (Base 9 - Max 20 chiffres) :",
+        max_chars=20,
+        key="input_b9",
+        placeholder="Colle la suite de chiffres bijectifs ici..."
+    )
+    
+    if saisie_b9:
+        resultat_b10 = executer_etape_2(saisie_b9)
         
-        # Affichage de votre compteur de zéros cumulés pour chaque bloc
-        st.metric(label="Cumul des zéros de position (Loi des séquences)", value=f"{total_zeros_grille}")
-        st.markdown("💡 *Ce montant comptabilise les passages de zéros calculés par le multiple de vos blocs de structure.*")
-        
-        if valeur_dec == restoration_dec:
-            st.markdown("✨ **SYMÉTRIE PARFAITE :** Le retour à la valeur initiale est validé au chiffre près.")
-    else:
-        st.error("Veuillez n'entrer que des chiffres.")
+        if "ERREUR" in resultat_b10:
+            st.error(resultat_b10)
+        else:
+            st.success("### 👉 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
+            st.code(resultat_b10, language="text")
+
+st.markdown("---")
+st.caption("© Architecture Mathématique Appliquée — Tous droits réservés.")
