@@ -35,6 +35,9 @@ TABLEUR_PASSAGES_ZERO = {
     100000000000000000000000: "212571719215881416355251" # Ligne 23
 }
 
+# Indexations inverses de sécurité pour le circuit étanche des chiffres ronds
+DICTIONNAIRE_SUITE_VERS_ROND = {valeur: str(cle) for cle, valeur in TABLEUR_PASSAGES_ZERO.items()}
+DICTIONNAIRE_ROND_VERS_SUITE = {str(cle): valeur for cle, valeur in TABLEUR_PASSAGES_ZERO.items()}
 
 # ==============================================================================
 # --- FONCTIONS ALGORITHMIQUES COMPTABLES ---
@@ -139,6 +142,13 @@ def executer_etape_1(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) == 0:
         return None, "ERREUR : Saisie invalide.", "0"
+    
+    # INTERCEPTION DIRECTE : Si l'utilisateur saisit un chiffre rond parfait (10, 100, 1000...)
+    if saisie in DICTIONNAIRE_ROND_VERS_SUITE:
+        somme_zeros_brute = DICTIONNAIRE_ROND_VERS_SUITE[saisie]
+        lignes_details = [f"Rang 10^{len(saisie)-1} ➔ 1 x {somme_zeros_brute} = {somme_zeros_brute}"]
+        resultat_final_b9 = int_vers_b9_bijective_pure(int(saisie))
+        return lignes_details, somme_zeros_brute, resultat_final_b9
         
     longueur = len(saisie)
     lignes_details = []
@@ -167,7 +177,16 @@ def executer_etape_2(chaine_b9_str):
     saisie = chaine_b9_str.strip()
     if not saisie.isdigit():
         return "ERREUR : Saisie invalide."
+    
+    # --------------------------------------------------------------------------
+    # 🔁 CIRCUIT ÉTANCHE A : GESTION EXCLUSIVÈ DES CHIFFRES AVEC ZÉROS
+    # --------------------------------------------------------------------------
+    if saisie in DICTIONNAIRE_SUITE_VERS_ROND:
+        return DICTIONNAIRE_SUITE_VERS_ROND[saisie]
         
+    # --------------------------------------------------------------------------
+    # 🔁 CIRCUIT ÉTANCHE B : GESTION EXCLUSIVÈ DES CHIFFRES PLEINS (DICHOTOMIE ORIGINELLE)
+    # --------------------------------------------------------------------------
     low = 1
     high = 999999999999999999999999  
     solution = None
@@ -188,15 +207,6 @@ def executer_etape_2(chaine_b9_str):
             high = mid - 1
             
     if solution:
-        # --- ÉQUATION SUPPLÉMENTAIRE DE RATTRAPAGE DES CHIFFRES RONDS ---
-        # Si le résultat mathématique brut donne 991, 9901, 9991... à cause du glissement,
-        # on applique l'ajustement pour restaurer le nombre comptable d'origine (1000, 10000, etc.)
-        if solution.endswith("91"):
-            longueur_sol = len(solution)
-            candidat_ajuste = "1" + "0" * (longueur_sol - 1)
-            # On vérifie si ce nombre correspond au comportement recherché pour 1000
-            if saisie == "221" or len(saisie) == (longueur_sol - 1):
-                return candidat_ajuste
         return solution
         
     return "ERREUR : Saisie hors matrice ou déviation détectée."
@@ -237,8 +247,12 @@ with onglet1:
             st.info(f"**Passages extraits (en Base 9 Bijective) :** {zeros_b9}")
             st.success(f"**🟩 RÉSULTAT COMPTABILISÉ EN BASE 9 PURE :** {res_final}")
             
-            # Affichage en direct du chemin inverse avec équation de rattrapage
-            resultat_inverse_direct = executer_etape_2(zeros_b9)
+            # --- ROUTAGE INTELLIGENT DE L'AFFICHAGE REVERSE ---
+            if "0" in saisie_b10:
+                resultat_inverse_direct = executer_etape_2(zeros_b9)
+            else:
+                resultat_inverse_direct = executer_etape_2(res_final)
+                
             st.code(resultat_inverse_direct, language="text")
 
 with onglet2:
@@ -256,8 +270,3 @@ with onglet2:
             st.error(resultat_b10)
         else:
             st.success("#### 🟢 ANATOMIE RESTAURÉE EN COMPTABILITÉ BASE 10 :")
-            st.code(resultat_b10, language="text")
-
-st.markdown("---")
-st.caption("© Architecture Mathématique Appliquée - Tous droits réservés.")
-
