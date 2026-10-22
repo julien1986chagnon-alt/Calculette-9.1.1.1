@@ -55,7 +55,7 @@ def addition_base_9_pure(blocs):
 
 # --- INTERFACE GRAPHIQUE STREAMLIT ---
 
-st.title("🧮 Calculatrice Division Verticale en Base 9")
+st.title("🧮 Arithmétique modulaire en base bijective")
 st.write("Conçue par l'Architecte. Exécutée fidèlement selon vos algorithmes.")
 
 # Entrées utilisateur (remplace les "input" du terminal)
