@@ -165,7 +165,7 @@ def chercher_extension_sans_abandon(num_str, den_str, limite_max=40):
 
 st.set_page_config(page_title="Calculatrice Totale Base 9", page_icon="🧮")
 
-st.title("🧮 Calculatrice Évolutive Totale — Base 9")
+st.title("🧮 Calculatrice Évolutive Totale — Base 9 Bijective")
 st.subheader("Moteurs Intégrés : Alignement Textuel & Cascades Quantiques")
 st.caption("Développé par Chagnon Julien Christian Robert — Tous droits réservés.")
 
