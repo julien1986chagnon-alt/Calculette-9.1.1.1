@@ -1,6 +1,6 @@
 # TITRE : Calculatrice évolutive 3.1.1.1 positionnelle.
 # Développé par Chagnon Julien Christian Robert - Tous droits réservés.
-# Principe : Logique sans zéro (Base 9) & Coupure à la longueur de Planck.
+# Principe : Logique sans zéro (Base 9 Bijective) & Coupure à la longueur de Planck.
 
 import sys
 import time
