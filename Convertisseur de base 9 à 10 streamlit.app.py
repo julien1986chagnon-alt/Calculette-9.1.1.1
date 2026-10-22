@@ -160,7 +160,7 @@ def executer_etape_2(chaine_b9_str):
 # ==========================================
 # 4. INTERFACE APPLICATIVE GRAPHIQUE
 # ==========================================
-st.title("🔢 Architecture Mathématique")
+st.title("🔢 Convertisseur base 9 et 10 ")
 st.caption("Calculateur Disjoint - Alignement des structures de bases numériques")
 
 # Système d'onglets pour naviguer facilement
