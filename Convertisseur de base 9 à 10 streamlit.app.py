@@ -10,27 +10,31 @@ TABLEUR_PASSAGES_ZERO = {
     10: "1",
     100: "11",
     1000: "221",
-    10000: "2541",
-    100000: "27951",
-    1000000: "318561",
-    10000000: "3515271",
-    100000000: "38667981",
-    1000000000: "436456891",
-    10000000000: "4812158911",
-    100000000000: "53933759121",
-    1000000000000: "594372461331",
-    10000000000000: "66481971724641",
-    100000000000000: "74241278932151",
-    1000000000000000: "826654179353661",
-    10000000000000000: "9194295983891371",
-    100000000000000000: "112247366933915181",
-    1000000000000000000: "1234732147374166991",
-    10000000000000000000: "1358315363226848111",
-    100000000000000000000: "14952469554496435221",
-    1000000000000000000000: "165572711549571852431",
-    10000000000000000000000: "183245988277116391476741",
-    100000000000000000000000: "212571719215881416355251"
+    10000: "2531",
+    100000: "27841",
+    1000000: "317351",
+    10000000: "3491861",
+    100000000: "38521571",
+    1000000000: "434737381",
+    10000000000: "4783222291",
+    100000000000: "53725445311",
+    1000000000000: "591979898421",
+    10000000000000: "6622889993631",
+    100000000000000: "73853112139941",
+    1000000000000000: "823484233551451",
+    10000000000000000: "9158437569165961",
+    100000000000000000: "111753824371836671",
+    1000000000000000000: "1229393168191314481",
+    10000000000000000000: "13534434861214459391",
+    100000000000000000000: "148878784573359164411",
+    1000000000000000000000: "1648777741416961818521",
+    10000000000000000000000: "18247666255587681114731",
+    100000000000000000000000: "211735438822575592263141",
+    1000000000000000000000000: "2329189838148442624894551",
+    10000000000000000000000000: "25632199329643868874951161",
+    100000000000000000000000000: "282954313637183668735562771",
 }
+
 
 # Mémoire dynamique de l'application (Session State)
 if "memoire_session" not in st.session_state:
@@ -160,7 +164,7 @@ def executer_etape_2(chaine_b9_str):
 # ==========================================
 # 4. INTERFACE APPLICATIVE GRAPHIQUE
 # ==========================================
-st.title("👑 Convertisseur base 9 bijective et 10 ")
+st.title("🔢 Convertisseur base 9 bijective et 10")
 st.caption("Calculateur Disjoint - Alignement des structures de bases numériques")
 
 # Système d'onglets pour naviguer facilement
@@ -169,8 +173,8 @@ onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", 
 # --- CONVERTISSEUR DIRECT (BASE 10 -> BASE 9) ---
 with onglet_direct:
     st.markdown("#### Génération Mathématique")
-    # Sécurité max_chars=20 : impossible d'écrire plus de 20 chiffres dans la zone
-    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=20, key="txt_b10")
+    # Sécurité max_chars=20 : impossible d'écrire plus de 27 chiffres dans la zone
+    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=27, key="txt_b10")
     
     if st.button("Calculer le format Bijectif", key="btn_direct"):
         saisie_clean = saisie_b10.strip().replace(" ", "")
@@ -185,8 +189,8 @@ with onglet_direct:
 # --- CONVERTISSEUR INVERSE (BASE 9 -> BASE 10) ---
 with onglet_inverse:
     st.markdown("#### Restauration d'Anatomie (3 Phases)")
-    # Sécurité max_chars=20 : blocage matériel au clavier à 20 caractères
-    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9) :", max_chars=20, key="txt_b9")
+    # Sécurité max_chars=20 : blocage matériel au clavier à 27 caractères
+    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9) :", max_chars=27, key="txt_b9")
     
     if st.button("Lancer l'Exception de Secours", key="btn_inverse"):
         saisie_clean = saisie_b9.strip().replace(" ", "")
