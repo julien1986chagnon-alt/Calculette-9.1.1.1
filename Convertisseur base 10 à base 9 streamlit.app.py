@@ -112,14 +112,13 @@ def additionner_b9(chaine1, chaine2):
     return "".join(reversed(resultat))
 
 # =====================================================================
-# PARTIE 1 : LA CONVERSION DIRECTE ENTIÈREMENT EN BASE 9 (CORRIGÉE)
+# PARTIE 1 : LA CONVERSION DIRECTE ENTIÈREMENT EN BASE 9
 # =====================================================================
 def convertisseur_par_segments(montant_str):
     montant_str = montant_str.strip().replace(" ", "")
     if not montant_str.isdigit():
         return "ERREUR SAISIE"
         
-    # CORRECTION ICI : On prend uniquement le tout premier caractère pour le multiplicateur
     premier_chiffre = int(montant_str[0])
     longueur = len(montant_str)
     
@@ -168,42 +167,59 @@ def convertisseur_inverse_par_segments(montant_b9_str):
         return "Aucune correspondance exacte trouvée"
 
 # =====================================================================
-# INTERFACE GRAPHIQUE STREAMLIT
+# INTERFACE GRAPHIQUE STREAMLIT (SYSTÈME D'ONGLETS)
 # =====================================================================
 st.title("👑 Convertisseur base 9 bijective et 10")
 st.caption("Calculateur Disjoint - Alignement des structures de bases numériques")
-st.write("---")
 
-choix = st.selectbox(
-    "Choisissez le sens de conversion :",
-    [
-        "1 : Base 10 ➡️ Ajouter les décalages (Calculs 100% Base 9)",
-        "2 : Retrouver le nombre d'origine (Inverse en Base 10)"
-    ]
-)
+onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", "⬅️ ÉTAPE 2 : Base 9 -> Base 10"])
 
-montant_saisi = st.text_input("Tapez le montant à évaluer :", placeholder="Exemple: 5000")
-
-if st.button("LANCER LE CALCUL", type="primary"):
-    if montant_saisi.strip() == "":
-        st.warning("Veuillez entrer une valeur.")
-    else:
-        if choix.startswith("1"):
-            resultat = convertisseur_par_segments(montant_saisi)
+# --- ONGLET 1 : CONVERSION DIRECTE ---
+with onglet_direct:
+    st.markdown("#### Génération Mathématique")
+    saisie_b10 = st.text_input("Saisissez le nombre décimal (Base 10) :", key="input_b10")
+    
+    if st.button("Lancer le Calcul", key="btn_direct"):
+        saisie_clean = saisie_b10.strip().replace(" ", "")
+        if not saisie_clean.isdigit():
+            st.error("⚠️ Saisie invalide. Veuillez n'entrer que des chiffres.")
+        else:
+            resultat = convertisseur_par_segments(saisie_clean)
             if "PALIER" in resultat or "ERREUR" in resultat:
                 st.error(f"❌ {resultat}")
             else:
-                st.success(f"🏁 **RÉSULTAT EN BASE 9 :**")
+                st.success(f"🏁 **RÉSULTAT EN BASE 9 BIJECTIVE :**")
                 st.code(resultat, language="text")
-                st.session_state.memoire_session[resultat] = montant_saisi
+                st.session_state.memoire_session[resultat] = saisie_clean
+
+# --- ONGLET 2 : CONVERSION INVERSE ---
+with onglet_inverse:
+    st.markdown("#### Restauration d'Anatomie (3 Phases)")
+    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9) :", key="input_b9")
+    
+    if st.button("Lancer l'Exception de Secours", key="btn_inverse"):
+        saisie_clean = saisie_b9.strip().replace(" ", "")
+        
+        # --- VERROUILLAGE SÉCURITÉ DE SAISIE DU ZÉRO ---
+        if "0" in saisie_clean:
+            st.error("⚠️ Erreur Pureté Bijective : Le chiffre 0 n'existe pas en Base 9 Bijective ! Aucun calcul ne sera effectué.")
+        
+        elif not saisie_clean.isdigit():
+            st.error("⚠️ Saisie invalide. Veuillez n'entrer que des chiffres.")
+            
         else:
-            # --- MODIFICATION APPORTÉE UNIQUEMENT SUR L'AFFICHAGE DU ZÉRO EN BASE 9 ---
-            if "0" in montant_saisi.strip().replace(" ", ""):
-                st.error("⚠️ Erreur Pureté Bijective : Le chiffre 0 n'existe pas en Base 9 Bijective ! Saisie refusée.")
+            # PHASE 1 : Recherche en mémoire immédiate
+            if saisie_clean in st.session_state.memoire_session:
+                resultat = st.session_state.memoire_session[saisie_clean]
+                st.success(f"🟢 **[PHASE 1] IDENTIFIÉ DANS LA SESSION :** {resultat}")
             else:
-                resultat_inverse = convertisseur_inverse_par_segments(montant_saisi)
-                if "ERREUR" in resultat_inverse or "Aucune" in resultat_inverse:
-                    st.error(f"❌ {resultat_inverse}")
+                # PHASE 2 : Recherche stricte via l'arbre
+                res_strict = convertisseur_inverse_par_segments(saisie_clean)
+                if "ERREUR" not in res_strict and "Aucune" not in res_strict:
+                    st.success(f"✨ **[PHASE 2] SÉQUENCE TROUVÉE DANS L'ARBRE :** {res_strict}")
                 else:
-                    st.success(f"🏁 **RETOUR EN BASE 10 D'ORIGINE :**")
-                    st.code(resultat_inverse, language="text")
+                    # PHASE 3 : Exception Forcée
+                    valeur_base10 = 0
+                    for symbole in saisie_clean:
+                        valeur_base10 = (valeur_base10 * 9) + int(symbole)
+                    st.warning(f"🦺 **[PHASE 3] EXCEPTION DE CALCUL ACTIVÉE (Vrai x 9) :** {valeur_base10}")
