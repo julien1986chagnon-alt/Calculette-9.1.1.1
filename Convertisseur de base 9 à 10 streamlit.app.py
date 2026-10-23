@@ -173,8 +173,8 @@ onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", 
 # --- CONVERTISSEUR DIRECT (BASE 10 -> BASE 9) ---
 with onglet_direct:
     st.markdown("#### Génération Mathématique")
-    # Sécurité max_chars=20 : impossible d'écrire plus de 27 chiffres dans la zone
-    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=27, key="txt_b10")
+    # Sécurité max_chars=20 : impossible d'écrire plus de 28 chiffres dans la zone
+    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=28, key="txt_b10")
     
     if st.button("Calculer le format Bijectif", key="btn_direct"):
         saisie_clean = saisie_b10.strip().replace(" ", "")
