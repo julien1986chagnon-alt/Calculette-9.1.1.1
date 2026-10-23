@@ -1,41 +1,38 @@
 import streamlit as st
 
-# =====================================================================
-# CONFIGURATION DE LA PAGE STREAMLIT
-# =====================================================================
-st.set_page_config(
-    page_title="Convertisseur Base 9 Bijective",
-    page_icon="🔢",
-    layout="centered"
-)
+# Configuration graphique de la page
+st.set_page_config(page_title="Calculateur Disjoint", page_icon="🔢", layout="centered")
 
-# =====================================================================
-# CONFIGURATION : LA GRILLE DES ZÉROS PURS (STRICTEMENT INTACTE)
-# =====================================================================
-TABLE_DES_ZEROS_PURS = {
+# ==========================================
+# 1. VOTRE TABLEUR DES PASSAGES ZÉRO (L'ARBRE)
+# ==========================================
+TABLEUR_PASSAGES_ZERO = {
     10: "1",
     100: "11",
     1000: "221",
-    10000: "2541",
-    100000: "27951",
-    1000000: "318561",
-    10000000: "3515271",
-    100000000: "38667981",
-    1000000000: "436456891",
-    10000000000: "4812158911",
-    100000000000: "53933759121",
-    1000000000000: "594372461331",
-    10000000000000: "6648197174641",
-    100000000000000: "74241278932151",
-    1000000000000000: "826654179353661",
-    10000000000000000: "9194295983891371",
-    100000000000000000: "112247366933915181",
-    1000000000000000000: "1234732147374166991",
-    10000000000000000000: "1358315363226848111",
-    100000000000000000000: "14952469554496435221",
-    1000000000000000000000: "165572711549571852431",
-    10000000000000000000000: "18324599827716391476741",
-    100000000000000000000000: "212571719215881416355251"
+    10000: "2531",
+    100000: "27841",
+    1000000: "317351",
+    10000000: "3491861",
+    100000000: "38521571",
+    1000000000: "434737381",
+    10000000000: "4783222291",
+    100000000000: "53725445311",
+    1000000000000: "591979898421",
+    10000000000000: "6622889993631",
+    100000000000000: "73853112139941",
+    1000000000000000: "823484233551451",
+    10000000000000000: "9158437569165961",
+    100000000000000000: "111753824371836671",
+    1000000000000000000: "1229393168191314481",
+    10000000000000000000: "13534434861214459391",
+    100000000000000000000: "148878784573359164411",
+    1000000000000000000000: "1648777741416961818521",
+    10000000000000000000000: "18247666255587681114731",
+    100000000000000000000000: "211735438822575592263141",
+    1000000000000000000000000: "2329189838148442624894551",
+    10000000000000000000000000: "25632199329643868874951161",
+    100000000000000000000000000: "282954313637183668735562771",
 }
 
 
@@ -43,183 +40,179 @@ TABLE_DES_ZEROS_PURS = {
 if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
 
-# =====================================================================
-# MOTEUR 1 : MULTIPLICATION PURE EN BASE 9 BIJECTIVE
-# =====================================================================
-def multiplier_b9_bijective(chaine_b9, multiplicateur_int):
-    if multiplicateur_int == 1:
-        return chaine_b9
-        
-    resultat = []
-    retenue = 0
-    
-    for char in reversed(chaine_b9):
-        produit = int(char) * multiplicateur_int + retenue
-        if produit == 0:
-            reste = 0
-            retenue = 0
-        else:
-            reste = produit % 9
-            if reste == 0:
-                reste = 9
-                retenue = (produit // 9) - 1
-            else:
-                retenue = produit // 9
-        resultat.append(str(reste))
-        
-    if retenue > 0:
-        if retenue % 9 == 0:
-            resultat.append("9")
-            retenue_restante = (retenue // 9) - 1
-            if retenue_restante > 0:
-                resultat.append(str(retenue_restante))
-        else:
-            resultat.append(str(retenue))
-            
-    return "".join(reversed(resultat))
-
-# =====================================================================
-# MOTEUR 2 : ADDITION PURE EN BASE 9 (AVEC SUPPORT DU 0 DE DÉPART)
-# =====================================================================
-def additionner_b9(chaine1, chaine2):
-    resultat = []
-    retenue = 0
-    
-    max_len = max(len(chaine1), len(chaine2))
-    c1 = chaine1.zfill(max_len)
-    c2 = chaine2.zfill(max_len)
+# ==========================================
+# 2. VOS FONCTIONS DE CALCUL COMPTABLE (STR)
+# ==========================================
+def addition_comptable_verticale_b9(str_n1, str_n2):
+    n1, n2 = str_n1.strip(), str_n2.strip()
+    max_len = max(len(n1), len(n2))
+    n1, n2 = n1.zfill(max_len), n2.zfill(max_len)
+    resultat, retenue = [], 0
     
     for i in range(max_len - 1, -1, -1):
-        somme = int(c1[i]) + int(c2[i]) + retenue
-        if somme == 0:
-            reste = 0
-            retenue = 0
+        d1 = int(n1[i]) if n1[i] != '0' else 0
+        d2 = int(n2[i]) if n2[i] != '0' else 0
+        somme_colonne = d1 + d2 + retenue
+        
+        if somme_colonne >= 9:
+            reste = somme_colonne % 9
+            chiffre_ici = 9 if reste == 0 else reste
+            retenue = (somme_colonne // 9) - 1 if reste == 0 else somme_colonne // 9
         else:
-            reste = somme % 9
-            if reste == 0:
-                reste = 9
-                retenue = (somme // 9) - 1
-            else:
-                retenue = somme // 9
-        resultat.append(str(reste))
+            chiffre_ici = somme_colonne
+            retenue = 0
+        resultat.append(str(chiffre_ici))
         
     if retenue > 0:
-        if retenue % 9 == 0:
-            resultat.append("9")
-        else:
-            resultat.append(str(retenue))
+        resultat.append(str(retenue))
+        
+    res_final = "".join(reversed(resultat)).lstrip('0')
+    return res_final if res_final != "" else "0"
+
+def somme_verticale_multi_lignes_b9(liste_chaines):
+    total = "0"
+    for chaine in liste_chaines:
+        total = addition_comptable_verticale_b9(total, chaine)
+    return total
+
+def multiplication_comptable_unitaire_b9(str_b0, chiffre_int):
+    resultat = "0"
+    for _ in range(chiffre_int):
+        resultat = addition_comptable_verticale_b9(resultat, str_b0)
+    return resultat
+
+def comparaison_chaines_numeriques(str_b9_1, str_b9_2):
+    s1, s2 = str_b9_1.lstrip('0'), str_b9_2.lstrip('0')
+    if s1 == "": s1 = "0"
+    if s2 == "": s2 = "0"
+    if len(s1) > len(s2): return 1
+    if len(s1) < len(s2): return -1
+    if s1 > s2: return 1
+    if s1 < s2: return -1
+    return 0
+
+# ==========================================
+# 3. VOS FONCTIONS D'EXPLORATION DE L'ARBRE
+# ==========================================
+def simuler_etape_1_pure(saisie_b10):
+    longueur = len(saisie_b10)
+    lignes_zeros_seules = []
+    for i, chiffre_str in enumerate(saisie_b10):
+        chiffre = int(chiffre_str)
+        nb_zeros_droite = longueur - 1 - i
+        if chiffre > 0:
+            puissance_dix = 10 ** nb_zeros_droite
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
+                lignes_zeros_seules.append(partial_b9)
+    return lignes_zeros_seules
+
+def executer_etape_1(montant_b10_str):
+    saisie = montant_b10_str.strip().replace(" ", "")
+    if not saisie.isdigit() or int(saisie) == 0:
+        return None, "ERREUR", "0"
+    longueur = len(saisie)
+    lignes_details, lignes_zeros_seules = [], []
+    
+    for i, chiffre_str in enumerate(saisie):
+        chiffre = int(chiffre_str)
+        nb_zeros_droite = longueur - 1 - i
+        if chiffre > 0:
+            puissance_dix = 10 ** nb_zeros_droite
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                partial_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
+                lignes_zeros_seules.append(partial_b9)
+                lignes_details.append(f"Rang 10^{nb_zeros_droite} -> ({chiffre})")
+                
+    somme_zeros_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
+    resultat_final_b9 = addition_comptable_verticale_b9(saisie, somme_zeros_brute)
+    return lignes_details, somme_zeros_brute, resultat_final_b9
+
+def executer_etape_2(chaine_b9_str):
+    saisie = chaine_b9_str.strip()
+    solution_trouvee = []
+    
+    def explore_arbre(prefixe_actuel):
+        if len(prefixe_actuel) == len(saisie):
+            somme_brute = simuler_etape_1_pure(prefixe_actuel)
+            somme_totale_b9 = somme_verticale_multi_lignes_b9(somme_brute)
+            solution_trouvee_b9 = addition_comptable_verticale_b9(prefixe_actuel, somme_totale_b9)
+            if solution_trouvee_b9 == saisie:
+                solution_trouvee.append(prefixe_actuel)
+                return True
+            return False
             
-    return "".join(reversed(resultat))
+        taille_restante = len(saisie) - len(prefixe_actuel)
+        lim_basse_somme = simuler_etape_1_pure(prefixe_actuel + "0" * taille_restante)
+        limite_basse = addition_comptable_verticale_b9(prefixe_actuel + "1", somme_verticale_multi_lignes_b9(lim_basse_somme))
+        
+        lim_haute_somme = simuler_etape_1_pure(prefixe_actuel + "9" * taille_restante)
+        limite_haute = addition_comptable_verticale_b9(prefixe_actuel + "9", somme_verticale_multi_lignes_b9(lim_haute_somme))
+        
+        if comparaison_chaines_numeriques(saisie, limite_basse) >= 0 and comparaison_chaines_numeriques(saisie, limite_haute) <= 0:
+            debut_range = 1 if prefixe_actuel == "" else 0
+            for chiffre_choisi in range(debut_range, 10):
+                if explore_arbre(prefixe_actuel + str(chiffre_choisi)):
+                    return True
+        return False
 
-# =====================================================================
-# PARTIE 1 : LA CONVERSION DIRECTE ENTIÈREMENT EN BASE 9
-# =====================================================================
-def convertisseur_par_segments(montant_str):
-    montant_str = montant_str.strip().replace(" ", "")
-    if not montant_str.isdigit():
-        return "ERREUR SAISIE"
-        
-    premier_chiffre = int(montant_str[0])
-    longueur = len(montant_str)
-    
-    str_palier = "1" + "0" * (longueur - 1)
-    
-    if int(str_palier) in TABLE_DES_ZEROS_PURS:
-        sequence_b9 = TABLE_DES_ZEROS_PURS[int(str_palier)]
-        produit_b9 = multiplier_b9_bijective(sequence_b9, premier_chiffre)
-        resultat_final = additionner_b9(montant_str, produit_b9)
-        return resultat_final
-        
-    return "PALIER NON PARAMÉTRÉ"
+    explore_arbre("")
+    return solution_trouvee if solution_trouvee else "ERREUR"
 
-# =====================================================================
-# PARTIE 2 : LA CONVERSION INVERSE (BASE 9 -> BASE 10)
-# =====================================================================
-def convertisseur_inverse_par_segments(montant_b9_str):
-    montant_b9_str = montant_b9_str.strip().replace(" ", "")
-    if not montant_b9_str.isdigit() or "0" in montant_b9_str:
-        return "ERREUR SAISIE"
-        
-    cible_b9 = int(montant_b9_str)
-    bas = 0
-    haut = 10000000000000000000000
-    resultat_b10 = None
-    
-    while bas <= haut:
-        milieu = (bas + haut) // 2
-        test_res = convertisseur_par_segments(str(milieu))
-        
-        if test_res.isdigit():
-            test_b9 = int(test_res)
-            if test_b9 == cible_b9:
-                resultat_b10 = milieu
-                break
-            elif test_b9 < cible_b9:
-                bas = milieu + 1
-            else:
-                haut = milieu - 1
-        else:
-            haut = milieu - 1
-            
-    if resultat_b10 is not None:
-        return str(resultat_b10)
-    else:
-        return "Aucune correspondance exacte trouvée"
-
-# =====================================================================
-# INTERFACE GRAPHIQUE STREAMLIT (SYSTÈME D'ONGLETS)
-# =====================================================================
-st.title("👑 Convertisseur base 10  et 9 bijective à base 9 bijective à base 10")
+# ==========================================
+# 4. INTERFACE APPLICATIVE GRAPHIQUE
+# ==========================================
+st.title("🔢 Convertisseur base 9 bijective et 10")
 st.caption("Calculateur Disjoint - Alignement des structures de bases numériques")
 
+# Système d'onglets pour naviguer facilement
 onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", "⬅️ ÉTAPE 2 : Base 9 -> Base 10"])
 
-# --- ONGLET 1 : CONVERSION DIRECTE ---
+# --- CONVERTISSEUR DIRECT (BASE 10 -> BASE 9) ---
 with onglet_direct:
     st.markdown("#### Génération Mathématique")
-    saisie_b10 = st.text_input("Saisissez le nombre décimal (Base 10) :", key="input_b10")
+    # Sécurité max_chars=20 : impossible d'écrire plus de 20 chiffres dans la zone
+    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=20, key="txt_b10")
     
-    if st.button("Lancer le Calcul", key="btn_direct"):
+    if st.button("Calculer le format Bijectif", key="btn_direct"):
         saisie_clean = saisie_b10.strip().replace(" ", "")
         if not saisie_clean.isdigit():
             st.error("⚠️ Saisie invalide. Veuillez n'entrer que des chiffres.")
         else:
-            resultat = convertisseur_par_segments(saisie_clean)
-            if "PALIER" in resultat or "ERREUR" in resultat:
-                st.error(f"❌ {resultat}")
-            else:
-                st.success(f"🏁 **RÉSULTAT EN BASE 9 BIJECTIVE :**")
-                st.code(resultat, language="text")
-                st.session_state.memoire_session[resultat] = saisie_clean
+            lignes, type_calcul, res_final = executer_etape_1(saisie_clean)
+            st.session_state.memoire_session[res_final] = saisie_clean
+            
+            st.success(f"🎯 **RÉSULTAT BASE 9 BIJECTIVE :** `{res_final}`")
 
-# --- ONGLET 2 : CONVERSION INVERSE ---
+# --- CONVERTISSEUR INVERSE (BASE 9 -> BASE 10) ---
 with onglet_inverse:
     st.markdown("#### Restauration d'Anatomie (3 Phases)")
-    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9) :", key="input_b9")
+    # Sécurité max_chars=20 : blocage matériel au clavier à 20 caractères
+    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9) :", max_chars=20, key="txt_b9")
     
     if st.button("Lancer l'Exception de Secours", key="btn_inverse"):
         saisie_clean = saisie_b9.strip().replace(" ", "")
-        
-        # --- VERROUILLAGE SÉCURITÉ DE SAISIE DU ZÉRO ---
-        if "0" in saisie_clean:
-            st.error("⚠️ Erreur Pureté Bijective : Le chiffre 0 n'existe pas en Base 9 Bijective ! Aucun calcul ne sera effectué.")
-        
-        elif not saisie_clean.isdigit():
+        if not saisie_clean.isdigit():
             st.error("⚠️ Saisie invalide. Veuillez n'entrer que des chiffres.")
-            
         else:
             # PHASE 1 : Recherche en mémoire immédiate
             if saisie_clean in st.session_state.memoire_session:
                 resultat = st.session_state.memoire_session[saisie_clean]
-                st.success(f"🟢 **[PHASE 1] IDENTIFIÉ DANS LA SESSION :** {resultat}")
+                st.success(f"🎯 **[PHASE 1] IDENTIFIÉ DANS LA SESSION :** `{resultat}`")
+                
             else:
-                # PHASE 2 : Recherche stricte via l'arbre
-                res_strict = convertisseur_inverse_par_segments(saisie_clean)
-                if "ERREUR" not in res_strict and "Aucune" not in res_strict:
-                    st.success(f"✨ **[PHASE 2] SÉQUENCE TROUVÉE DANS L'ARBRE :** {res_strict}")
+                # PHASE 2 : Recherche stricte via la cartographie de l'arbre
+                res_strict = executer_etape_2(saisie_clean)
+                
+                if isinstance(res_strict, list) and len(res_strict) > 0 and res_strict != "ERREUR":
+                    st.success(f"✨ **[PHASE 2] SÉQUENCE TROUVÉE DANS L'ARBRE :** `{res_strict}`")
+                
+                # PHASE 3 : Exception du vrai x 9 Bijectif (Pour les segments hors-arbre)
                 else:
-                    # PHASE 3 : Exception Forcée
                     valeur_base10 = 0
                     for symbole in saisie_clean:
                         valeur_base10 = (valeur_base10 * 9) + int(symbole)
-                    st.warning(f"🦺 **[PHASE 3] EXCEPTION DE CALCUL ACTIVÉE (Vrai x 9) :** {valeur_base10}")
+                    
+                    st.warning(f"💎 **[PHASE 3] EXCEPTION DE CALCUL ACTIVÉE (Vrai x 9) :** `{valeur_base10}`")
