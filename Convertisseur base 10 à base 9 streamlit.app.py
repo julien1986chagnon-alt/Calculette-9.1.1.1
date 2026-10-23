@@ -169,7 +169,7 @@ def convertisseur_inverse_par_segments(montant_b9_str):
 # =====================================================================
 # INTERFACE GRAPHIQUE STREAMLIT (SYSTÈME D'ONGLETS)
 # =====================================================================
-st.title("👑 Convertisseur base 9 bijective et 10")
+st.title("👑 Convertisseur base 10  et 9 bijective à base 9 bijective à base 10")
 st.caption("Calculateur Disjoint - Alignement des structures de bases numériques")
 
 onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", "⬅️ ÉTAPE 2 : Base 9 -> Base 10"])
