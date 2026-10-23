@@ -1,19 +1,19 @@
 import streamlit as st
 
-# ==============================================================================
+# =====================================================================
 # CONFIGURATION DE LA PAGE STREAMLIT
-# ==============================================================================
+# =====================================================================
 st.set_page_config(
     page_title="Convertisseur Base 9 Bijective",
-    page_icon="💎",
+    page_icon="🔢",
     layout="centered"
 )
 
-# ==============================================================================
+# =====================================================================
 # CONFIGURATION : LA GRILLE DES ZÉROS PURS (STRICTEMENT INTACTE)
-# ==============================================================================
+# =====================================================================
 TABLE_DES_ZEROS_PURS = {
-     10: "1",
+    10: "1",
     100: "11",
     1000: "221",
     10000: "2541",
@@ -38,9 +38,14 @@ TABLE_DES_ZEROS_PURS = {
     100000000000000000000000: "212571719215881416355251"
 }
 
-# ==============================================================================
+
+# Mémoire dynamique de l'application (Session State)
+if "memoire_session" not in st.session_state:
+    st.session_state.memoire_session = {}
+
+# =====================================================================
 # MOTEUR 1 : MULTIPLICATION PURE EN BASE 9 BIJECTIVE
-# ==============================================================================
+# =====================================================================
 def multiplier_b9_bijective(chaine_b9, multiplicateur_int):
     if multiplicateur_int == 1:
         return chaine_b9
@@ -73,9 +78,9 @@ def multiplier_b9_bijective(chaine_b9, multiplicateur_int):
             
     return "".join(reversed(resultat))
 
-# ==============================================================================
+# =====================================================================
 # MOTEUR 2 : ADDITION PURE EN BASE 9 (AVEC SUPPORT DU 0 DE DÉPART)
-# ==============================================================================
+# =====================================================================
 def additionner_b9(chaine1, chaine2):
     resultat = []
     retenue = 0
@@ -106,39 +111,39 @@ def additionner_b9(chaine1, chaine2):
             
     return "".join(reversed(resultat))
 
-# ==============================================================================
+# =====================================================================
 # PARTIE 1 : LA CONVERSION DIRECTE ENTIÈREMENT EN BASE 9 (CORRIGÉE)
-# ==============================================================================
+# =====================================================================
 def convertisseur_par_segments(montant_str):
-    montant_str = montant_str.replace(" ", "")
+    montant_str = montant_str.strip().replace(" ", "")
     if not montant_str.isdigit():
         return "ERREUR SAISIE"
         
-    # CORRECTION ICI : On prend UNIQUEMENT le tout premier caractère pour le multiplicateur
+    # CORRECTION ICI : On prend uniquement le tout premier caractère pour le multiplicateur
     premier_chiffre = int(montant_str[0])
     longueur = len(montant_str)
     
     str_palier = "1" + "0" * (longueur - 1)
     
-    if str_palier in TABLE_DES_ZEROS_PURS:
-        sequence_b9 = TABLE_DES_ZEROS_PURS[str_palier]
+    if int(str_palier) in TABLE_DES_ZEROS_PURS:
+        sequence_b9 = TABLE_DES_ZEROS_PURS[int(str_palier)]
         produit_b9 = multiplier_b9_bijective(sequence_b9, premier_chiffre)
         resultat_final = additionner_b9(montant_str, produit_b9)
         return resultat_final
         
     return "PALIER NON PARAMÉTRÉ"
 
-# ==============================================================================
+# =====================================================================
 # PARTIE 2 : LA CONVERSION INVERSE (BASE 9 -> BASE 10)
-# ==============================================================================
+# =====================================================================
 def convertisseur_inverse_par_segments(montant_b9_str):
-    montant_b9_str = montant_b9_str.replace(" ", "")
+    montant_b9_str = montant_b9_str.strip().replace(" ", "")
     if not montant_b9_str.isdigit() or "0" in montant_b9_str:
         return "ERREUR SAISIE"
         
     cible_b9 = int(montant_b9_str)
     bas = 0
-    haut = 10000000000000000000
+    haut = 10000000000000000000000
     resultat_b10 = None
     
     while bas <= haut:
@@ -162,17 +167,17 @@ def convertisseur_inverse_par_segments(montant_b9_str):
     else:
         return "Aucune correspondance exacte trouvée"
 
-# ==============================================================================
+# =====================================================================
 # INTERFACE GRAPHIQUE STREAMLIT
-# ==============================================================================
-st.title("💎 Convertisseur Logique Bijective (Moteur Révisé)")
-st.caption("Architecture mathématique et calculs 100% Base 9 par Chagnon Julien Christian Robert.")
+# =====================================================================
+st.title("👑 Convertisseur base 9 bijective et 10")
+st.caption("Calculateur Disjoint - Alignement des structures de bases numériques")
 st.write("---")
 
 choix = st.selectbox(
     "Choisissez le sens de conversion :",
     [
-        "1 : Base 10 ➔ Ajouter les décalages (Calculs 100% Base 9)",
+        "1 : Base 10 ➡️ Ajouter les décalages (Calculs 100% Base 9)",
         "2 : Retrouver le nombre d'origine (Inverse en Base 10)"
     ]
 )
@@ -188,12 +193,17 @@ if st.button("LANCER LE CALCUL", type="primary"):
             if "PALIER" in resultat or "ERREUR" in resultat:
                 st.error(f"❌ {resultat}")
             else:
-                st.success(f"📈 **RÉSULTAT EN BASE 9 :**")
+                st.success(f"🏁 **RÉSULTAT EN BASE 9 :**")
                 st.code(resultat, language="text")
+                st.session_state.memoire_session[resultat] = montant_saisi
         else:
-            resultat_inverse = convertisseur_inverse_par_segments(montant_saisi)
-            if "ERREUR" in resultat_inverse or "Aucune" in resultat_inverse:
-                st.error(f"❌ {resultat_inverse}")
+            # --- MODIFICATION APPORTÉE UNIQUEMENT SUR L'AFFICHAGE DU ZÉRO EN BASE 9 ---
+            if "0" in montant_saisi.strip().replace(" ", ""):
+                st.error("⚠️ Erreur Pureté Bijective : Le chiffre 0 n'existe pas en Base 9 Bijective ! Saisie refusée.")
             else:
-                st.success(f"🔄 **RETOUR EN BASE 10 D'ORIGINE :**")
-                st.code(resultat_inverse, language="text")
+                resultat_inverse = convertisseur_inverse_par_segments(montant_saisi)
+                if "ERREUR" in resultat_inverse or "Aucune" in resultat_inverse:
+                    st.error(f"❌ {resultat_inverse}")
+                else:
+                    st.success(f"🏁 **RETOUR EN BASE 10 D'ORIGINE :**")
+                    st.code(resultat_inverse, language="text")
