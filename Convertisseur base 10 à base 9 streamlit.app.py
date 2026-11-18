@@ -40,9 +40,8 @@ TABLEUR_PASSAGES_ZERO = {
 # Mémoire dynamique de l'application (Session State)
 if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
-
 # =====================================================================
-# 2. FONCTIONS D'ADDITION ET DE SOUSTRACTION VERTICALE EN BASE 9
+# 2. FONCTIONS DE CALCUL VERTICAL EN BASE 9 BIJECTIVE
 # =====================================================================
 
 def addition_comptable_verticale_b9(str_n1, str_n2):
@@ -73,13 +72,6 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
-def soustraction_comptable_verticale_b9(str_grand, str_petit):
-    """Soustrait str_petit de str_grand dans votre système base 9 sans zéro."""
-    val_grand = b9_vers_entier_bijectif(str_grand)
-    val_petit = b9_vers_entier_bijectif(str_petit)
-    diff = val_grand - val_petit
-    return entier_bijectif_vers_b9(diff) if diff > 0 else "0"
-
 def somme_verticale_multi_lignes_b9(liste_chaines):
     total = "0"
     for chaine in liste_chaines:
@@ -93,6 +85,7 @@ def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
     return resultat
 
 def b9_vers_entier_bijectif(str_b9):
+    """Permet de comparer la taille exacte de deux nombres en Base 9 sans zéro."""
     if not str_b9 or str_b9 == "0":
         return 0
     total = 0
@@ -100,21 +93,12 @@ def b9_vers_entier_bijectif(str_b9):
         total = total * 9 + int(c)
     return total
 
-def entier_bijectif_vers_b9(n_int):
-    if n_int <= 0:
-        return "0"
-    chiffres = []
-    while n_int > 0:
-        n_int, reste = divmod(n_int - 1, 9)
-        chiffres.append(str(reste + 1))
-    return "".join(reversed(chiffres))
-
 # =====================================================================
 # 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
 # =====================================================================
 
 def executer_etape_1(montant_b10_str):
-    """Aller : Lit directement le total cumulé (index 1) de votre tableau pour chaque rang."""
+    """Aller : Utilise directement le total cumulé [1] de votre nouveau tableau."""
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
@@ -128,7 +112,7 @@ def executer_etape_1(montant_b10_str):
         if chiffre > 0:
             puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                # On pioche directement la 2e valeur du tuple : le total cumulé (index 1)
+                # Lit la 2e valeur du tuple : le total cumulé
                 total_unitaire_b9 = TABLEUR_PASSAGES_ZERO[puissance_dix][1]
                 partiel_b9 = multiplication_comptable_unitaire_b9(total_unitaire_b9, chiffre)
                 lignes_totaux.append(partiel_b9)
@@ -136,35 +120,32 @@ def executer_etape_1(montant_b10_str):
     return somme_verticale_multi_lignes_b9(lignes_totaux)
 
 def executer_etape_2(chaine_b9_str):
-    """Retour : Soustrait directement les totaux cumulés (index 1) de votre tableau."""
+    """Retour : Trouve le segment exact en Base 10 en tenant compte de tous les cumuls."""
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
 
-    reste_b9 = saisie
-    resultat_b10_chiffres = []
+    cible_rang = b9_vers_entier_bijectif(saisie)
     
-    # On parcourt les puissances de 10 de votre tableau de la plus grande à la plus petite (jusqu'à 1)
-    puissances_triees = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
-    
-    for p10 in puissances_triees:
-        # On lit directement le coût total du palier dans votre tableau (index 1)
-        cout_unitaire_b9 = TABLEUR_PASSAGES_ZERO[p10][1]
-        
-        chiffre_b10 = 0
-        while b9_vers_entier_bijectif(reste_b9) >= b9_vers_entier_bijectif(cout_unitaire_b9) and chiffre_b10 < 9:
-            reste_b9 = soustraction_comptable_verticale_b9(reste_b9, cout_unitaire_b9)
-            chiffre_b10 += 1
-            
-        if resultat_b10_chiffres or chiffre_b10 > 0:
-            resultat_b10_chiffres.append(str(chiffre_b10))
+    # Recherche par encadrement sur votre moteur officiel (gère 100% des retenues cumulées)
+    bas = 1
+    haut = cible_rang
+    meilleur_b10 = 1
 
-    res_final = "".join(resultat_b10_chiffres)
-    return res_final if res_final != "" else "1"
+    while bas <= haut:
+        milieu = (bas + haut) // 2
+        res_b9 = executer_etape_1(str(milieu))
+        rang_actuel = b9_vers_entier_bijectif(res_b9)
 
+        if rang_actuel == cible_rang:
+            return str(milieu)
+        elif rang_actuel < cible_rang:
+            meilleur_b10 = milieu
+            bas = milieu + 1
+        else:
+            haut = milieu - 1
 
-
-
+    return str(meilleur_b10)
 
 # =====================================================================
 # 4. INTERFACE APPLICATIVE GRAPHIQUE
@@ -175,28 +156,26 @@ st.caption("Calculateur Disjoint - Alignement des structures de bases numérique
 
 onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", "⬅️ ÉTAPE 2 : Base 9 -> Base 10"])
 
-# --- CONVERTISSEUR DIRECT (BASE 10 -> BASE 9) ---
 with onglet_direct:
     st.markdown("#### Génération Mathématique")
-    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=27, key="txt_b10")
+    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=26, key="txt_b10")
     
     if st.button("Calculer le format Bijectif", key="btn_direct"):
-        res_final = convertir_b10_vers_b9(saisie_b10)
+        res_final = executer_etape_1(saisie_b10)
         if res_final is None:
-            st.error("⚠️ Saisie invalide. Veuillez entrer un nombre entier supérieur à 0.")
+            st.error("⚠️ Saisie invalide. Entrez un nombre entier supérieur à 0.")
         else:
             st.success(f"🟢 **RÉSULTAT BASE 9 BIJECTIVE :** `{res_final}`")
 
-# --- CONVERTISSEUR INVERSE (BASE 9 -> BASE 10) ---
 with onglet_inverse:
     st.markdown("#### Restauration Exacte")
     saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9, chiffres 1 à 9 uniquement) :", max_chars=27, key="txt_b9")
     
     if st.button("Convertir vers Base 10", key="btn_inverse"):
-        res_b10 = convertir_b9_vers_b10(saisie_b9)
+        res_b10 = executer_etape_2(saisie_b9)
         if res_b10 is None:
-            st.error("⚠️ Saisie invalide. En base 9 bijective, utilisez uniquement les chiffres de 1 à 9 (sans zéro).")
+            st.error("⚠️ Saisie invalide. Utilisez uniquement les chiffres de 1 à 9 (sans zéro).")
         else:
             st.success(f"🟢 **RÉSULTAT BASE 10 :** `{res_b10}`")
 
-g(f"💎 **[PHASE 3] EXCEPTION DE CALCUL ACTIVÉE (Vrai x 9) :** `{valeur_base10}`")
+
