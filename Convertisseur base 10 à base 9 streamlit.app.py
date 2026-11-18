@@ -41,28 +41,114 @@ TABLEUR_PASSAGES_ZERO = {
 if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
 # =====================================================================
-# 2. FONCTIONS DE CONVERSION BIJECTIVE PURE (SANS TROUS)
+# 2. FONCTIONS DE CALCUL VERTICAL EN BASE 9 BIJECTIVE
 # =====================================================================
 
-def executer_etape_2(chaine_b9_str):
-    """Étape 1 de la reconstruction : reconnaît les paliers exacts de votre tableau."""
-    saisie = chaine_b9_str.strip().replace(" ", "")
-    if not saisie.isdigit() or "0" in saisie:
+def addition_comptable_verticale_b9(str_n1, str_n2):
+    n1, n2 = str_n1.strip(), str_n2.strip()
+    if n1 == "0": return n2
+    if n2 == "0": return n1
+    max_len = max(len(n1), len(n2))
+    n1, n2 = n1.zfill(max_len), n2.zfill(max_len)
+    resultat, retenue = [], 0
+
+    for i in range(max_len - 1, -1, -1):
+        d1 = int(n1[i]) if n1[i] != '0' else 0
+        d2 = int(n2[i]) if n2[i] != '0' else 0
+        somme_colonne = d1 + d2 + retenue
+
+        if somme_colonne >= 9:
+            reste = somme_colonne % 9
+            chiffre_ici = 9 if reste == 0 else reste
+            retenue = (somme_colonne // 9) - 1 if reste == 0 else somme_colonne // 9
+        else:
+            chiffre_ici = somme_colonne
+            retenue = 0
+        resultat.append(str(chiffre_ici))
+
+    if retenue > 0:
+        resultat.append(str(retenue))
+
+    res_final = "".join(reversed(resultat)).lstrip('0')
+    return res_final if res_final != "" else "0"
+
+def soustraction_comptable_verticale_b9(str_grand, str_petit):
+    """Soustrait un palier du reste en respectant les règles de votre addition sans zéro."""
+    if str_grand == str_petit:
+        return "0"
+    max_len = max(len(str_grand), len(str_petit))
+    n_grand = str_grand.strip().zfill(max_len)
+    n_petit = str_petit.strip().zfill(max_len)
+    resultat, emprunt = [], 0
+
+    for i in range(max_len - 1, -1, -1):
+        d_grand = int(n_grand[i])
+        d_petit = int(n_petit[i]) + emprunt
+
+        if d_grand <= d_petit and i > 0:
+            diff = (d_grand + 9) - d_petit
+            emprunt = 1
+        else:
+            diff = d_grand - d_petit
+            emprunt = 0
+
+        if diff == 0 and i > 0:
+            diff = 9
+            emprunt = 1
+
+        resultat.append(str(diff))
+
+    res_final = "".join(reversed(resultat)).lstrip('0')
+    return res_final if res_final != "" else "0"
+
+def somme_verticale_multi_lignes_b9(liste_chaines):
+    total = "0"
+    for chaine in liste_chaines:
+        total = addition_comptable_verticale_b9(total, chaine)
+    return total
+
+def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
+    resultat = "0"
+    for _ in range(chiffre_int):
+        resultat = addition_comptable_verticale_b9(resultat, str_b9)
+    return resultat
+
+def est_superieur_ou_egal_b9(str_a, str_b):
+    """Compare deux nombres en Base 9 (sans zéro) par longueur puis chiffre par chiffre."""
+    a = str_a.lstrip('0')
+    b = str_b.lstrip('0')
+    if len(a) != len(b):
+        return len(a) > len(b)
+    return a >= b
+
+# =====================================================================
+# 3. FONCTIONS ALLER ET RETOUR (DÉCOMPTE DU PLUS GRAND AU PLUS PETIT)
+# =====================================================================
+
+def executer_etape_1(montant_b10_str):
+    """Aller : Utilise directement le total cumulé de votre tableau."""
+    saisie = montant_b10_str.strip().replace(" ", "")
+    if not saisie.isdigit() or int(saisie) <= 0:
         return None
 
-    # 1. Recherche directe dans votre tableau (ex: "12531" -> 10000)
-    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
-        if saisie == total_b9:
-            return str(cle_b10)
+    longueur = len(saisie)
+    lignes_totaux = []
 
-    # 2. Recherche d'un multiple exact d'un palier (ex: 2 x "12531" -> 20000)
-    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
-        for chiffre in range(2, 10):
-            if saisie == multiplication_comptable_unitaire_b9(total_b9, chiffre):
-                return str(cle_b10 * chiffre)
+    for i, chiffre_str in enumerate(saisie):
+        chiffre = int(chiffre_str)
+        nb_zeros_droite = longueur - 1 - i
+        if chiffre > 0:
+            puissance_dix = 10 ** nb_zeros_droite
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                # Lit la 2e valeur du tuple : le total cumulé (index 1)
+                total_unitaire_b9 = TABLEUR_PASSAGES_ZERO[puissance_dix][1]
+                partiel_b9 = multiplication_comptable_unitaire_b9(total_unitaire_b9, chiffre)
+                lignes_totaux.append(partiel_b9)
 
-    return "Palier composé (étape suivante à construire)"def executer_etape_2(chaine_b9_str):
-    """Décompte du plus grand palier au plus petit (multiples + unitaires)."""
+    return somme_verticale_multi_lignes_b9(lignes_totaux)
+
+def executer_etape_2(chaine_b9_str):
+    """Retour : Repère le plus grand multiple dans votre tableau et descend sur le reste."""
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
@@ -70,51 +156,27 @@ def executer_etape_2(chaine_b9_str):
     reste_b9 = saisie
     total_base10 = 0
     
-    # On trie vos paliers du plus grand (10^26) jusqu'aux unitaires (1)
+    # On trie vos paliers du plus grand (10^26) jusqu'au plus petit (1)
     paliers_descendants = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
     
     for cle_b10 in paliers_descendants:
+        if reste_b9 == "0":
+            break
+            
         passage, total_palier_b9 = TABLEUR_PASSAGES_ZERO[cle_b10]
         
-        # On teste les multiples du plus grand (9) au plus petit (1) pour ce palier
+        # On cherche le plus grand multiple (de 9 à 1) qui rentre dans le reste actuel
         for multiple in range(9, 0, -1):
             valeur_multiple_b9 = multiplication_comptable_unitaire_b9(total_palier_b9, multiple)
             
-            # Si ce multiple rentre dans ce qu'il nous reste
-            if b9_vers_entier_bijectif(reste_b9) >= b9_vers_entier_bijectif(valeur_multiple_b9):
-                # On ajoute ce palier à notre réponse Base 10
+            if est_superieur_ou_egal_b9(reste_b9, valeur_multiple_b9):
+                # On ajoute ce palier à la réponse finale en Base 10
                 total_base10 += cle_b10 * multiple
-                # On soustrait ce multiple pour continuer avec le reste
+                # On soustrait ce bloc pour continuer sur ce qu'il reste
                 reste_b9 = soustraction_comptable_verticale_b9(reste_b9, valeur_multiple_b9)
                 break
 
     return str(total_base10) if total_base10 > 0 else "1"
-
-
-
-# =====================================================================
-# 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
-# =====================================================================
-
-def convertir_b10_vers_b9(montant_b10_str):
-    saisie = montant_b10_str.strip().replace(" ", "")
-    if not saisie.isdigit() or int(saisie) <= 0:
-        return None
-    
-    n_b10 = int(saisie)
-    # Conversion bijective directe : chaque nombre en base 10 a un unique voisin en base 9 sans zéro
-    resultat_b9 = base10_vers_bijectif9(n_b10)
-    return resultat_b9
-
-def convertir_b9_vers_b10(chaine_b9_str):
-    saisie = chaine_b9_str.strip().replace(" ", "")
-    if not saisie.isdigit() or "0" in saisie:
-        return None
-    
-    # Conversion inverse directe : garantit un retour à 100% identique à l'original
-    resultat_b10 = bijectif9_vers_base10(saisie)
-    return str(resultat_b10)
-
 
 # =====================================================================
 # 4. INTERFACE APPLICATIVE GRAPHIQUE
@@ -137,14 +199,13 @@ with onglet_direct:
             st.success(f"🟢 **RÉSULTAT BASE 9 BIJECTIVE :** `{res_final}`")
 
 with onglet_inverse:
-    st.markdown("#### Restauration Exacte")
-    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9, chiffres 1 à 9 uniquement) :", max_chars=27, key="txt_b9")
+    st.markdown("#### Décompte par Paliers Descendants")
+    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9) :", max_chars=27, key="txt_b9")
     
-    if st.button("Convertir vers Base 10", key="btn_inverse"):
+    if st.button("Décompter vers Base 10", key="btn_inverse"):
         res_b10 = executer_etape_2(saisie_b9)
         if res_b10 is None:
             st.error("⚠️ Saisie invalide. Utilisez uniquement les chiffres de 1 à 9 (sans zéro).")
         else:
             st.success(f"🟢 **RÉSULTAT BASE 10 :** `{res_b10}`")
-
 
