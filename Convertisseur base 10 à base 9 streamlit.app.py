@@ -41,10 +41,11 @@ TABLEUR_PASSAGES_ZERO = {
 if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
 # =====================================================================
-# 2. FONCTIONS DE CALCUL VERTICAL EN BASE 9 BIJECTIVE
+# 2. OPÉRATIONS MIROIRS EN BASE 9 BIJECTIVE (ADDITION ET SOUSTRACTION)
 # =====================================================================
 
-def addition_comptable_verticale_b9(str_n1, str_n2):
+def addition_verticale_b9(str_n1, str_n2):
+    """Additionne deux nombres en base 9 sans zéro (sens aller)."""
     n1, n2 = str_n1.strip(), str_n2.strip()
     if n1 == "0": return n2
     if n2 == "0": return n1
@@ -72,8 +73,8 @@ def addition_comptable_verticale_b9(str_n1, str_n2):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
-def soustraction_comptable_verticale_b9(str_grand, str_petit):
-    """Soustrait un palier du reste en respectant les règles de votre addition sans zéro."""
+def soustraction_verticale_b9(str_grand, str_petit):
+    """Soustrait un palier en base 9 sans zéro (opération miroir du retour)."""
     if str_grand == str_petit:
         return "0"
     max_len = max(len(str_grand), len(str_petit))
@@ -81,7 +82,7 @@ def soustraction_comptable_verticale_b9(str_grand, str_petit):
     n_petit = str_petit.strip().zfill(max_len)
     resultat, emprunt = [], 0
 
-    for i in range(max_len - 1, -1, -1):
+    for i in range(len(n_grand) - 1, -1, -1):
         d_grand = int(n_grand[i])
         d_petit = int(n_petit[i]) + emprunt
 
@@ -101,20 +102,15 @@ def soustraction_comptable_verticale_b9(str_grand, str_petit):
     res_final = "".join(reversed(resultat)).lstrip('0')
     return res_final if res_final != "" else "0"
 
-def somme_verticale_multi_lignes_b9(liste_chaines):
-    total = "0"
-    for chaine in liste_chaines:
-        total = addition_comptable_verticale_b9(total, chaine)
-    return total
-
-def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
+def multiplier_palier_b9(str_b9, chiffre_int):
+    """Répète l'addition verticale autant de fois que le chiffre l'indique."""
     resultat = "0"
     for _ in range(chiffre_int):
-        resultat = addition_comptable_verticale_b9(resultat, str_b9)
+        resultat = addition_verticale_b9(resultat, str_b9)
     return resultat
 
 def est_superieur_ou_egal_b9(str_a, str_b):
-    """Compare deux nombres en Base 9 (sans zéro) par longueur puis chiffre par chiffre."""
+    """Compare deux nombres en base 9 sans zéro."""
     a = str_a.lstrip('0')
     b = str_b.lstrip('0')
     if len(a) != len(b):
@@ -122,17 +118,17 @@ def est_superieur_ou_egal_b9(str_a, str_b):
     return a >= b
 
 # =====================================================================
-# 3. FONCTIONS ALLER ET RETOUR (DÉCOMPTE DU PLUS GRAND AU PLUS PETIT)
+# 3. CONVERSION ALLER (BASE 10 -> 9) ET REMBOBINAGE (BASE 9 -> 10)
 # =====================================================================
 
 def executer_etape_1(montant_b10_str):
-    """Aller : Utilise directement le total cumulé de votre tableau."""
+    """Sens aller : Assemble les paliers de votre tableau par addition."""
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
 
     longueur = len(saisie)
-    lignes_totaux = []
+    total_b9 = "0"
 
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
@@ -140,15 +136,14 @@ def executer_etape_1(montant_b10_str):
         if chiffre > 0:
             puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                # Lit la 2e valeur du tuple : le total cumulé (index 1)
-                total_unitaire_b9 = TABLEUR_PASSAGES_ZERO[puissance_dix][1]
-                partiel_b9 = multiplication_comptable_unitaire_b9(total_unitaire_b9, chiffre)
-                lignes_totaux.append(partiel_b9)
+                passage, valeur_totale_palier = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                bloc_b9 = multiplier_palier_b9(valeur_totale_palier, chiffre)
+                total_b9 = addition_verticale_b9(total_b9, bloc_b9)
 
-    return somme_verticale_multi_lignes_b9(lignes_totaux)
+    return total_b9
 
 def executer_etape_2(chaine_b9_str):
-    """Retour : Repère le plus grand multiple dans votre tableau et descend sur le reste."""
+    """Sens retour : Rembobine exactement l'Étape 1 en retirant les plus grands paliers d'abord."""
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
@@ -156,53 +151,51 @@ def executer_etape_2(chaine_b9_str):
     reste_b9 = saisie
     total_base10 = 0
     
-    # On trie vos paliers du plus grand (10^26) jusqu'au plus petit (1)
+    # On parcourt votre tableau du plus grand palier au plus petit (rembobinage)
     paliers_descendants = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
     
     for cle_b10 in paliers_descendants:
         if reste_b9 == "0":
             break
             
-        passage, total_palier_b9 = TABLEUR_PASSAGES_ZERO[cle_b10]
+        passage, valeur_totale_palier = TABLEUR_PASSAGES_ZERO[cle_b10]
         
-        # On cherche le plus grand multiple (de 9 à 1) qui rentre dans le reste actuel
-        for multiple in range(9, 0, -1):
-            valeur_multiple_b9 = multiplication_comptable_unitaire_b9(total_palier_b9, multiple)
+        # On cherche quel chiffre (de 9 à 1) avait été utilisé à l'aller pour ce palier
+        for chiffre in range(9, 0, -1):
+            bloc_b9 = multiplier_palier_b9(valeur_totale_palier, chiffre)
             
-            if est_superieur_ou_egal_b9(reste_b9, valeur_multiple_b9):
-                # On ajoute ce palier à la réponse finale en Base 10
-                total_base10 += cle_b10 * multiple
-                # On soustrait ce bloc pour continuer sur ce qu'il reste
-                reste_b9 = soustraction_comptable_verticale_b9(reste_b9, valeur_multiple_b9)
+            if est_superieur_ou_egal_b9(reste_b9, bloc_b9):
+                total_base10 += cle_b10 * chiffre
+                reste_b9 = soustraction_verticale_b9(reste_b9, bloc_b9)
                 break
 
     return str(total_base10) if total_base10 > 0 else "1"
 
 # =====================================================================
-# 4. INTERFACE APPLICATIVE GRAPHIQUE
+# 4. INTERFACE STREAMLIT
 # =====================================================================
 
 st.title("🔢 Convertisseur base 9 bijective et 10")
-st.caption("Calculateur Disjoint - Alignement des structures de bases numériques")
+st.caption("Calculateur Miroir - Assemblage et Rembobinage sur Tableau")
 
 onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", "⬅️ ÉTAPE 2 : Base 9 -> Base 10"])
 
 with onglet_direct:
-    st.markdown("#### Génération Mathématique")
-    saisie_b10 = st.text_input("Saisissez le montant décimal (Base 10) :", max_chars=26, key="txt_b10")
+    st.markdown("#### Assemblage (Base 10 vers Base 9)")
+    saisie_b10 = st.text_input("Saisissez le nombre en Base 10 :", max_chars=26, key="txt_b10")
     
-    if st.button("Calculer le format Bijectif", key="btn_direct"):
+    if st.button("Convertir vers Base 9", key="btn_direct"):
         res_final = executer_etape_1(saisie_b10)
         if res_final is None:
             st.error("⚠️ Saisie invalide. Entrez un nombre entier supérieur à 0.")
         else:
-            st.success(f"🟢 **RÉSULTAT BASE 9 BIJECTIVE :** `{res_final}`")
+            st.success(f"🟢 **RÉSULTAT BASE 9 :** `{res_final}`")
 
 with onglet_inverse:
-    st.markdown("#### Décompte par Paliers Descendants")
-    saisie_b9 = st.text_input("Saisissez le nombre bijectif (Base 9) :", max_chars=27, key="txt_b9")
+    st.markdown("#### Rembobinage Miroir (Base 9 vers Base 10)")
+    saisie_b9 = st.text_input("Saisissez le nombre en Base 9 (chiffres 1 à 9) :", max_chars=27, key="txt_b9")
     
-    if st.button("Décompter vers Base 10", key="btn_inverse"):
+    if st.button("Rembobiner vers Base 10", key="btn_inverse"):
         res_b10 = executer_etape_2(saisie_b9)
         if res_b10 is None:
             st.error("⚠️ Saisie invalide. Utilisez uniquement les chiffres de 1 à 9 (sans zéro).")
