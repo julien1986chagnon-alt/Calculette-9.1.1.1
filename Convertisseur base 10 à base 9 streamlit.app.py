@@ -41,11 +41,65 @@ if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
 
 # =====================================================================
-# 2. FONCTIONS DE CONVERSION BIJECTIVE PURE (SANS TROUS)
+# 2. FONCTIONS D'ADDITION ET DE SOUSTRACTION VERTICALE EN BASE 9
 # =====================================================================
 
-def base10_vers_bijectif9(n_int):
-    """Convertit un entier base 10 en chaîne base 9 sans zéro (chiffres 1 à 9)."""
+def addition_comptable_verticale_b9(str_n1, str_n2):
+    n1, n2 = str_n1.strip(), str_n2.strip()
+    if n1 == "0": return n2
+    if n2 == "0": return n1
+    max_len = max(len(n1), len(n2))
+    n1, n2 = n1.zfill(max_len), n2.zfill(max_len)
+    resultat, retenue = [], 0
+
+    for i in range(max_len - 1, -1, -1):
+        d1 = int(n1[i]) if n1[i] != '0' else 0
+        d2 = int(n2[i]) if n2[i] != '0' else 0
+        somme_colonne = d1 + d2 + retenue
+
+        if somme_colonne >= 9:
+            reste = somme_colonne % 9
+            chiffre_ici = 9 if reste == 0 else reste
+            retenue = (somme_colonne // 9) - 1 if reste == 0 else somme_colonne // 9
+        else:
+            chiffre_ici = somme_colonne
+            retenue = 0
+        resultat.append(str(chiffre_ici))
+
+    if retenue > 0:
+        resultat.append(str(retenue))
+
+    res_final = "".join(reversed(resultat)).lstrip('0')
+    return res_final if res_final != "" else "0"
+
+def soustraction_comptable_verticale_b9(str_grand, str_petit):
+    """Soustrait str_petit de str_grand dans votre système base 9 sans zéro."""
+    val_grand = b9_vers_entier_bijectif(str_grand)
+    val_petit = b9_vers_entier_bijectif(str_petit)
+    diff = val_grand - val_petit
+    return entier_bijectif_vers_b9(diff) if diff > 0 else "0"
+
+def somme_verticale_multi_lignes_b9(liste_chaines):
+    total = "0"
+    for chaine in liste_chaines:
+        total = addition_comptable_verticale_b9(total, chaine)
+    return total
+
+def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
+    resultat = "0"
+    for _ in range(chiffre_int):
+        resultat = addition_comptable_verticale_b9(resultat, str_b9)
+    return resultat
+
+def b9_vers_entier_bijectif(str_b9):
+    if not str_b9 or str_b9 == "0":
+        return 0
+    total = 0
+    for c in str_b9:
+        total = total * 9 + int(c)
+    return total
+
+def entier_bijectif_vers_b9(n_int):
     if n_int <= 0:
         return "0"
     chiffres = []
@@ -54,40 +108,62 @@ def base10_vers_bijectif9(n_int):
         chiffres.append(str(reste + 1))
     return "".join(reversed(chiffres))
 
-def bijectif9_vers_base10(str_b9):
-    """Convertit une chaîne base 9 sans zéro vers son entier base 10 exact."""
-    total = 0
-    for c in str_b9:
-        total = total * 9 + int(c)
-    return total
-
-def lire_reference_tableau(nb_chiffres):
-    """Utilise votre TABLEUR_PASSAGES_ZERO pour vérifier le palier correspondant."""
-    puissance_dix = 10 ** (nb_chiffres - 1)
-    return TABLEUR_PASSAGES_ZERO.get(puissance_dix, "0")
-
 # =====================================================================
-# 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
+# 3. FONCTIONS ALLER (ADDITION) ET RETOUR (SOUSTRACTION DIRECTE)
 # =====================================================================
 
-def convertir_b10_vers_b9(montant_b10_str):
+def executer_etape_1(montant_b10_str):
+    """Aller : Convertit en base 9 et ADDITIONNE les passages de votre tableau."""
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
-    
-    n_b10 = int(saisie)
-    # Conversion bijective directe : chaque nombre en base 10 a un unique voisin en base 9 sans zéro
-    resultat_b9 = base10_vers_bijectif9(n_b10)
-    return resultat_b9
 
-def convertir_b9_vers_b10(chaine_b9_str):
+    longueur = len(saisie)
+    lignes_zeros_seules = []
+
+    for i, chiffre_str in enumerate(saisie):
+        chiffre = int(chiffre_str)
+        nb_zeros_droite = longueur - 1 - i
+        if chiffre > 0:
+            puissance_dix = 10 ** nb_zeros_droite
+            if puissance_dix in TABLEUR_PASSAGES_ZERO:
+                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
+                lignes_zeros_seules.append(partiel_b9)
+
+    somme_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
+    saisie_en_b9 = entier_bijectif_vers_b9(int(saisie))
+    return addition_comptable_verticale_b9(saisie_en_b9, somme_brute)
+
+def executer_etape_2(chaine_b9_str):
+    """Retour : SOUSTRAIT directement les passages du tableau rang par rang pour revenir en Base 10."""
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
+
+    reste_b9 = saisie
+    resultat_b10_chiffres = []
     
-    # Conversion inverse directe : garantit un retour à 100% identique à l'original
-    resultat_b10 = bijectif9_vers_base10(saisie)
-    return str(resultat_b10)
+    # On parcourt les puissances de 10 du tableau de la plus grande à la plus petite
+    puissances_triees = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
+    
+    for p10 in puissances_triees:
+        p10_en_b9 = entier_bijectif_vers_b9(p10)
+        decalage_unitaire_b9 = TABLEUR_PASSAGES_ZERO[p10]
+        # Coût total d'un pas à cette puissance (le pas base 10 + son passage tableau)
+        cout_unitaire_b9 = addition_comptable_verticale_b9(p10_en_b9, decalage_unitaire_b9)
+        
+        chiffre_b10 = 0
+        # On soustrait tant que le reste est supérieur ou égal au coût du palier (max 9 fois)
+        while b9_vers_entier_bijectif(reste_b9) >= b9_vers_entier_bijectif(cout_unitaire_b9) and chiffre_b10 < 9:
+            reste_b9 = soustraction_comptable_verticale_b9(reste_b9, cout_unitaire_b9)
+            chiffre_b10 += 1
+            
+        if resultat_b10_chiffres or chiffre_b10 > 0:
+            resultat_b10_chiffres.append(str(chiffre_b10))
+
+    res_final = "".join(resultat_b10_chiffres)
+    return res_final if res_final != "" else "1"
 
 
 # =====================================================================
