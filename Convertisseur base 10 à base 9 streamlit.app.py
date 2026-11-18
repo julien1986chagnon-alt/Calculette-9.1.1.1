@@ -142,11 +142,11 @@ def executer_etape_1(montant_b10_str):
 
     return total_b9
 
-def executer_etape_2(chaine_b9_str):
-    """Sens retour : Rembobine exactement l'Étape 1 en retirant les plus grands paliers d'abord."""
-    saisie = chaine_b9_str.strip().replace(" ", "")
-    if not saisie.isdigit() or "0" in saisie:
-        return None
+# Lecture directe du total cumulé dans votre tableau
+    for palier_b10, (passage, total_cumule) in TABLEUR_PASSAGES_ZERO.items():
+        if saisie == total_cumule:
+            return str(palier_b10)
+
 
     reste_b9 = saisie
     total_base10 = 0
