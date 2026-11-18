@@ -61,7 +61,36 @@ def executer_etape_2(chaine_b9_str):
             if saisie == multiplication_comptable_unitaire_b9(total_b9, chiffre):
                 return str(cle_b10 * chiffre)
 
-    return "Palier composé (étape suivante à construire)"
+    return "Palier composé (étape suivante à construire)"def executer_etape_2(chaine_b9_str):
+    """Décompte du plus grand palier au plus petit (multiples + unitaires)."""
+    saisie = chaine_b9_str.strip().replace(" ", "")
+    if not saisie.isdigit() or "0" in saisie:
+        return None
+
+    reste_b9 = saisie
+    total_base10 = 0
+    
+    # On trie vos paliers du plus grand (10^26) jusqu'aux unitaires (1)
+    paliers_descendants = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
+    
+    for cle_b10 in paliers_descendants:
+        passage, total_palier_b9 = TABLEUR_PASSAGES_ZERO[cle_b10]
+        
+        # On teste les multiples du plus grand (9) au plus petit (1) pour ce palier
+        for multiple in range(9, 0, -1):
+            valeur_multiple_b9 = multiplication_comptable_unitaire_b9(total_palier_b9, multiple)
+            
+            # Si ce multiple rentre dans ce qu'il nous reste
+            if b9_vers_entier_bijectif(reste_b9) >= b9_vers_entier_bijectif(valeur_multiple_b9):
+                # On ajoute ce palier à notre réponse Base 10
+                total_base10 += cle_b10 * multiple
+                # On soustrait ce multiple pour continuer avec le reste
+                reste_b9 = soustraction_comptable_verticale_b9(reste_b9, valeur_multiple_b9)
+                break
+
+    return str(total_base10) if total_base10 > 0 else "1"
+
+
 
 # =====================================================================
 # 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
