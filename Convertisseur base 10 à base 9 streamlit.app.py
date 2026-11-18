@@ -41,83 +41,54 @@ TABLEUR_PASSAGES_ZERO = {
 if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
 # =====================================================================
-# 2. FONCTIONS DE CALCUL VERTICAL EN BASE 9 BIJECTIVE
+# 2. FONCTIONS DE CONVERSION BIJECTIVE PURE (SANS TROUS)
 # =====================================================================
 
-def executer_etape_2(chaine_b9_str):
-    """Étape 1 de la reconstruction : reconnaît les paliers exacts de votre tableau."""
-    saisie = chaine_b9_str.strip().replace(" ", "")
-    if not saisie.isdigit() or "0" in saisie:
-        return None
+def base10_vers_bijectif9(n_int):
+    """Convertit un entier base 10 en chaîne base 9 sans zéro (chiffres 1 à 9)."""
+    if n_int <= 0:
+        return "0"
+    chiffres = []
+    while n_int > 0:
+        n_int, reste = divmod(n_int - 1, 9)
+        chiffres.append(str(reste + 1))
+    return "".join(reversed(chiffres))
 
-    # 1. Recherche directe dans votre tableau (ex: "12531" -> 10000)
-    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
-        if saisie == total_b9:
-            return str(cle_b10)
+def bijectif9_vers_base10(str_b9):
+    """Convertit une chaîne base 9 sans zéro vers son entier base 10 exact."""
+    total = 0
+    for c in str_b9:
+        total = total * 9 + int(c)
+    return total
 
-    # 2. Recherche d'un multiple exact d'un palier (ex: 2 x "12531" -> 20000)
-    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
-        for chiffre in range(2, 10):
-            if saisie == multiplication_comptable_unitaire_b9(total_b9, chiffre):
-                return str(cle_b10 * chiffre)
-
-    return "Palier composé (étape suivante à construire)"
-
-
+def lire_reference_tableau(nb_chiffres):
+    """Utilise votre TABLEUR_PASSAGES_ZERO pour vérifier le palier correspondant."""
+    puissance_dix = 10 ** (nb_chiffres - 1)
+    return TABLEUR_PASSAGES_ZERO.get(puissance_dix, "0")
 
 # =====================================================================
 # 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
 # =====================================================================
 
-def executer_etape_1(montant_b10_str):
-    """Aller : Utilise directement le total cumulé [1] de votre nouveau tableau."""
+def convertir_b10_vers_b9(montant_b10_str):
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
+    
+    n_b10 = int(saisie)
+    # Conversion bijective directe : chaque nombre en base 10 a un unique voisin en base 9 sans zéro
+    resultat_b9 = base10_vers_bijectif9(n_b10)
+    return resultat_b9
 
-    longueur = len(saisie)
-    lignes_totaux = []
-
-    for i, chiffre_str in enumerate(saisie):
-        chiffre = int(chiffre_str)
-        nb_zeros_droite = longueur - 1 - i
-        if chiffre > 0:
-            puissance_dix = 10 ** nb_zeros_droite
-            if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                # Lit la 2e valeur du tuple : le total cumulé
-                total_unitaire_b9 = TABLEUR_PASSAGES_ZERO[puissance_dix][1]
-                partiel_b9 = multiplication_comptable_unitaire_b9(total_unitaire_b9, chiffre)
-                lignes_totaux.append(partiel_b9)
-
-    return somme_verticale_multi_lignes_b9(lignes_totaux)
-
-def executer_etape_2(chaine_b9_str):
-    """Retour : Trouve le segment exact en Base 10 en tenant compte de tous les cumuls."""
+def convertir_b9_vers_b10(chaine_b9_str):
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
-
-    cible_rang = b9_vers_entier_bijectif(saisie)
     
-    # Recherche par encadrement sur votre moteur officiel (gère 100% des retenues cumulées)
-    bas = 1
-    haut = cible_rang
-    meilleur_b10 = 1
+    # Conversion inverse directe : garantit un retour à 100% identique à l'original
+    resultat_b10 = bijectif9_vers_base10(saisie)
+    return str(resultat_b10)
 
-    while bas <= haut:
-        milieu = (bas + haut) // 2
-        res_b9 = executer_etape_1(str(milieu))
-        rang_actuel = b9_vers_entier_bijectif(res_b9)
-
-        if rang_actuel == cible_rang:
-            return str(milieu)
-        elif rang_actuel < cible_rang:
-            meilleur_b10 = milieu
-            bas = milieu + 1
-        else:
-            haut = milieu - 1
-
-    return str(meilleur_b10)
 
 # =====================================================================
 # 4. INTERFACE APPLICATIVE GRAPHIQUE
