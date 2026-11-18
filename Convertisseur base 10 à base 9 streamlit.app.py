@@ -55,7 +55,7 @@ def base10_vers_base9(n_str):
 def base9_vers_base10(b9_str):
     """Convertit n'importe quel nombre Base 9 bijective (chiffres 1 à 9) vers la Base 10."""
     saisie = str(b9_str).strip().replace(" ", "")
-    if not saisie.isdigit() or "0" in saisie or len(saisie) > 27:
+    if not saisie.isdigit() or "0" in saisie or len(saisie) > 35:
         return None
     
     total = 0
