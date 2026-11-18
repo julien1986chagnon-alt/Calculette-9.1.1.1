@@ -44,54 +44,26 @@ if "memoire_session" not in st.session_state:
 # 2. FONCTIONS DE CALCUL VERTICAL EN BASE 9 BIJECTIVE
 # =====================================================================
 
-def addition_comptable_verticale_b9(str_n1, str_n2):
-    n1, n2 = str_n1.strip(), str_n2.strip()
-    if n1 == "0": return n2
-    if n2 == "0": return n1
-    max_len = max(len(n1), len(n2))
-    n1, n2 = n1.zfill(max_len), n2.zfill(max_len)
-    resultat, retenue = [], 0
+def executer_etape_2(chaine_b9_str):
+    """Étape 1 de la reconstruction : reconnaît les paliers exacts de votre tableau."""
+    saisie = chaine_b9_str.strip().replace(" ", "")
+    if not saisie.isdigit() or "0" in saisie:
+        return None
 
-    for i in range(max_len - 1, -1, -1):
-        d1 = int(n1[i]) if n1[i] != '0' else 0
-        d2 = int(n2[i]) if n2[i] != '0' else 0
-        somme_colonne = d1 + d2 + retenue
+    # 1. Recherche directe dans votre tableau (ex: "12531" -> 10000)
+    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
+        if saisie == total_b9:
+            return str(cle_b10)
 
-        if somme_colonne >= 9:
-            reste = somme_colonne % 9
-            chiffre_ici = 9 if reste == 0 else reste
-            retenue = (somme_colonne // 9) - 1 if reste == 0 else somme_colonne // 9
-        else:
-            chiffre_ici = somme_colonne
-            retenue = 0
-        resultat.append(str(chiffre_ici))
+    # 2. Recherche d'un multiple exact d'un palier (ex: 2 x "12531" -> 20000)
+    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
+        for chiffre in range(2, 10):
+            if saisie == multiplication_comptable_unitaire_b9(total_b9, chiffre):
+                return str(cle_b10 * chiffre)
 
-    if retenue > 0:
-        resultat.append(str(retenue))
+    return "Palier composé (étape suivante à construire)"
 
-    res_final = "".join(reversed(resultat)).lstrip('0')
-    return res_final if res_final != "" else "0"
 
-def somme_verticale_multi_lignes_b9(liste_chaines):
-    total = "0"
-    for chaine in liste_chaines:
-        total = addition_comptable_verticale_b9(total, chaine)
-    return total
-
-def multiplication_comptable_unitaire_b9(str_b9, chiffre_int):
-    resultat = "0"
-    for _ in range(chiffre_int):
-        resultat = addition_comptable_verticale_b9(resultat, str_b9)
-    return resultat
-
-def b9_vers_entier_bijectif(str_b9):
-    """Permet de comparer la taille exacte de deux nombres en Base 9 sans zéro."""
-    if not str_b9 or str_b9 == "0":
-        return 0
-    total = 0
-    for c in str_b9:
-        total = total * 9 + int(c)
-    return total
 
 # =====================================================================
 # 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
