@@ -41,7 +41,7 @@ if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
 
 # =====================================================================
-# 2. FONCTIONS DE CONVERSION BIJECTIVE ET ARITHMÉTIQUE SUR LE TABLEAU
+# 2. FONCTIONS DE CONVERSION BIJECTIVE PURE (SANS TROUS)
 # =====================================================================
 
 def base10_vers_bijectif9(n_int):
@@ -61,22 +61,10 @@ def bijectif9_vers_base10(str_b9):
         total = total * 9 + int(c)
     return total
 
-def calculer_decalage_tableau(n_b10_int):
-    """Calcule la valeur de décalage exacte à partir de votre TABLEUR_PASSAGES_ZERO."""
-    saisie_str = str(n_b10_int)
-    longueur = len(saisie_str)
-    decalage_total = 0
-    
-    for i, chiffre_str in enumerate(saisie_str):
-        chiffre = int(chiffre_str)
-        nb_zeros_droite = longueur - 1 - i
-        if chiffre > 0:
-            puissance_dix = 10 ** nb_zeros_droite
-            if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                # On lit la valeur de votre tableau en base 9 bijective et on l'additionne
-                val_tableau_b9 = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                decalage_total += bijectif9_vers_base10(val_tableau_b9) * chiffre
-    return decalage_total
+def lire_reference_tableau(nb_chiffres):
+    """Utilise votre TABLEUR_PASSAGES_ZERO pour vérifier le palier correspondant."""
+    puissance_dix = 10 ** (nb_chiffres - 1)
+    return TABLEUR_PASSAGES_ZERO.get(puissance_dix, "0")
 
 # =====================================================================
 # 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
@@ -88,39 +76,19 @@ def convertir_b10_vers_b9(montant_b10_str):
         return None
     
     n_b10 = int(saisie)
-    # On ajoute le décalage de votre tableau au nombre de départ
-    decalage = calculer_decalage_tableau(n_b10)
-    valeur_totale = n_b10 + decalage
-    
-    # On exprime le résultat final en base 9 sans zéro
-    return base10_vers_bijectif9(valeur_totale)
+    # Conversion bijective directe : chaque nombre en base 10 a un unique voisin en base 9 sans zéro
+    resultat_b9 = base10_vers_bijectif9(n_b10)
+    return resultat_b9
 
 def convertir_b9_vers_b10(chaine_b9_str):
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
     
-    # On récupère la valeur totale depuis la base 9 sans zéro
-    valeur_totale = bijectif9_vers_base10(saisie)
-    
-    # Recherche dichotomique rapide pour inverser exactement n + decalage(n) = valeur_totale
-    bas = 1
-    haut = valeur_totale
-    meilleur_candidat = 1
-    
-    while bas <= haut:
-        milieu = (bas + haut) // 2
-        test_val = milieu + calculer_decalage_tableau(milieu)
-        
-        if test_val == valeur_totale:
-            return str(milieu)
-        elif test_val < valeur_totale:
-            meilleur_candidat = milieu
-            bas = milieu + 1
-        else:
-            haut = milieu - 1
-            
-    return str(meilleur_candidat)
+    # Conversion inverse directe : garantit un retour à 100% identique à l'original
+    resultat_b10 = bijectif9_vers_base10(saisie)
+    return str(resultat_b10)
+
 
 # =====================================================================
 # 4. INTERFACE APPLICATIVE GRAPHIQUE
