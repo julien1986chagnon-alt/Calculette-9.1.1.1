@@ -109,11 +109,11 @@ def entier_bijectif_vers_b9(n_int):
     return "".join(reversed(chiffres))
 
 # =====================================================================
-# 3. FONCTIONS ALLER (ADDITION) ET RETOUR (SOUSTRACTION DIRECTE)
+# 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
 # =====================================================================
 
 def executer_etape_1(montant_b10_str):
-    """Aller : Convertit en base 9 et ADDITIONNE les passages de votre tableau."""
+    """Aller : Additionne directement la saisie avec votre TABLEUR_PASSAGES_ZERO."""
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
@@ -132,11 +132,10 @@ def executer_etape_1(montant_b10_str):
                 lignes_zeros_seules.append(partiel_b9)
 
     somme_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    saisie_en_b9 = entier_bijectif_vers_b9(int(saisie))
-    return addition_comptable_verticale_b9(saisie_en_b9, somme_brute)
+    return addition_comptable_verticale_b9(saisie, somme_brute)
 
 def executer_etape_2(chaine_b9_str):
-    """Retour : SOUSTRAIT directement les passages du tableau rang par rang pour revenir en Base 10."""
+    """Retour : Soustrait les paliers exacts générés par l'Étape 1 pour revenir en Base 10."""
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
@@ -144,17 +143,14 @@ def executer_etape_2(chaine_b9_str):
     reste_b9 = saisie
     resultat_b10_chiffres = []
     
-    # On parcourt les puissances de 10 du tableau de la plus grande à la plus petite
-    puissances_triees = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
-    
-    for p10 in puissances_triees:
-        p10_en_b9 = entier_bijectif_vers_b9(p10)
-        decalage_unitaire_b9 = TABLEUR_PASSAGES_ZERO[p10]
-        # Coût total d'un pas à cette puissance (le pas base 10 + son passage tableau)
-        cout_unitaire_b9 = addition_comptable_verticale_b9(p10_en_b9, decalage_unitaire_b9)
+    for exposant in range(26, -1, -1):
+        p10 = 10 ** exposant
+        cout_unitaire_b9 = executer_etape_1(str(p10))
         
+        if cout_unitaire_b9 is None:
+            continue
+            
         chiffre_b10 = 0
-        # On soustrait tant que le reste est supérieur ou égal au coût du palier (max 9 fois)
         while b9_vers_entier_bijectif(reste_b9) >= b9_vers_entier_bijectif(cout_unitaire_b9) and chiffre_b10 < 9:
             reste_b9 = soustraction_comptable_verticale_b9(reste_b9, cout_unitaire_b9)
             chiffre_b10 += 1
@@ -164,6 +160,8 @@ def executer_etape_2(chaine_b9_str):
 
     res_final = "".join(resultat_b10_chiffres)
     return res_final if res_final != "" else "1"
+
+
 
 
 # =====================================================================
