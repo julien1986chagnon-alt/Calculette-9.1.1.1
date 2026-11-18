@@ -1,12 +1,12 @@
 import streamlit as st
 
-# =====================================================================
+# ==============================================================================
 # 1. VOTRE TABLE DES PASSAGES ZÉRO EN BASE 9 (À COMPLÉTER PAR VOS SOINS)
-# =====================================================================
+# ==============================================================================
 # Format : Puissance_de_10 : "Nombre_de_passages_en_base_9"
 
-TABLEUR_PASSAGES_ZERO = {
-    10: "1 ",
+TABLEAU_PASSAGES_ZERO = {
+    10: "1",
     100: "11",
     1000: "221",
     10000: "2531",
@@ -30,26 +30,26 @@ TABLEUR_PASSAGES_ZERO = {
     10000000000000000000000: "17726917763182514779641",
     100000000000000000000000: "195997196495117663687251",
     1000000000000000000000000: "2267179272556295411669861",
-    10000000000000000000000000: "24948982998229359528479671",
+    10000000000000000000000000: "249489829982293528479671",
     100000000000000000000000000: "275549924191533965824387581",
-
 }
-# =====================================================================
+
+# ==============================================================================
 # 2. FONCTIONS DE CONVERSION (BASE 10 -> BASE 9 PUIS BASE 9 -> BASE 10)
-# =====================================================================
+# ==============================================================================
 
 def base10_vers_base9(n_str):
     """Convertit n'importe quel entier (Base 10) vers la Base 9 bijective (chiffres 1 à 9)."""
     saisie = str(n_str).strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0 or len(saisie) > 27:
         return None
-    
+
     n = int(saisie)
     chiffres = []
     while n > 0:
         n, reste = divmod(n - 1, 9)
         chiffres.append(str(reste + 1))
-        
+
     return "".join(reversed(chiffres))
 
 def base9_vers_base10(b9_str):
@@ -57,35 +57,39 @@ def base9_vers_base10(b9_str):
     saisie = str(b9_str).strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie or len(saisie) > 31:
         return None
-    
+
     total = 0
     for chiffre in saisie:
         total = total * 9 + int(chiffre)
-        
+
     return str(total)
 
 def calculer_passages_depuis_table(n_str):
-    """Lit directement le nombre de passages en Base 9 depuis votre table."""
+    """Cumule les passages zéro de la table et retourne le total en Base 9 bijective."""
     saisie = str(n_str).strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
-    
+
     longueur = len(saisie)
-    total_passages_b9 = 0
-    
+    total_passages_b10 = 0
+
     for i, chiffre_char in enumerate(saisie):
         chiffre = int(chiffre_char)
         if chiffre > 0:
             puissance_dix = 10 ** (longueur - 1 - i)
-            if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                val_table = int(TABLEUR_PASSAGES_ZERO[puissance_dix])
-                total_passages_b9 += val_table * chiffre
-                
-    return str(total_passages_b9)
+            if puissance_dix in TABLEAU_PASSAGES_ZERO:
+                val_table_b9 = TABLEAU_PASSAGES_ZERO[puissance_dix].strip()
+                val_table_b10 = int(base9_vers_base10(val_table_b9))
+                total_passages_b10 += val_table_b10 * chiffre
 
-# =====================================================================
+    if total_passages_b10 == 0:
+        return "0"
+
+    return base10_vers_base9(str(total_passages_b10))
+
+# ==============================================================================
 # 3. INTERFACE STREAMLIT
-# =====================================================================
+# ==============================================================================
 
 st.set_page_config(page_title="Convertisseur Base 10 & Base 9", page_icon="🔢")
 
@@ -93,31 +97,31 @@ st.title("🔢 Convertisseur Base 10 ↔ Base 9")
 st.caption("Numération bijective sans zéro (chiffres de 1 à 9)")
 
 onglet_10_vers_9, onglet_9_vers_10 = st.tabs([
-    "➡️ Base 10 vers Base 9", 
+    "➡️ Base 10 vers Base 9",
     "⬅️ Base 9 vers Base 10"
 ])
 
 with onglet_10_vers_9:
     saisie_10 = st.text_input("Entrez un nombre entier en Base 10 (27 chiffres max) :", max_chars=27, key="in_10")
     afficher_option = st.checkbox("Afficher le nombre de passages zéro (depuis ma table)", value=True)
-    
+
     if st.button("Convertir en Base 9", key="btn_10"):
         resultat = base10_vers_base9(saisie_10)
         if resultat is None:
             st.error("⚠️ Veuillez entrer un nombre entier valide (entre 1 et 27 chiffres maximum).")
         else:
             st.success(f"🟢 **Résultat en Base 9 :** `{resultat}`")
-            
+
             if afficher_option:
                 passages_b9 = calculer_passages_depuis_table(saisie_10)
-                st.info(f"📊 **Nombre de passages zéro (en Base 9 bijective) :** `{passages_b9}`")
+                st.info(f"🔢 **Nombre de passages zéro (en Base 9 bijective) :** `{passages_b9}`")
 
 with onglet_9_vers_10:
     saisie_9 = st.text_input("Entrez un nombre en Base 9 (chiffres de 1 à 9, 31 chiffres max) :", max_chars=31, key="in_9")
     if st.button("Convertir en Base 10", key="btn_9"):
         resultat = base9_vers_base10(saisie_9)
         if resultat is None:
-            st.error("⚠️ Saisie invalide. Utilisez uniquement les chiffres de 1 à 9 sans zéro (27 chiffres max).")
+            st.error("⚠️ Saisie invalide. Utilisez uniquement les chiffres de 1 à 9 sans zéro (31 chiffres max).")
         else:
             st.success(f"🟢 **Résultat en Base 10 :** `{resultat}`")
 
