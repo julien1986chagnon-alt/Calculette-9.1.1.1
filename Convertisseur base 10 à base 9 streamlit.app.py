@@ -114,13 +114,13 @@ def entier_bijectif_vers_b9(n_int):
 # =====================================================================
 
 def executer_etape_1(montant_b10_str):
-    """Aller : Additionne directement la saisie avec votre TABLEUR_PASSAGES_ZERO."""
+    """Aller : Lit directement le total cumulé (index 1) de votre tableau pour chaque rang."""
     saisie = montant_b10_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
 
     longueur = len(saisie)
-    lignes_zeros_seules = []
+    lignes_totaux = []
 
     for i, chiffre_str in enumerate(saisie):
         chiffre = int(chiffre_str)
@@ -128,15 +128,15 @@ def executer_etape_1(montant_b10_str):
         if chiffre > 0:
             puissance_dix = 10 ** nb_zeros_droite
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                ref_tableur = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                partiel_b9 = multiplication_comptable_unitaire_b9(ref_tableur, chiffre)
-                lignes_zeros_seules.append(partiel_b9)
+                # On pioche directement la 2e valeur du tuple : le total cumulé (index 1)
+                total_unitaire_b9 = TABLEUR_PASSAGES_ZERO[puissance_dix][1]
+                partiel_b9 = multiplication_comptable_unitaire_b9(total_unitaire_b9, chiffre)
+                lignes_totaux.append(partiel_b9)
 
-    somme_brute = somme_verticale_multi_lignes_b9(lignes_zeros_seules)
-    return addition_comptable_verticale_b9(saisie, somme_brute)
+    return somme_verticale_multi_lignes_b9(lignes_totaux)
 
 def executer_etape_2(chaine_b9_str):
-    """Retour : Soustrait les paliers exacts générés par l'Étape 1 pour revenir en Base 10."""
+    """Retour : Soustrait directement les totaux cumulés (index 1) de votre tableau."""
     saisie = chaine_b9_str.strip().replace(" ", "")
     if not saisie.isdigit() or "0" in saisie:
         return None
@@ -144,13 +144,13 @@ def executer_etape_2(chaine_b9_str):
     reste_b9 = saisie
     resultat_b10_chiffres = []
     
-    for exposant in range(26, -1, -1):
-        p10 = 10 ** exposant
-        cout_unitaire_b9 = executer_etape_1(str(p10))
+    # On parcourt les puissances de 10 de votre tableau de la plus grande à la plus petite (jusqu'à 1)
+    puissances_triees = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
+    
+    for p10 in puissances_triees:
+        # On lit directement le coût total du palier dans votre tableau (index 1)
+        cout_unitaire_b9 = TABLEUR_PASSAGES_ZERO[p10][1]
         
-        if cout_unitaire_b9 is None:
-            continue
-            
         chiffre_b10 = 0
         while b9_vers_entier_bijectif(reste_b9) >= b9_vers_entier_bijectif(cout_unitaire_b9) and chiffre_b10 < 9:
             reste_b9 = soustraction_comptable_verticale_b9(reste_b9, cout_unitaire_b9)
@@ -161,6 +161,7 @@ def executer_etape_2(chaine_b9_str):
 
     res_final = "".join(resultat_b10_chiffres)
     return res_final if res_final != "" else "1"
+
 
 
 
