@@ -110,7 +110,7 @@ with onglet_10_vers_9:
             
             if afficher_option:
                 passages_b9 = calculer_passages_depuis_table(saisie_10)
-                st.info(f"📊 **Nombre de passages zéro (en Base 9 d'après votre table) :** `{passages_b9}`")
+                st.info(f"📊 **Nombre de passages zéro (en Base 9 bijective) :** `{passages_b9}`")
 
 with onglet_9_vers_10:
     saisie_9 = st.text_input("Entrez un nombre en Base 9 (chiffres de 1 à 9, 31 chiffres max) :", max_chars=31, key="in_9")
