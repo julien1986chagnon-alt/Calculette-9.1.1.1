@@ -41,164 +41,107 @@ TABLEUR_PASSAGES_ZERO = {
 if "memoire_session" not in st.session_state:
     st.session_state.memoire_session = {}
 # =====================================================================
-# 2. OPÉRATIONS MIROIRS EN BASE 9 BIJECTIVE (ADDITION ET SOUSTRACTION)
+# 2. LECTURE DIRECTE DE VOTRE TABLE DE CONVERGENCE (PASSAGES ZÉRO)
 # =====================================================================
 
-def addition_verticale_b9(str_n1, str_n2):
-    """Additionne deux nombres en base 9 sans zéro (sens aller)."""
-    n1, n2 = str_n1.strip(), str_n2.strip()
-    if n1 == "0": return n2
-    if n2 == "0": return n1
-    max_len = max(len(n1), len(n2))
-    n1, n2 = n1.zfill(max_len), n2.zfill(max_len)
-    resultat, retenue = [], 0
-
-    for i in range(max_len - 1, -1, -1):
-        d1 = int(n1[i]) if n1[i] != '0' else 0
-        d2 = int(n2[i]) if n2[i] != '0' else 0
-        somme_colonne = d1 + d2 + retenue
-
-        if somme_colonne >= 9:
-            reste = somme_colonne % 9
-            chiffre_ici = 9 if reste == 0 else reste
-            retenue = (somme_colonne // 9) - 1 if reste == 0 else somme_colonne // 9
-        else:
-            chiffre_ici = somme_colonne
-            retenue = 0
-        resultat.append(str(chiffre_ici))
-
-    if retenue > 0:
-        resultat.append(str(retenue))
-
-    res_final = "".join(reversed(resultat)).lstrip('0')
-    return res_final if res_final != "" else "0"
-
-def soustraction_verticale_b9(str_grand, str_petit):
-    """Soustrait un palier en base 9 sans zéro (opération miroir du retour)."""
-    if str_grand == str_petit:
-        return "0"
-    max_len = max(len(str_grand), len(str_petit))
-    n_grand = str_grand.strip().zfill(max_len)
-    n_petit = str_petit.strip().zfill(max_len)
-    resultat, emprunt = [], 0
-
-    for i in range(len(n_grand) - 1, -1, -1):
-        d_grand = int(n_grand[i])
-        d_petit = int(n_petit[i]) + emprunt
-
-        if d_grand <= d_petit and i > 0:
-            diff = (d_grand + 9) - d_petit
-            emprunt = 1
-        else:
-            diff = d_grand - d_petit
-            emprunt = 0
-
-        if diff == 0 and i > 0:
-            diff = 9
-            emprunt = 1
-
-        resultat.append(str(diff))
-
-    res_final = "".join(reversed(resultat)).lstrip('0')
-    return res_final if res_final != "" else "0"
-
-def multiplier_palier_b9(str_b9, chiffre_int):
-    """Répète l'addition verticale autant de fois que le chiffre l'indique."""
-    resultat = "0"
-    for _ in range(chiffre_int):
-        resultat = addition_verticale_b9(resultat, str_b9)
-    return resultat
-
-def est_superieur_ou_egal_b9(str_a, str_b):
-    """Compare deux nombres en base 9 sans zéro."""
-    a = str_a.lstrip('0')
-    b = str_b.lstrip('0')
-    if len(a) != len(b):
-        return len(a) > len(b)
-    return a >= b
-
-# =====================================================================
-# 3. CONVERSION ALLER (BASE 10 -> 9) ET REMBOBINAGE (BASE 9 -> 10)
-# =====================================================================
-
-def executer_etape_1(montant_b10_str):
-    """Sens aller : Assemble les paliers de votre tableau par addition."""
-    saisie = montant_b10_str.strip().replace(" ", "")
+def lire_passages_dans_ma_table(n_str):
+    """Lit vos paliers directement dans TABLEUR_PASSAGES_ZERO et additionne vos passages."""
+    saisie = n_str.strip().replace(" ", "")
     if not saisie.isdigit() or int(saisie) <= 0:
         return None
-
+    
     longueur = len(saisie)
-    total_b9 = "0"
-
-    for i, chiffre_str in enumerate(saisie):
-        chiffre = int(chiffre_str)
-        nb_zeros_droite = longueur - 1 - i
+    total_passages = 0
+    total_cumule_table = 0
+    
+    for i, chiffre_char in enumerate(saisie):
+        chiffre = int(chiffre_char)
         if chiffre > 0:
-            puissance_dix = 10 ** nb_zeros_droite
+            puissance_dix = 10 ** (longueur - 1 - i)
             if puissance_dix in TABLEUR_PASSAGES_ZERO:
-                passage, valeur_totale_palier = TABLEUR_PASSAGES_ZERO[puissance_dix]
-                bloc_b9 = multiplier_palier_b9(valeur_totale_palier, chiffre)
-                total_b9 = addition_verticale_b9(total_b9, bloc_b9)
+                passage_palier, total_palier = TABLEUR_PASSAGES_ZERO[puissance_dix]
+                total_passages += int(passage_palier) * chiffre
+                total_cumule_table += int(total_palier) * chiffre
+                
+    return str(total_passages), str(total_cumule_table)
 
-    return total_b9
+# =====================================================================
+# 3. CONVERSION UNIVERSELLE BASE 9 BIJECTIVE (ALLER & RETOUR EXACT)
+# =====================================================================
 
-# Lecture directe du total cumulé dans votre tableau
-    for palier_b10, (passage, total_cumule) in TABLEUR_PASSAGES_ZERO.items():
-        if saisie == total_cumule:
-            return str(palier_b10)
-
-
-    reste_b9 = saisie
-    total_base10 = 0
+def base10_vers_base9_bijective(n_str):
+    """Convertit n'importe quel entier (Base 10) vers la Base 9 bijective officielle."""
+    saisie = n_str.strip().replace(" ", "")
+    if not saisie.isdigit() or int(saisie) <= 0:
+        return None
     
-    # On parcourt votre tableau du plus grand palier au plus petit (rembobinage)
-    paliers_descendants = sorted(TABLEUR_PASSAGES_ZERO.keys(), reverse=True)
-    
-    for cle_b10 in paliers_descendants:
-        if reste_b9 == "0":
-            break
-            
-        passage, valeur_totale_palier = TABLEUR_PASSAGES_ZERO[cle_b10]
+    n = int(saisie)
+    chiffres = []
+    while n > 0:
+        n, reste = divmod(n - 1, 9)
+        chiffres.append(str(reste + 1))
         
-        # On cherche quel chiffre (de 9 à 1) avait été utilisé à l'aller pour ce palier
-        for chiffre in range(9, 0, -1):
-            bloc_b9 = multiplier_palier_b9(valeur_totale_palier, chiffre)
+    return "".join(reversed(chiffres))
+
+def base9_bijective_vers_base10(b9_str):
+    """Convertit n'importe quel nombre Base 9 bijective vers la Base 10 (avec lecture directe de votre table)."""
+    saisie = b9_str.strip().replace(" ", "")
+    if not saisie.isdigit() or "0" in saisie:
+        return None, False
+    
+    # 1. Vérifie d'abord si le nombre est un palier exact de votre table
+    for palier_b10, (passage, total_table) in TABLEUR_PASSAGES_ZERO.items():
+        if saisie == total_table:
+            return str(palier_b10), True
             
-            if est_superieur_ou_egal_b9(reste_b9, bloc_b9):
-                total_base10 += cle_b10 * chiffre
-                reste_b9 = soustraction_verticale_b9(reste_b9, bloc_b9)
-                break
-
-    return str(total_base10) if total_base10 > 0 else "1"
+    # 2. Sinon, applique le calcul universel de retour en Base 10
+    total_b10 = 0
+    for chiffre_char in saisie:
+        total_b10 = total_b10 * 9 + int(chiffre_char)
+        
+    return str(total_b10), False
 
 # =====================================================================
-# 4. INTERFACE STREAMLIT
+# 4. INTERFACE STREAMLIT (VOTRE TABLE + BASE 9 UNIVERSELLE)
 # =====================================================================
 
-st.title("🔢 Convertisseur base 9 bijective et 10")
-st.caption("Calculateur Miroir - Assemblage et Rembobinage sur Tableau")
+st.title("🔢 Convertisseur Base 9 Bijective & Table de Convergence")
+st.caption("Alliance de votre table des passages zéro et de la numération bijective universelle")
 
-onglet_direct, onglet_inverse = st.tabs(["➡️ ÉTAPE 1 : Base 10 -> Base 9", "⬅️ ÉTAPE 2 : Base 9 -> Base 10"])
+onglet_aller, onglet_retour = st.tabs([
+    "➡️ ÉTAPE 1 : Base 10 ➡️ Base 9", 
+    "⬅️ ÉTAPE 2 : Base 9 ➡️ Base 10"
+])
 
-with onglet_direct:
-    st.markdown("#### Assemblage (Base 10 vers Base 9)")
-    saisie_b10 = st.text_input("Saisissez le nombre en Base 10 :", max_chars=26, key="txt_b10")
+with onglet_aller:
+    st.markdown("#### Analyse depuis la Base 10")
+    saisie_b10 = st.text_input("Entrez un nombre entier en Base 10 :", max_chars=26, key="in_b10")
     
-    if st.button("Convertir vers Base 9", key="btn_direct"):
-        res_final = executer_etape_1(saisie_b10)
-        if res_final is None:
-            st.error("⚠️ Saisie invalide. Entrez un nombre entier supérieur à 0.")
+    if st.button("Lancer l'analyse complète", key="btn_aller"):
+        res_table = lire_passages_dans_ma_table(saisie_b10)
+        vrai_b9 = base10_vers_base9_bijective(saisie_b10)
+        
+        if vrai_b9 is None or res_table is None:
+            st.error("⚠️ Veuillez entrer un nombre entier valide supérieur à 0.")
         else:
-            st.success(f"🟢 **RÉSULTAT BASE 9 :** `{res_final}`")
+            passages_lus, cumule_lu = res_table
+            st.info(f"📊 **Passages zéro (d'après votre table) :** `{passages_lus}`")
+            st.success(f"🟢 **Total en Base 9 bijective :** `{vrai_b9}`")
 
-with onglet_inverse:
-    st.markdown("#### Rembobinage Miroir (Base 9 vers Base 10)")
-    saisie_b9 = st.text_input("Saisissez le nombre en Base 9 (chiffres 1 à 9) :", max_chars=27, key="txt_b9")
+with onglet_retour:
+    st.markdown("#### Conversion vers la Base 10")
+    saisie_b9 = st.text_input("Entrez un nombre en Base 9 (chiffres 1 à 9 uniquement) :", max_chars=27, key="in_b9")
     
-    if st.button("Rembobiner vers Base 10", key="btn_inverse"):
-        res_b10 = executer_etape_2(saisie_b9)
+    if st.button("Convertir vers la Base 10", key="btn_retour"):
+        res_b10, trouve_dans_table = base9_bijective_vers_base10(saisie_b9)
+        
         if res_b10 is None:
             st.error("⚠️ Saisie invalide. Utilisez uniquement les chiffres de 1 à 9 (sans zéro).")
+        elif trouve_dans_table:
+            st.success(f"🟢 **PALIER RECONNU DANS VOTRE TABLE :** `{res_b10}`")
         else:
+            st.success(f"🟢 **RÉSULTAT EN BASE 10 :** `{res_b10}`")
+
+
             st.success(f"🟢 **RÉSULTAT BASE 10 :** `{res_b10}`")
 
