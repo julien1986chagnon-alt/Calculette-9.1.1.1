@@ -44,27 +44,24 @@ if "memoire_session" not in st.session_state:
 # 2. FONCTIONS DE CONVERSION BIJECTIVE PURE (SANS TROUS)
 # =====================================================================
 
-def base10_vers_bijectif9(n_int):
-    """Convertit un entier base 10 en chaîne base 9 sans zéro (chiffres 1 à 9)."""
-    if n_int <= 0:
-        return "0"
-    chiffres = []
-    while n_int > 0:
-        n_int, reste = divmod(n_int - 1, 9)
-        chiffres.append(str(reste + 1))
-    return "".join(reversed(chiffres))
+def executer_etape_2(chaine_b9_str):
+    """Étape 1 de la reconstruction : reconnaît les paliers exacts de votre tableau."""
+    saisie = chaine_b9_str.strip().replace(" ", "")
+    if not saisie.isdigit() or "0" in saisie:
+        return None
 
-def bijectif9_vers_base10(str_b9):
-    """Convertit une chaîne base 9 sans zéro vers son entier base 10 exact."""
-    total = 0
-    for c in str_b9:
-        total = total * 9 + int(c)
-    return total
+    # 1. Recherche directe dans votre tableau (ex: "12531" -> 10000)
+    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
+        if saisie == total_b9:
+            return str(cle_b10)
 
-def lire_reference_tableau(nb_chiffres):
-    """Utilise votre TABLEUR_PASSAGES_ZERO pour vérifier le palier correspondant."""
-    puissance_dix = 10 ** (nb_chiffres - 1)
-    return TABLEUR_PASSAGES_ZERO.get(puissance_dix, "0")
+    # 2. Recherche d'un multiple exact d'un palier (ex: 2 x "12531" -> 20000)
+    for cle_b10, (passage, total_b9) in TABLEUR_PASSAGES_ZERO.items():
+        for chiffre in range(2, 10):
+            if saisie == multiplication_comptable_unitaire_b9(total_b9, chiffre):
+                return str(cle_b10 * chiffre)
+
+    return "Palier composé (étape suivante à construire)"
 
 # =====================================================================
 # 3. FONCTIONS ALLER (BASE 10 -> BASE 9) ET RETOUR (BASE 9 -> BASE 10)
